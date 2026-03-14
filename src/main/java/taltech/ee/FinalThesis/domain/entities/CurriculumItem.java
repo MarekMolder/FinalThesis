@@ -1,0 +1,109 @@
+package taltech.ee.FinalThesis.domain.entities;
+
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import taltech.ee.FinalThesis.domain.enums.CurriculumItemEducationalFrameworkEnum;
+import taltech.ee.FinalThesis.domain.enums.CurriculumItemSourceTypeEnum;
+import taltech.ee.FinalThesis.domain.enums.CurriculumItemTypeEnum;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.util.UUID;
+
+@Entity
+@Table(name = "curriculum_item")
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class CurriculumItem {
+
+    @Id
+    @Column(name = "id", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CurriculumItemTypeEnum type;
+
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "order_index", nullable = false)
+    private Integer orderIndex;
+
+    @Column(name = "source_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CurriculumItemSourceTypeEnum sourceType;
+
+    @Column(name = "external_iri")
+    private String externalIri;
+
+    @Column(name = "local_key")
+    private String localKey;
+
+    @Column(name = "subject_iri")
+    private String subjectIri;
+
+    @Column(name = "subject_area_iri")
+    private String subjectAreaIri;
+
+    @Column(name = "education_level_iri", nullable = false)
+    private String educationLevelIri;
+
+    @Column(name = "school_level", nullable = false)
+    private String schoolLevel;
+
+    @Column(name = "grade", nullable = false)
+    private String grade;
+
+    @Column(name = "educational_framework", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CurriculumItemEducationalFrameworkEnum educationalFramework;
+
+    @Column(name = "notation", nullable = false)
+    private String notation;
+
+    @Column(name = "verb_iri", nullable = false)
+    private String verbIri;
+
+    @Column(name = "is_mandatory", nullable = false)
+    private Boolean isMandatory;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "curriculum_version_id")
+    private CurriculumVersion curriculumVersion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "curriculum_item_id")
+    private CurriculumItem parentItem;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "curriculumItem")
+    private List<CurriculumItemSchedule> curriculumItemSchedules = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sourceItem")
+    private List<CurriculumItemRelation> curriculumItemRelations = new ArrayList<>();
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+}
