@@ -1,4 +1,4 @@
-package taltech.ee.FinalThesis.service.auth;
+package taltech.ee.FinalThesis.services.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

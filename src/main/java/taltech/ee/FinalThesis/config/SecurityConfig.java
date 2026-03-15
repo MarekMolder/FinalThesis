@@ -17,7 +17,7 @@ import taltech.ee.FinalThesis.domain.enums.UserRoleEnum;
 import taltech.ee.FinalThesis.repositories.UserRepository;
 import taltech.ee.FinalThesis.security.CurriculumUserDetailsService;
 import taltech.ee.FinalThesis.security.JwtAuthenticationFilter;
-import taltech.ee.FinalThesis.service.auth.AuthenticationService;
+import taltech.ee.FinalThesis.services.auth.AuthenticationService;
 
 @Configuration
 public class SecurityConfig {

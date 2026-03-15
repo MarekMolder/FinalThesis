@@ -1,5 +1,5 @@
 package taltech.ee.FinalThesis.domain.enums;
 
-public enum CurriculumItemEducationalFrameworkEnum {
+public enum CurriculumEducationalFrameworkEnum {
     ESTONIAN_NATIONAL_CURRICULUM
 }

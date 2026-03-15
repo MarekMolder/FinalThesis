@@ -1,4 +1,4 @@
-package taltech.ee.FinalThesis.exceptions.notFoundExceptions;
+package taltech.ee.FinalThesis.exceptions;
 
 /**
  * Thrown when a booking request is invalid: outside opening hours, wrong duration,

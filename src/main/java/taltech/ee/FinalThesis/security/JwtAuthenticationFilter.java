@@ -10,7 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
-import taltech.ee.FinalThesis.service.auth.AuthenticationService;
+import taltech.ee.FinalThesis.services.auth.AuthenticationService;
 
 import java.io.IOException;
 

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import taltech.ee.FinalThesis.domain.enums.CurriculumEducationalFrameworkEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumStatusEnum;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVisbilityEnum;
@@ -73,7 +74,8 @@ public class Curriculum {
     private String grade;
 
     @Column(name = "educational_framework", nullable = false)
-    private String educationalFramework;
+    @Enumerated(EnumType.STRING)
+    private CurriculumEducationalFrameworkEnum educationalFramework;
 
     @Column(name = "language", nullable = false)
     private String language;
@@ -84,7 +86,7 @@ public class Curriculum {
     @Column(name = "external_source", nullable = false)
     private String externalSource;
 
-    @Column(name = "external_page_iri", nullable = false)
+    @Column(name = "external_page_iri")
     private String externalPageIri;
 
     @ManyToOne(fetch = FetchType.LAZY)

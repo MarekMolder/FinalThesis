@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import taltech.ee.FinalThesis.domain.dto.AuthResponse;
-import taltech.ee.FinalThesis.domain.dto.LoginRequest;
 import taltech.ee.FinalThesis.domain.dto.RegisterRequest;
-import taltech.ee.FinalThesis.service.auth.AuthenticationService;
+import taltech.ee.FinalThesis.services.auth.AuthenticationService;
 
 /**
  * REST API for authentication: login and registration.
@@ -22,7 +21,7 @@ import taltech.ee.FinalThesis.service.auth.AuthenticationService;
 @RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final taltech.ee.FinalThesis.service.auth.AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
 
     /** Authenticates user by email/password and returns a JWT. */
     @PostMapping("/login")

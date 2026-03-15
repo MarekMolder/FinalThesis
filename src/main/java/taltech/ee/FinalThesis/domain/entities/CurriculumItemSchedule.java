@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import taltech.ee.FinalThesis.domain.enums.CurriculumItemEducationalFrameworkEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumItemScheduleStatusEnum;
 
 import java.time.LocalDateTime;

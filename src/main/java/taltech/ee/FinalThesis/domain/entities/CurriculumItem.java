@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import taltech.ee.FinalThesis.domain.enums.CurriculumItemEducationalFrameworkEnum;
+import taltech.ee.FinalThesis.domain.enums.CurriculumEducationalFrameworkEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumItemSourceTypeEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumItemTypeEnum;
 import java.time.LocalDateTime;
@@ -70,7 +70,7 @@ public class CurriculumItem {
 
     @Column(name = "educational_framework", nullable = false)
     @Enumerated(EnumType.STRING)
-    private CurriculumItemEducationalFrameworkEnum educationalFramework;
+    private CurriculumEducationalFrameworkEnum educationalFramework;
 
     @Column(name = "notation", nullable = false)
     private String notation;

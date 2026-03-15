@@ -1,4 +1,4 @@
-package taltech.ee.FinalThesis.service.auth;
+package taltech.ee.FinalThesis.services.auth;
 
 import org.springframework.security.core.userdetails.UserDetails;
 

@@ -1,5 +1,7 @@
 package taltech.ee.FinalThesis.exceptions.notFoundExceptions;
 
+import taltech.ee.FinalThesis.exceptions.CurriculumException;
+
 /**
  * Thrown when a user is not found (e.g. by email). Mapped to 400 by GlobalExceptionHandler.
  */

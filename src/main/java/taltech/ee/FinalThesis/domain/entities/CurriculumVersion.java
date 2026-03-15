@@ -2,9 +2,10 @@ package taltech.ee.FinalThesis.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import taltech.ee.FinalThesis.domain.enums.CurriculumStatusEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionPublishStatusEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 
@@ -40,16 +41,20 @@ public class CurriculumVersion {
     @Column(name = "change_note", columnDefinition = "TEXT")
     private String changeNote;
 
-    @Column(name = "content_json", columnDefinition = "JSON", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "content_json", nullable = false)
     private String contentJson;
 
-    @Column(name = "retrieval_context_json", columnDefinition = "JSON", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "retrieval_context_json", nullable = false)
     private String retrievalContextJson;
 
-    @Column(name = "retrieved_catalog_json", columnDefinition = "JSON", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "retrieved_catalog_json", nullable = false)
     private String retrievedCatalogJson;
 
-    @Column(name = "compliance_report_json", columnDefinition = "JSON", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "compliance_report_json", nullable = false)
     private String complianceReportJson;
 
     @Column(name = "external_page_iri")
