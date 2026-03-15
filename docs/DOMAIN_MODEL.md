@@ -1,6 +1,6 @@
-# Relatsiooniline andmemudel
+# Relational Data Model
 
-Projektis kasutatakse järgmisi põhitabeleid:
+The project uses the following main tables:
 
 1. `user`
 2. `curriculum`
@@ -10,21 +10,22 @@ Projektis kasutatakse järgmisi põhitabeleid:
 6. `curriculum_item_relation`
 
 ---
-## 1. user
+# 1. user
 
-### Eesmärk
-Hoiab süsteemi kasutajate andmeid.
+## Purpose
+Stores system user information.
 
-### Väljad
-- `id` – kasutaja unikaalne ID
-- `email` – kasutaja e-posti aadress
-- `name` – kasutaja nimi
-- `password_hash` – parooli räsi
-- `role` – kasutaja roll süsteemis
-- `created_at` – loomise ajatempel
-- `updated_at` – uuendamise ajatempel
+## Fields
+- `id` – unique user ID
+- `email` – user email address
+- `name` – user name
+- `password_hash` – password hash
+- `role` – user role in the system
+- `created_at` – creation timestamp
+- `updated_at` – last update timestamp
 
-### Näide
+
+## Example
 - `id`: `USR-001`
 - `email`: `opetaja@gmail.com`
 - `name`: `Mari Tamm`
@@ -37,36 +38,37 @@ Hoiab süsteemi kasutajate andmeid.
 
 ## 2. curriculum
 
-### Eesmärk
-Hoiab töökava üldandmeid ehk töökava "konteinerit".  
-Töökava detailne sisu ja muudatused paiknevad versioonides.
 
-### Väljad
-- `id` – töökava unikaalne ID
-- `owner_user_id` – kasutaja, kellele töökava kuulub
-- `title` – töökava nimi
-- `description` – lühikirjeldus
-- `curriculum_type` – õppekava tüüp
-- `status` – töökava olek
-- `visibility` – nähtavus
+## Purpose
+Stores general information about a **õppekava/curriculum container**.  
+The detailed content and modifications of the töökava are stored in versions.
+
+## Fields
+- `id` – unique töökava ID
+- `owner_user_id` – user who owns the töökava
+- `title` – töökava title
+- `description` – short description
+- `curriculum_type` – õppekava type
+- `status` – töökava status
+- `visibility` – visibility
 - `provider` – õppeasutus
-- `relevant_occupation` – seotud kvalifikatsioon või ametiala
-- `identifier` – väline tunnus või kood
+- `relevant_occupation` – related qualification or occupation
+- `identifier` – external identifier or code
 - `audience` – sihtrühm
-- `subject_area_iri` – ainevaldkonna IRI
+- `subject_area_iri` – ainevaldkond IRI
 - `subject_iri` – õppeaine IRI
-- `educational_level_iri` – haridusastme IRI
-- `school_level` – kooliaste tekstina
+- `educational_level_iri` – haridusaste IRI
+- `school_level` – kooliaste (text)
 - `grade` – klass
-- `educational_framework` – kasutatav raamistik
-- `language` – keel
-- `volume_hours` – maht tundides
-- `external_source` – väline andmeallikas
-- `external_page_iri` – välise süsteemi root-objekti IRI
-- `created_at` – loomise ajatempel
-- `updated_at` – uuendamise ajatempel
+- `educational_framework` – educational framework
+- `language` – language
+- `volume_hours` – total volume in hours
+- `external_source` – external data source
+- `external_page_iri` – external system root object IRI
+- `created_at` – creation timestamp
+- `updated_at` – update timestamp
 
-### Näide
+## Example
 - `id`: `CUR-001`
 - `owner_user_id`: `USR-001`
 - `title`: `9. klassi keemia töökava`
@@ -95,29 +97,29 @@ Töökava detailne sisu ja muudatused paiknevad versioonides.
 
 ## 3. curriculum_version
 
-### Eesmärk
-Hoiab töökava versioone.  
-Iga suurem muudatuste laine salvestatakse eraldi versioonina.
+## Purpose
+Stores õppekava/curriculum versions.  
+Each major set of changes is stored as a separate version.
 
-### Väljad
-- `id` – töökava versiooni ID
-- `curriculum_id` – millise töökava versiooniga on tegu
-- `created_by_user_id` – kasutaja, kes versiooni lõi
-- `version_number` – versiooni number
-- `state` – versiooni olek
-- `change_note` – muudatuse selgitus
-- `content_json` – töökava sisu JSON kujul
-- `retrieval_context_json` – retrievali sisendkontekst
-- `retrieved_catalog_json` – retrievali käigus saadud andmed
-- `compliance_report_json` – vastavusraport
-- `external_page_iri` – välise lehe juurobjekti IRI
-- `publish_status` – avaldamise staatus
-- `published_at` – avaldamise aeg
-- `published_error` – avaldamise veateade
-- `created_at` – loomise ajatempel
-- `updated_at` – uuendamise ajatempel
+## Fields
+- `id` – töökava version ID
+- `curriculum_id` – which töökava this version belongs to
+- `created_by_user_id` – user who created the version
+- `version_number` – version number
+- `state` – version state
+- `change_note` – explanation of the change
+- `content_json` – töökava content in JSON format
+- `retrieval_context_json` – retrieval input context
+- `retrieved_catalog_json` – data retrieved during retrieval
+- `compliance_report_json` – compliance report
+- `external_page_iri` – external page root object IRI
+- `publish_status` – publishing status
+- `published_at` – publishing timestamp
+- `published_error` – publishing error message
+- `created_at` – creation timestamp
+- `updated_at` – update timestamp
 
-### Näide
+## Example
 - `id`: `VER-001`
 - `curriculum_id`: `CUR-001`
 - `created_by_user_id`: `USR-001`
@@ -139,43 +141,46 @@ Iga suurem muudatuste laine salvestatakse eraldi versioonina.
 
 ## 4. curriculum_item
 
-### Eesmärk
-Hoiab töökava struktuurielemente, näiteks:
-- teemad
-- õpiväljundid
-- testid
-- õppematerjalid
-- ülesanded
+## Purpose
+Stores structural elements of a õppekava, for example:
 
-Toetab hierarhilist struktuuri parent-child suhte kaudu.
+- module - moodul
+- topic - teemad
+- learning_outcome - õpiväljundid
+- test - testid
+- learning_material - õppematerjalid
+- task - ülesanded
+- knobit - knobit
 
-### Väljad
-- `id` – elemendi ID
-- `curriculum_version_id` – millise versiooni osa element on
-- `parent_item_id` – ülemise elemendi ID
-- `created_by_user_id` – kasutaja, kes elemendi lõi
-- `type` – elemendi tüüp
-- `title` – elemendi pealkiri
-- `description` – elemendi kirjeldus
-- `order_index` – järjekorranumber sama taseme elementide vahel
-- `source_type` – elemendi päritolu
-- `external_iri` – välise objekti IRI
-- `local_key` – lokaalne võti JSON ja relatsioonilise mudeli sidumiseks
-- `subject_iri` – seotud õppeaine IRI
-- `subject_area_iri` – seotud ainevaldkonna IRI
-- `education_level_iri` – haridusastme IRI
+Supports hierarchical structure through a parent-child relationship.
+
+## Fields
+- `id` – item ID
+- `curriculum_version_id` – version this item belongs to
+- `parent_item_id` – parent item ID
+- `created_by_user_id` – user who created the item
+- `type` – item type
+- `title` – item title
+- `description` – item description
+- `order_index` – order index among same-level items
+- `source_type` – source of the item
+- `external_iri` – external object IRI
+- `local_key` – local key linking JSON and relational model
+- `subject_iri` – related õppeaine IRI
+- `subject_area_iri` – related ainevaldkond IRI
+- `education_level_iri` – haridusaste IRI
 - `school_level` – kooliaste
 - `grade` – klass
-- `educational_framework` – kasutatav raamistik
-- `notation` – tähis
-- `verb_iri` – tegevusvormi IRI
-- `is_mandatory` – kas element on kohustuslik
-- `created_at` – loomise ajatempel
-- `updated_at` – uuendamise ajatempel
+- `educational_framework` – educational framework
+- `notation` – notation
+- `verb_iri` – verb IRI
+- `is_mandatory` – whether the item is mandatory
+- `created_at` – creation timestamp
+- `updated_at` – update timestamp
 
-### Näited
+## Examples
 
-#### Õpiväljund
+#### Learning_outcome - Õpiväljund
 - `id`: `ITM-002`
 - `curriculum_version_id`: `VER-001`
 - `parent_item_id`: `ITM-001`
@@ -197,38 +202,28 @@ Toetab hierarhilist struktuuri parent-child suhte kaudu.
 - `verb_iri`: `Analüüsib`
 - `is_mandatory`: `true`
 
-#### Test
-- `id`: `ITM-006`
-- `type`: `test`
-- `title`: `Kokkuvõttev test 1`
-
-#### Õppematerjal
-- `id`: `ITM-004`
-- `type`: `learning_material`
-- `title`: `Kuidas selgitada propaani mudelit?`
-
 ---
 
 ## 5. curriculum_item_schedule
 
-### Eesmärk
-Salvestab töökava elemendi ajakava.
+## Purpose
+Stores scheduling information for a õppekava / curriculum element.
 
-### Väljad
-- `id` – ajastuse kirje ID
-- `curriculum_item_id` – millise elemendi ajastus
-- `planned_start_at` – planeeritud algus
-- `planned_end_at` – planeeritud lõpp
-- `planned_minutes` – planeeritud kestus minutites
-- `actual_start_at` – tegelik algus
-- `actual_end_at` – tegelik lõpp
-- `actual_minutes` – tegelik kestus minutites
-- `status` – ajastuse olek
-- `schedule_notes` – õpetaja märkus
-- `created_at` – loomise ajatempel
-- `updated_at` – uuendamise ajatempel
+## Fields
+- `id` – schedule record ID
+- `curriculum_item_id` – which item is scheduled
+- `planned_start_at` – planned start
+- `planned_end_at` – planned end
+- `planned_minutes` – planned duration in minutes
+- `actual_start_at` – actual start
+- `actual_end_at` – actual end
+- `actual_minutes` – actual duration
+- `status` – schedule status
+- `schedule_notes` – teacher notes
+- `created_at` – creation timestamp
+- `updated_at` – update timestamp
 
-### Näide
+### Example
 - `id`: `SCH-003`
 - `curriculum_item_id`: `ITM-006`
 - `planned_start_at`: `2025-11-10 09:00`
@@ -246,20 +241,20 @@ Salvestab töökava elemendi ajakava.
 
 ## 6. curriculum_item_relation
 
-### Eesmärk
-Hoiab töökava versiooni elementide vahelisi semantilisi ja loogilisi seoseid.
+## Purpose
+Stores semantic and logical relations between elements of a õppekava version.
 
-### Väljad
-- `id` – relation kirje ID
-- `curriculum_version_id` – millise versiooni sees seos kehtib
-- `source_item_id` – lähteelement
-- `target_item_id` – sihtelement
-- `target_external_iri` – viide välisele RDF objektile
-- `relation_type` – seose tüüp
-- `created_at` – loomise ajatempel
-- `updated_at` – uuendamise ajatempel
+## Fields
+- `id` – relation record ID
+- `curriculum_version_id` – version where the relation applies
+- `source_item_id` – source item
+- `target_item_id` – target item
+- `target_external_iri` – reference to external RDF object
+- `relation_type` – type of relation
+- `created_at` – creation timestamp
+- `updated_at` – update timestamp
 
-### Näide
+### Example
 - `id`: `REL-004`
 - `curriculum_version_id`: `VER-001`
 - `source_item_id`: `ITM-006`
@@ -271,31 +266,30 @@ Hoiab töökava versiooni elementide vahelisi semantilisi ja loogilisi seoseid.
 
 ---
 
-# Tabelitevahelised seosed
+# Table Relationships
 
 ## user
-- üks `user` saab omada mitut `curriculum` kirjet
-- üks `user` saab luua mitut `curriculum_version` kirjet
-- üks `user` saab luua mitut `curriculum_item` kirjet
+- one `user` can own multiple `curriculum` records
+- one `user` can create multiple `curriculum_version` records
+- one `user` can create multiple `curriculum_item` records
 
 ## curriculum
-- üks `curriculum` saab omada mitut `curriculum_version` kirjet
+- one `curriculum` can have multiple `curriculum_version` records
 
 ## curriculum_version
-- üks `curriculum_version` saab omada mitut `curriculum_item` kirjet
-- üks `curriculum_version` saab omada mitut `curriculum_item_relation` kirjet
+- one `curriculum_version` can have multiple `curriculum_item` records
+- one `curriculum_version` can have multiple `curriculum_item_relation` records
 
 ## curriculum_item
-- üks `curriculum_item` võib kuuluda teisele `curriculum_item` kirjele läbi `parent_item_id`
-- üks `curriculum_item` võib omada mitut `curriculum_item_schedule` kirjet
-- üks `curriculum_item` võib olla seotud teise `curriculum_item` kirjega relation tabeli kaudu
+- one `curriculum_item` can belong to another `curriculum_item` via `parent_item_id`
+- one `curriculum_item` can have multiple `curriculum_item_schedule` records
+- one `curriculum_item` can be related to another `curriculum_item` through the relation table
 
 ---
-
-# Esialgsed enumid
+# Initial Enums
 
 ## user.role
-Soovituslikud väärtused:
+Recommended values:
 - `teacher`
 - `admin`
 
@@ -321,7 +315,7 @@ Soovituslikud väärtused:
 - `failed`
 
 ## curriculum_item.type
-Soovituslikud väärtused:
+Recommended values:
 - `module`
 - `topic`
 - `learning_outcome`
@@ -341,11 +335,10 @@ Soovituslikud väärtused:
 - `cancelled`
 
 ## curriculum_item_relation.relation_type
-Soovituslikud väärtused:
+Recommended values:
 - `eeldab`
 - `on_eelduseks`
 - `koosneb`
 - `on_osaks`
 - `sisaldab`
-
 ---
