@@ -3,7 +3,6 @@
 ## Purpose
 
 This document describes the semantic model of RDF objects used in the system. Thats what oppekava.edu.ee (knowledge graph) semantic wiki creates (rdf data).  
-The RDF layer allows linking curriculum data stored in the relational database with a knowledge system, ontology, and semantic relations.
 
 The document defines the RDF properties of the main educational objects, their meaning, and examples.
 
@@ -11,6 +10,7 @@ The following RDF object types are described in this model:
 
 1. Õppekava - Curriculum
 2. Moodul - Module
+3. Teema - Topic
 3. Õpiväljund - Learning_outcome
 4. Õppematerjal - Learning_material
 5. Knobit - Knobit
@@ -63,7 +63,49 @@ A Moodul usually belongs to a specific Õppekava and may contain prerequisites a
 
 ---
 
-# 3. Õpiväljundi - Learning_outcome Ontology
+# 3. Teema Ontology
+
+## Description
+The Teema RDF object describes a curriculum topic or thematic unit as a semantic resource.  
+A Teema is typically connected to an ainevaldkond, õppeaine, haridusaste, and may also participate in hierarchical topic structures through broader and narrower topics.  
+It can be linked to Õpiväljundid, Õppematerjalid, Testid, and Ülesanded.
+
+## Semantic Fields
+
+| RDF Property | Description | Example |
+|---|---|---|
+| `rdf:type` | Object type in the ontology | `haridus:Teema` |
+| `rdfs:label` | Full human-readable title of the Teema resource | `Suuline ja kirjalik suhtlus (EstCORE:30005)` |
+| `schema:name` | Teema name | `Suuline ja kirjalik suhtlus` |
+| `schema:targetName` | Full target identifier used in curriculum alignment | `EstCORE:Suuline ja kirjalik suhtlus (30005)` |
+| `schema:alignmentType` | Type of alignment | `educationalSubject` |
+| `schema:educationalFramework` | Curriculum or framework name | `Estonian National Curriculum` |
+| `skos:notation` | Official code or identifier of the Teema | `30005` |
+| `skos:prefLabel` | Preferred label of the Teema | `Suuline ja kirjalik suhtlus` |
+| `skos:inScheme` | Scheme or controlled vocabulary the Teema belongs to | `EstCORE` |
+| `haridus:seotudAinevaldkond` | Ainevaldkond related to the Teema | `Keel ja kirjandus` |
+| `haridus:seotudHaridusaste` | Educational level related to the Teema | `Põhiharidus` |
+| `haridus:seotudOppeaine` | Õppeaine related to the Teema | `Eesti keel` |
+| `haridus:ulemteema` | Broader parent Teema of this Teema | `Suuline ja kirjalik suhtlus` |
+| `haridus:seotudTeema` | Relation used by other objects to point to this Teema | `Arutleb eakohastel teemadel` |
+| `property:Has_query` | Semantic MediaWiki internal query reference for derived listings | `QUERY44afcb19fabc612c3704fa481233e57f` |
+
+### Notes
+
+- A `Teema` may function as both:
+    - an independent topic object
+    - a parent topic for narrower subtopics
+- In practice, `haridus:ulemteema` is used on the narrower topic object to point to its broader parent topic.
+- Reverse topic hierarchy such as narrower topics may be derived from incoming `haridus:ulemteema` relations.
+- In Semantic MediaWiki exports, `property:Has_query` entries often represent helper queries for listing:
+    - subtopics
+    - related learning materials
+    - related learning outcomes
+- These query nodes are implementation-specific and are not always part of the conceptual ontology itself.
+
+---
+
+# 4. Õpiväljundi - Learning_outcome Ontology
 
 ## Description
 The Õpiväljund RDF object describes a learning outcome that a learner must achieve.  
@@ -95,7 +137,7 @@ An Õpiväljund may also contain smaller components or require other Õpiväljun
 
 ---
 
-# 4. Õppematerjali - Learning_material Ontology
+# 5. Õppematerjali - Learning_material Ontology
 
 ## Description
 The Õppematerjal RDF object describes educational content or resources that support achieving Õpiväljundid.  
@@ -128,7 +170,7 @@ The Õppematerjal RDF object describes educational content or resources that sup
 
 ---
 
-# 5. Knobit Ontology
+# 6. Knobit Ontology
 
 ## Description
 The Knobit RDF object describes a small unit of knowledge, skill, or attitude.  
@@ -151,7 +193,7 @@ In particular, the usage of the property `property:Haridus-3AKnobitKoosneb` requ
 
 ---
 
-# 6. Test Ontology
+# 7. Test Ontology
 
 ## Description
 The Test RDF object describes an assessment tool used to evaluate knowledge or skills.  
@@ -177,7 +219,7 @@ A Test can be connected to an ainevaldkond, õppeaine, teema, and smaller units 
 
 ---
 
-# 7. Ülesande - Task Ontology
+# 8. Ülesande - Task Ontology
 
 ## Description
 The Ülesanne RDF object describes an individual exercise or task that may belong to a Test or Õppematerjal.  

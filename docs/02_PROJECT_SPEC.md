@@ -8,33 +8,18 @@ AI Assisted Curriculum Builder
 
 AI Assisted Curriculum Builder is a system for helping teachers create and manage yearly teaching plans.
 
-The system combines:
-- a relational data model for application state
-- an RDF knowledge graph for external educational content and semantic relations
-- an AI assistant for suggestions, retrieval support, and validation
-
 The teacher is always the final decision maker. AI provides assistance but does not make persistent changes without explicit user confirmation.
 
 ---
 
 ## 2. Core Domain Entities
 
+- See 04_DOMAIN_MODEL.md
+
 ### curriculum
 
 A curriculum is the top-level container for a teacher's teaching plan.
 
-It stores general metadata such as:
-- title
-- description
-- subject
-- subject area
-- educational level
-- school level
-- grade
-- language
-- provider
-- audience
-- volume
 
 A curriculum does not store the full editable structure directly.  
 The editable structure is stored through curriculum versions.
@@ -43,18 +28,6 @@ The editable structure is stored through curriculum versions.
 
 A curriculum version represents one saved version of a curriculum.
 
-It is used for:
-- storing a specific structural state of the curriculum
-- version history
-- rollback
-- validation snapshots
-- publishing/export preparation
-
-A version may also contain:
-- `content_json`
-- `retrieval_context_json`
-- `retrieved_catalog_json`
-- `compliance_report_json`
 
 ### curriculum_item
 
@@ -70,12 +43,6 @@ Supported item types:
 - knobit
 
 Items are hierarchical and can reference a parent item.
-
-Examples:
-- module -> learning_outcome
-- learning_outcome -> task
-- learning_outcome -> test
-- learning_material -> task
 
 ### curriculum_item_schedule
 
@@ -95,8 +62,6 @@ A curriculum item relation stores semantic or logical relations between curricul
 
 Examples:
 - one learning outcome requires another
-- one item contains another
-- one item is compositionally related to another
 
 ---
 
@@ -130,21 +95,12 @@ The RDF knowledge graph is not the primary editing store of the application.
 
 `content_json` is a snapshot representation of a curriculum version.
 
-It is used for:
-- export
-- reconstruction
-- version snapshotting
-- publish preparation
+- See 07_CONTENT_JSON.md && 08_CONTENT_JSON_EXAMPLE.md
 
-`content_json` is not the primary editing storage.
+It is used for:
+- creating pages in mediawiki page called oppekava.edu.ee (knowledge graph)
 
 Primary editing must happen through relational tables.
-
-### Inverse Relations
-
-Inverse semantic relations are not stored manually in relational tables unless explicitly required later.
-
-They are derived from canonical stored relations.
 
 ---
 
@@ -165,123 +121,6 @@ They are derived from canonical stored relations.
 
 ---
 
-## 5. Canonical Enum Values
-
-### user.role
-
-- `teacher`
-- `admin`
-
-### curriculum.status
-
-- `draft`
-- `active`
-- `archived`
-
-### curriculum.visibility
-
-- `private`
-- `public`
-
-### curriculum_version.state
-
-- `draft`
-- `review`
-- `final`
-- `archived`
-
-### curriculum_version.publish_status
-
-- `not_published`
-- `publishing`
-- `published`
-- `failed`
-
-### curriculum_item.type
-
-- `module`
-- `topic`
-- `learning_outcome`
-- `task`
-- `test`
-- `learning_material`
-- `knobit`
-
-### curriculum_item.source_type
-
-- `teacher_created`
-- `external`
-
-### curriculum_item_schedule.status
-
-- `planned`
-- `in_progress`
-- `completed`
-- `cancelled`
-
-### curriculum_item_relation.relation_type
-
-- `prerequisite`
-- `composed_of`
-- `contains`
-- `related_to`
-
----
-
-## 6. MVP Scope
-
-The first version of the system must support the following.
-
-### Curriculum management
-
-- create curriculum
-- edit curriculum metadata
-- list teacher curriculums
-
-### Version management
-
-- create curriculum version
-- edit curriculum version
-- store version snapshots
-- track version states
-
-### Curriculum structure editing
-
-- create curriculum items
-- edit item metadata
-- build item hierarchy
-- reorder items
-
-### Scheduling
-
-- attach schedules to curriculum items
-- set planned time
-- store actual time
-
-### Relations
-
-- create relations between curriculum items
-- validate prerequisite logic
-
-### Knowledge graph usage
-
-- search external graph objects
-- import external graph objects into local curriculum structure
-- store `external_iri`
-
-### AI assistance
-
-- suggest learning outcomes
-- suggest tasks
-- suggest tests
-- suggest learning materials
-- assist with structure building
-- warn about logical inconsistencies
-
-AI suggestions must always require user confirmation before persistence.
-
----
-
 ## 7. AI Interaction Rules
 
 1. AI does not access the relational database directly.
@@ -291,15 +130,3 @@ AI suggestions must always require user confirmation before persistence.
 5. AI cannot persist data without explicit user action.
 6. AI must respect relational model constraints and enum values.
 7. AI must not invent new persisted domain entities without developer approval.
-
-
----
-
-## 9. Conceptual Architecture
-
-```text
-Teacher UI
-  -> Backend API
-    -> Relational Database
-    -> AI Tool Layer
-      -> RDF Knowledge Graph

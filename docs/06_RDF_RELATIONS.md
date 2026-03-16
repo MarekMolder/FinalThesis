@@ -250,6 +250,133 @@ Knobit B consists of smaller Knobitid or sub-units.
 
 ---
 
+# 9. Relations Involving Teema
+
+## Description
+
+`Teema` is a central semantic object used to organize educational content by topic.  
+It connects curriculum structure, learning outcomes, and supporting resources.
+
+---
+
+## 9.1 Teema and Ainevaldkond
+
+### Meaning
+A Teema belongs to or is associated with an ainevaldkond.
+
+### Possible RDF relation
+- `haridus:seotudAinevaldkond`
+
+### Example
+- `Suuline ja kirjalik suhtlus` → `Keel ja kirjandus`
+
+---
+
+## 9.2 Teema and Haridusaste
+
+### Meaning
+A Teema is associated with a specific educational level.
+
+### Possible RDF relation
+- `haridus:seotudHaridusaste`
+
+### Example
+- `Suuline ja kirjalik suhtlus` → `Põhiharidus`
+
+---
+
+## 9.3 Teema and Õppeaine
+
+### Meaning
+A Teema is associated with a specific school subject.
+
+### Possible RDF relation
+- `haridus:seotudOppeaine`
+
+### Example
+- `Suuline ja kirjalik suhtlus` → `Eesti keel`
+
+---
+
+## 9.4 Hierarchical Relation Between Teemad
+
+### Meaning
+A narrower Teema may belong under a broader parent Teema.
+
+### Possible RDF relation
+- `haridus:ulemteema`
+
+### Example
+- `Veebisuhtlus` → `Suuline ja kirjalik suhtlus`
+- `Suhtlemise eetika` → `Suuline ja kirjalik suhtlus`
+- `Keelekasutus erinevates suhtlusolukordades` → `Suuline ja kirjalik suhtlus`
+
+### Note
+The reverse relation, such as “has subtopic” or “alamteema”, may be derived from incoming `haridus:ulemteema` relations.
+
+---
+
+## 9.5 Õpiväljund and Teema
+
+### Meaning
+An Õpiväljund is related to the Teema in which that learning outcome is addressed.
+
+### Possible RDF relation
+- `haridus:seotudTeema`
+
+### Example
+- `Arutleb eakohastel teemadel` → `Suuline ja kirjalik suhtlus`
+
+---
+
+## X.6 Õppematerjal and Teema
+
+### Meaning
+A learning material is connected to the Teema it supports.
+
+### Possible RDF relation
+- `haridus:seotudTeema`
+
+### Example
+- `Eesti ilmastik, keelekümblus` → `Suuline ja kirjalik suhtlus`
+
+---
+
+## 9.7 Test and Teema
+
+### Meaning
+A Test may be related to a Teema whose knowledge or skills it assesses.
+
+### Possible RDF relation
+- `haridus:seotudTeema`
+
+---
+
+## 9.8 Ülesanne and Teema
+
+### Meaning
+An Ülesanne may be connected to the Teema that it practices or assesses.
+
+### Possible RDF relation
+- `haridus:seotudTeema`
+
+---
+
+## 9.9 General Role of Teema in the Model
+
+`Teema` acts as a semantic bridge between:
+
+- curriculum structure
+- subject-specific organization
+- learning outcomes
+- learning materials
+- tests
+- tasks
+
+This makes `Teema` an important navigation and aggregation object in the RDF layer.
+
+---
+
 # 9. Summary of Relations
 
 The model uses the following main relation types:

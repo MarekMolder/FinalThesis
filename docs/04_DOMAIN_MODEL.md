@@ -41,15 +41,15 @@ Stores system user information.
 
 ## Purpose
 Stores general information about a **õppekava/curriculum container**.  
-The detailed content and modifications of the töökava are stored in versions.
+The detailed content and modifications of the curriculum are stored in versions.
 
 ## Fields
-- `id` – unique töökava ID
-- `owner_user_id` – user who owns the töökava
-- `title` – töökava title
+- `id` – unique curriculum ID
+- `owner_user_id` – user who owns the curriculum
+- `title` – curriculum title
 - `description` – short description
-- `curriculum_type` – õppekava type
-- `status` – töökava status
+- `curriculum_type` – curriculum type
+- `status` – curriculum status
 - `visibility` – visibility
 - `provider` – õppeasutus
 - `relevant_occupation` – related qualification or occupation
@@ -102,13 +102,13 @@ Stores õppekava/curriculum versions.
 Each major set of changes is stored as a separate version.
 
 ## Fields
-- `id` – töökava version ID
-- `curriculum_id` – which töökava this version belongs to
+- `id` – curriculum version ID
+- `curriculum_id` – which curriculum this version belongs to
 - `created_by_user_id` – user who created the version
 - `version_number` – version number
 - `state` – version state
 - `change_note` – explanation of the change
-- `content_json` – töökava content in JSON format
+- `content_json` – curriculum content in JSON format
 - `retrieval_context_json` – retrieval input context
 - `retrieved_catalog_json` – data retrieved during retrieval
 - `compliance_report_json` – compliance report
