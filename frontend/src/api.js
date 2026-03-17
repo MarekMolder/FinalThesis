@@ -13,7 +13,7 @@ export async function api(path, options = {}) {
   };
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   if (res.status === 401) {
-    localStorage.removeItem('token');
+    logout();
     window.location.href = '/login';
     throw new Error('Unauthorized');
   }
@@ -51,6 +51,11 @@ export async function register(name, email, password) {
 
 export function isLoggedIn() {
   return !!getToken();
+}
+
+/** Remove token (e.g. logout). Redirect to /login optional. */
+export function logout() {
+  localStorage.removeItem('token');
 }
 
 // CRUD helpers (return .content for list when it's a page)
