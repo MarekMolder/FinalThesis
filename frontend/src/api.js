@@ -58,6 +58,37 @@ export function logout() {
   localStorage.removeItem('token');
 }
 
+function base64UrlDecode(input) {
+  const pad = '='.repeat((4 - (input.length % 4)) % 4);
+  const base64 = (input + pad).replace(/-/g, '+').replace(/_/g, '/');
+  try {
+    // atob expects Latin1; JWT payload is JSON ASCII/UTF-8 safe for typical claims
+    return atob(base64);
+  } catch {
+    return null;
+  }
+}
+
+/** Returns user info derived from JWT (email from `sub`, role from `role`). */
+export function getCurrentUser() {
+  const token = getToken();
+  if (!token) return null;
+  const parts = token.split('.');
+  if (parts.length < 2) return null;
+  const json = base64UrlDecode(parts[1]);
+  if (!json) return null;
+  try {
+    const payload = JSON.parse(json);
+    return {
+      email: payload.sub || payload.email || null,
+      role: payload.role || null,
+      label: payload.role === 'ADMIN' ? 'Admin' : 'Õpetaja',
+    };
+  } catch {
+    return null;
+  }
+}
+
 // CRUD helpers (return .content for list when it's a page)
 export const curriculum = {
   list: (params) => api('/curriculum?' + new URLSearchParams(params || {})).then((p) => p.content ?? p),

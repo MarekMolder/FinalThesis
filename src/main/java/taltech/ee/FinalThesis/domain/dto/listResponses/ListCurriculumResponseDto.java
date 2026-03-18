@@ -39,4 +39,6 @@ public class ListCurriculumResponseDto {
     private String externalPageIri;
     private UUID userId;
     private List<ListCurriculumVersionResponseDto> curriculumVersions = new ArrayList<>();
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
