@@ -34,7 +34,8 @@ public class CurriculumItem {
     @Enumerated(EnumType.STRING)
     private CurriculumItemTypeEnum type;
 
-    @Column(name = "title", nullable = false)
+    /** Õpiväljundi pealkiri võib olla pikk lause (graafist). */
+    @Column(name = "title", nullable = false, columnDefinition = "TEXT")
     private String title;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -47,35 +48,59 @@ public class CurriculumItem {
     @Enumerated(EnumType.STRING)
     private CurriculumItemSourceTypeEnum sourceType;
 
-    @Column(name = "external_iri")
+    @Column(name = "external_iri", columnDefinition = "TEXT")
     private String externalIri;
 
-    @Column(name = "local_key")
+    @Column(name = "local_key", columnDefinition = "TEXT")
     private String localKey;
 
-    @Column(name = "subject_iri")
+    @Column(name = "subject_iri", columnDefinition = "TEXT")
     private String subjectIri;
 
-    @Column(name = "subject_area_iri")
+    @Column(name = "subject_area_iri", columnDefinition = "TEXT")
     private String subjectAreaIri;
 
-    @Column(name = "education_level_iri", nullable = false)
+    /** Inimloetav õppeaine (graafist Haridus:seotudOppeaine fulltext). */
+    @Column(name = "subject_label", columnDefinition = "TEXT")
+    private String subjectLabel;
+
+    /** Inimloetav ainevaldkond, kui graafist tuleb (nt Haridus:seotudAinevaldkond). */
+    @Column(name = "subject_area_label", columnDefinition = "TEXT")
+    private String subjectAreaLabel;
+
+    /** Inimloetav teema (Haridus:seotudTeema). */
+    @Column(name = "topic_label", columnDefinition = "TEXT")
+    private String topicLabel;
+
+    @Column(name = "topic_iri", columnDefinition = "TEXT")
+    private String topicIri;
+
+    /** Tegevussõna tekst (Haridus:verb fulltext). */
+    @Column(name = "verb_label", columnDefinition = "TEXT")
+    private String verbLabel;
+
+    @Column(name = "education_level_iri", nullable = false, columnDefinition = "TEXT")
     private String educationLevelIri;
 
-    @Column(name = "school_level", nullable = false)
+    /** Haridusaste silt, kui erineb IRI-st (nt kui link puudub). */
+    @Column(name = "education_level_label", columnDefinition = "TEXT")
+    private String educationLevelLabel;
+
+    @Column(name = "school_level", nullable = false, columnDefinition = "TEXT")
     private String schoolLevel;
 
-    @Column(name = "grade", nullable = false)
+    @Column(name = "grade", nullable = false, columnDefinition = "TEXT")
     private String grade;
 
     @Column(name = "educational_framework", nullable = false)
     @Enumerated(EnumType.STRING)
     private CurriculumEducationalFrameworkEnum educationalFramework;
 
-    @Column(name = "notation", nullable = false)
+    /** Semantilised seosed jms — võib olla väga pikk (komaga ühendatud). */
+    @Column(name = "notation", nullable = false, columnDefinition = "TEXT")
     private String notation;
 
-    @Column(name = "verb_iri", nullable = false)
+    @Column(name = "verb_iri", nullable = false, columnDefinition = "TEXT")
     private String verbIri;
 
     @Column(name = "is_mandatory", nullable = false)

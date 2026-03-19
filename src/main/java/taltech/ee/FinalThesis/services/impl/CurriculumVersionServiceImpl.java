@@ -9,6 +9,7 @@ import taltech.ee.FinalThesis.domain.createRequests.CreateCurriculumVersionReque
 import taltech.ee.FinalThesis.domain.entities.Curriculum;
 import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
 import taltech.ee.FinalThesis.domain.entities.User;
+import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 import taltech.ee.FinalThesis.domain.updateRequests.UpdateCurriculumVersionRequest;
 import taltech.ee.FinalThesis.exceptions.CurriculumUpdateException;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumNotFoundException;
@@ -38,6 +39,10 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
                 .orElseThrow(() -> new UserNotFoundException(String.format("User with ID '%s' not found", userId)));
         Curriculum curriculum = curriculumRepository.findByIdAndUserId(curriculumId, userId)
                 .orElseThrow(() -> new CurriculumNotFoundException(String.format("Curriculum with ID '%s' not found", curriculumId)));
+
+        if (curriculum.isExternalGraph()) {
+            throw new CurriculumUpdateException("Cannot create a curriculum version for an external graph curriculum");
+        }
 
         CurriculumVersion version = new CurriculumVersion();
         version.setVersionNumber(request.getVersionNumber());
@@ -79,6 +84,10 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
         CurriculumVersion existing = curriculumVersionRepository.findByIdAndCurriculum_User_Id(id, userId)
                 .orElseThrow(() -> new CurriculumVersionNotFoundException(String.format("Curriculum version with ID '%s' not found", id)));
 
+        if (existing.getState() == CurriculumVersionStateEnum.CLOSED) {
+            throw new CurriculumUpdateException("CLOSED curriculum versions cannot be updated");
+        }
+
         if (request.getVersionNumber() != null) existing.setVersionNumber(request.getVersionNumber());
         if (request.getState() != null) existing.setState(request.getState());
         if (request.getChangeNote() != null) existing.setChangeNote(request.getChangeNote());
@@ -96,6 +105,11 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
     @Override
     @Transactional
     public void deleteForUser(UUID id, UUID userId) {
-        getForUser(id, userId).ifPresent(curriculumVersionRepository::delete);
+        getForUser(id, userId).ifPresent(existing -> {
+            if (existing.getState() == CurriculumVersionStateEnum.CLOSED) {
+                throw new CurriculumUpdateException("CLOSED curriculum versions cannot be deleted");
+            }
+            curriculumVersionRepository.delete(existing);
+        });
     }
 }

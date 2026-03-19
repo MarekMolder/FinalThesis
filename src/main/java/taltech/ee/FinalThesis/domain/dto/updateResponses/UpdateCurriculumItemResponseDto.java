@@ -26,7 +26,13 @@ public class UpdateCurriculumItemResponseDto {
     private String localKey;
     private String subjectIri;
     private String subjectAreaIri;
+    private String subjectLabel;
+    private String subjectAreaLabel;
+    private String topicLabel;
+    private String topicIri;
+    private String verbLabel;
     private String educationLevelIri;
+    private String educationLevelLabel;
     private String schoolLevel;
     private String grade;
     private CurriculumEducationalFrameworkEnum educationalFramework;

@@ -17,4 +17,14 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, UUID> {
     Optional<Curriculum> findByIdAndUserId(UUID id, UUID userId);
 
     Page<Curriculum> findByVisibility(CurriculumVisbilityEnum visibility, Pageable pageable);
+
+    /** PUBLIC, externalGraph=false, not owned by userId (süsteemi õppekavad). */
+    Page<Curriculum> findByVisibilityAndExternalGraphFalseAndUser_IdNot(
+            CurriculumVisbilityEnum visibility, UUID excludeUserId, Pageable pageable);
+
+    /** For RDF import deduplication: find existing external curriculum by source IRI. */
+    Optional<Curriculum> findOneByExternalGraphTrueAndExternalPageIri(String externalPageIri);
+
+    /** Graafist imporditud õppekavad (DB-s, externalGraph=true). */
+    Page<Curriculum> findByExternalGraphTrue(Pageable pageable);
 }

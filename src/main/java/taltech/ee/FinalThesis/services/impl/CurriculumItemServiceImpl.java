@@ -9,6 +9,8 @@ import taltech.ee.FinalThesis.domain.createRequests.CreateCurriculumItemRequest;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItem;
 import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
 import taltech.ee.FinalThesis.domain.entities.User;
+import taltech.ee.FinalThesis.domain.enums.CurriculumItemSourceTypeEnum;
+import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 import taltech.ee.FinalThesis.domain.updateRequests.UpdateCurriculumItemRequest;
 import taltech.ee.FinalThesis.exceptions.CurriculumUpdateException;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumItemNotFoundException;
@@ -38,6 +40,10 @@ public class CurriculumItemServiceImpl implements CurriculumItemService {
                 .orElseThrow(() -> new UserNotFoundException(String.format("User with ID '%s' not found", userId)));
         CurriculumVersion version = curriculumVersionRepository.findByIdAndCurriculum_User_Id(curriculumVersionId, userId)
                 .orElseThrow(() -> new CurriculumVersionNotFoundException(String.format("Curriculum version with ID '%s' not found", curriculumVersionId)));
+
+        if (version.getState() == CurriculumVersionStateEnum.CLOSED) {
+            throw new CurriculumUpdateException("CLOSED curriculum versions cannot create new items");
+        }
 
         CurriculumItem item = new CurriculumItem();
         item.setType(request.getType());
@@ -92,6 +98,15 @@ public class CurriculumItemServiceImpl implements CurriculumItemService {
         CurriculumItem existing = curriculumItemRepository.findByIdAndCurriculumVersion_Curriculum_User_Id(id, userId)
                 .orElseThrow(() -> new CurriculumItemNotFoundException(String.format("Curriculum item with ID '%s' not found", id)));
 
+        if (existing.getCurriculumVersion().getState() == CurriculumVersionStateEnum.CLOSED) {
+            throw new CurriculumUpdateException("CLOSED curriculum versions cannot update item base fields");
+        }
+
+        if (existing.getSourceType() == CurriculumItemSourceTypeEnum.OPPEKAVAWEB
+                || existing.getSourceType() == CurriculumItemSourceTypeEnum.EXTERNAL) {
+            throw new CurriculumUpdateException("External/OPPEKAVAWEB curriculum items cannot be edited (base fields are locked)");
+        }
+
         if (request.getType() != null) existing.setType(request.getType());
         if (request.getTitle() != null) existing.setTitle(request.getTitle());
         if (request.getDescription() != null) existing.setDescription(request.getDescription());
@@ -115,6 +130,14 @@ public class CurriculumItemServiceImpl implements CurriculumItemService {
     @Override
     @Transactional
     public void deleteForUser(UUID id, UUID userId) {
-        getForUser(id, userId).ifPresent(curriculumItemRepository::delete);
+        getForUser(id, userId).ifPresent(existing -> {
+            if (existing.getCurriculumVersion().getState() == CurriculumVersionStateEnum.CLOSED) {
+                throw new CurriculumUpdateException("CLOSED curriculum versions cannot delete items");
+            }
+            if (existing.getSourceType() == CurriculumItemSourceTypeEnum.OPPEKAVAWEB) {
+                throw new CurriculumUpdateException("OPPEKAVAWEB curriculum items cannot be deleted (base fields are locked)");
+            }
+            curriculumItemRepository.delete(existing);
+        });
     }
 }

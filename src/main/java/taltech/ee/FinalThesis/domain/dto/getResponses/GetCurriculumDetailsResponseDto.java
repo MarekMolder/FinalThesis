@@ -24,8 +24,10 @@ public class GetCurriculumDetailsResponseDto {
     private CurriculumVisbilityEnum visibility;
     private String provider;
     private String relevantOccupation;
+    private String relevantOccupationIri;
     private String identifier;
     private String audience;
+    private String audienceIri;
     private String subjectAreaIri;
     private String subjectIri;
     private String educationalLevelIri;
@@ -36,6 +38,10 @@ public class GetCurriculumDetailsResponseDto {
     private Integer volumeHours;
     private String externalSource;
     private String externalPageIri;
+    /**
+     * True if the curriculum was imported from the external RDF graph (oppekava.edu.ee).
+     */
+    private boolean externalGraph;
     private UUID userId;
     private List<GetCurriculumVersionDetailsResponseDto> curriculumVersions = new ArrayList<>();
     private LocalDateTime createdAt;

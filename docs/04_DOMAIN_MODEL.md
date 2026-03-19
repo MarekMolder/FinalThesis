@@ -166,14 +166,20 @@ Supports hierarchical structure through a parent-child relationship.
 - `source_type` – source of the item
 - `external_iri` – external object IRI
 - `local_key` – local key linking JSON and relational model
-- `subject_iri` – related õppeaine IRI
-- `subject_area_iri` – related ainevaldkond IRI
-- `education_level_iri` – haridusaste IRI
+- `subject_iri` – related õppeaine IRI (URL)
+- `subject_label` – õppeaine inimloetav nimi (graafist)
+- `subject_area_iri` – related ainevaldkond IRI (URL)
+- `subject_area_label` – ainevaldkond inimloetav nimi
+- `topic_iri` – teema IRI (Haridus:seotudTeema)
+- `topic_label` – teema inimloetav nimi
+- `education_level_iri` – haridusaste IRI (URL)
+- `education_level_label` – haridusaste silt (kui eraldi tekst)
+- `verb_iri` – tegevussõna lehe URL (Haridus:verb)
+- `verb_label` – tegevussõna tekst
 - `school_level` – kooliaste
 - `grade` – klass
 - `educational_framework` – educational framework
-- `notation` – notation
-- `verb_iri` – verb IRI
+- `notation` – notation (nt semantilised mõisted / EAP)
 - `is_mandatory` – whether the item is mandatory
 - `created_at` – creation timestamp
 - `updated_at` – update timestamp

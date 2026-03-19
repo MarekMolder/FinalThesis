@@ -25,8 +25,10 @@ public class ListCurriculumResponseDto {
     private CurriculumVisbilityEnum visibility;
     private String provider;
     private String relevantOccupation;
+    private String relevantOccupationIri;
     private String identifier;
     private String audience;
+    private String audienceIri;
     private String subjectAreaIri;
     private String subjectIri;
     private String educationalLevelIri;
@@ -37,6 +39,11 @@ public class ListCurriculumResponseDto {
     private Integer volumeHours;
     private String externalSource;
     private String externalPageIri;
+    /**
+     * True if this curriculum was imported from the external RDF graph (oppekava.edu.ee).
+     * Such curricula are treated as immutable via API write-guards.
+     */
+    private boolean externalGraph;
     private UUID userId;
     private List<ListCurriculumVersionResponseDto> curriculumVersions = new ArrayList<>();
     private LocalDateTime createdAt;

@@ -16,6 +16,9 @@ export default function CurriculumItems() {
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  const selectedVersion = versions.find((v) => v.id === versionId);
+  const versionClosed = selectedVersion?.state === 'CLOSED';
+
   useEffect(() => {
     curriculum.list().then(setCurriculums).catch(() => {});
   }, []);
@@ -33,6 +36,7 @@ export default function CurriculumItems() {
 
   function openCreate() {
     if (!versionId) { setError('Vali versioon'); return; }
+    if (versionClosed) { setError('CLOSED versioonis itemeid luua ei saa'); return; }
     setForm({
       curriculumVersionId: versionId,
       parentItemId: null,
@@ -109,7 +113,7 @@ export default function CurriculumItems() {
         </select>
       </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button onClick={openCreate} style={{ marginBottom: 16 }} disabled={!versionId}>Add item</button>
+      <button onClick={openCreate} style={{ marginBottom: 16 }} disabled={!versionId || versionClosed}>Add item</button>
       {loading && <p>Loading...</p>}
       <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
@@ -127,8 +131,18 @@ export default function CurriculumItems() {
               <td>{row.type}</td>
               <td>{row.title}</td>
               <td>
-                <button onClick={() => openEdit(row)}>Edit</button>
-                <button onClick={() => handleDelete(row.id)}>Delete</button>
+                <button
+                  onClick={() => openEdit(row)}
+                  disabled={versionClosed || row.sourceType === 'OPPEKAVAWEB'}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(row.id)}
+                  disabled={versionClosed || row.sourceType === 'OPPEKAVAWEB'}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

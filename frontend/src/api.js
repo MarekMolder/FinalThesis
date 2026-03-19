@@ -92,10 +92,26 @@ export function getCurrentUser() {
 // CRUD helpers (return .content for list when it's a page)
 export const curriculum = {
   list: (params) => api('/curriculum?' + new URLSearchParams(params || {})).then((p) => p.content ?? p),
+  /** Süsteemi õppekavad: PUBLIC, externalGraph=false, not owned by current user. */
+  systemList: (params) => api('/curriculum/system?' + new URLSearchParams(params || {})).then((p) => p.content ?? p),
+  /** Graafist imporditud õppekavad (DB-s, externalGraph=true). */
+  listExternal: (params) => api('/curriculum/external?' + new URLSearchParams(params || {})).then((p) => p.content ?? p),
   get: (id) => api(`/curriculum/${id}`),
+  /** For external curricula: graph structure (modules, learning outcomes). */
+  getGraphStructure: (id) => api(`/curriculum/${id}/graph-structure`),
+  /** Imporditud õppekava struktuur DB-st (EELDAB/KOOSNEB jms). */
+  getImportedStructure: (id) => api(`/curriculum/${id}/imported-structure`),
   create: (body) => api('/curriculum', { method: 'POST', body: JSON.stringify(body) }),
   update: (id, body) => api(`/curriculum/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (id) => api(`/curriculum/${id}`, { method: 'DELETE' }),
+};
+
+/** Graafist (oppekava.edu.ee) – loetelu ja sünk DB-sse. */
+export const graph = {
+  /** Loetelu graafist (mitte DB). */
+  curricula: () => api('/graph/curricula'),
+  /** Impordi puuduvad õppekavad graafist DB-sse (externalGraph=true, versioon CLOSED). */
+  sync: () => api('/graph/sync', { method: 'POST' }),
 };
 
 export const curriculumVersion = {

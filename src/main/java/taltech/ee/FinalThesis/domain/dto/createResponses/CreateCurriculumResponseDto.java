@@ -24,8 +24,10 @@ public class CreateCurriculumResponseDto {
     private CurriculumVisbilityEnum visibility;
     private String provider;
     private String relevantOccupation;
+    private String relevantOccupationIri;
     private String identifier;
     private String audience;
+    private String audienceIri;
     private String subjectAreaIri;
     private String subjectIri;
     private String educationalLevelIri;

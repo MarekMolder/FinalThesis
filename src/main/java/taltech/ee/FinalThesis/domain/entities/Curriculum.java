@@ -35,6 +35,7 @@ public class Curriculum {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    /** e.g. "vocational" (kutseõppekava), "teacher_work_plan" (töökava). */
     @Column(name = "curriculum_type", nullable = false)
     private String curriculumType;
 
@@ -52,11 +53,19 @@ public class Curriculum {
     @Column(name = "relevant_occupation")
     private String relevantOccupation;
 
+    /** External graph: IRI/URL of the first Schema:relevantOccupation value. */
+    @Column(name = "relevant_occupation_iri")
+    private String relevantOccupationIri;
+
     @Column(name = "identifier")
     private String identifier;
 
     @Column(name = "audience", nullable = false)
     private String audience;
+
+    /** External graph: IRI/URL of the first Schema:audience value (e.g. https://oppekava.edu.ee/a/...). */
+    @Column(name = "audience_iri")
+    private String audienceIri;
 
     @Column(name = "subject_area_iri", nullable = false)
     private String subjectAreaIri;
@@ -88,6 +97,13 @@ public class Curriculum {
 
     @Column(name = "external_page_iri")
     private String externalPageIri;
+
+    /**
+     * When true, the curriculum (and its versions/items) is considered imported from the external RDF graph
+     * (oppekava.edu.ee) and must be treated as immutable via API write guards.
+     */
+    @Column(name = "is_external_graph", nullable = false, columnDefinition = "boolean default false")
+    private boolean externalGraph;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

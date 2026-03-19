@@ -12,6 +12,8 @@ import taltech.ee.FinalThesis.domain.createRequests.CreateCurriculumRequest;
 import taltech.ee.FinalThesis.domain.dto.createRequests.CreateCurriculumRequestDto;
 import taltech.ee.FinalThesis.domain.dto.createResponses.CreateCurriculumResponseDto;
 import taltech.ee.FinalThesis.domain.dto.getResponses.GetCurriculumDetailsResponseDto;
+import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumDetailDto;
+import taltech.ee.FinalThesis.domain.dto.imported.ImportedCurriculumStructureDto;
 import taltech.ee.FinalThesis.domain.dto.listResponses.ListCurriculumResponseDto;
 import taltech.ee.FinalThesis.domain.dto.updateRequests.UpdateCurriculumRequestDto;
 import taltech.ee.FinalThesis.domain.dto.updateResponses.UpdateCurriculumResponseDto;
@@ -73,6 +75,26 @@ public class CurriculumController {
         );
     }
 
+    /** Süsteemi õppekavad: PUBLIC, externalGraph=false, not owned by current user. */
+    @GetMapping("/system")
+    public ResponseEntity<Page<ListCurriculumResponseDto>> listSystemCurriculums(
+            @AuthenticationPrincipal CurriculumUserDetails userDetails,
+            Pageable pageable) {
+        Page<Curriculum> curriculums = curriculumService.listPublicSystemCurriculums(userDetails.getId(), pageable);
+        return ResponseEntity.ok(
+                curriculums.map(curriculumMapper::toListCurriculumResponseDto)
+        );
+    }
+
+    /** Graafist imporditud õppekavad (DB-s, externalGraph=true). */
+    @GetMapping("/external")
+    public ResponseEntity<Page<ListCurriculumResponseDto>> listExternalCurriculums(Pageable pageable) {
+        Page<Curriculum> curriculums = curriculumService.listExternalCurriculums(pageable);
+        return ResponseEntity.ok(
+                curriculums.map(curriculumMapper::toListCurriculumResponseDto)
+        );
+    }
+
     @GetMapping(path = "/{curriculumId}")
     public ResponseEntity<GetCurriculumDetailsResponseDto> getCurriculum(
             @AuthenticationPrincipal CurriculumUserDetails userDetails,
@@ -80,6 +102,39 @@ public class CurriculumController {
     ) {
         return curriculumService.getCurriculumForUserOrPublic(curriculumId, userDetails.getId())
                 .map(curriculumMapper::toGetCurriculumDetailsResponseDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * For external curricula: graph-derived structure (moodulid, õpiväljundid).
+     * Returns 404 if curriculum not found, not visible, or not external.
+     */
+    @GetMapping(path = "/{curriculumId}/graph-structure")
+    public ResponseEntity<GraphCurriculumDetailDto> getCurriculumGraphStructure(
+            @AuthenticationPrincipal CurriculumUserDetails userDetails,
+            @PathVariable UUID curriculumId
+    ) {
+        if (curriculumService.getCurriculumForUserOrPublic(curriculumId, userDetails.getId()).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return curriculumService.getGraphStructureForCurriculum(curriculumId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Imporditud õppekava: struktuur andmebaasist (EELDAB/KOOSNEB õpiväljundite vahel).
+     */
+    @GetMapping(path = "/{curriculumId}/imported-structure")
+    public ResponseEntity<ImportedCurriculumStructureDto> getCurriculumImportedStructure(
+            @AuthenticationPrincipal CurriculumUserDetails userDetails,
+            @PathVariable UUID curriculumId
+    ) {
+        if (curriculumService.getCurriculumForUserOrPublic(curriculumId, userDetails.getId()).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return curriculumService.getImportedStructureForCurriculum(curriculumId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

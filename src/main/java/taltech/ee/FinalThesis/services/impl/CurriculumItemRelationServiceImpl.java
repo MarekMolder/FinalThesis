@@ -9,6 +9,7 @@ import taltech.ee.FinalThesis.domain.createRequests.CreateCurriculumItemRelation
 import taltech.ee.FinalThesis.domain.entities.CurriculumItem;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItemRelation;
 import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
+import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 import taltech.ee.FinalThesis.domain.updateRequests.UpdateCurriculumItemRelationRequest;
 import taltech.ee.FinalThesis.exceptions.CurriculumUpdateException;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumItemNotFoundException;
@@ -43,6 +44,15 @@ public class CurriculumItemRelationServiceImpl implements CurriculumItemRelation
                 .orElseThrow(() -> new UserNotFoundException(String.format("User with ID '%s' not found", userId)));
         CurriculumVersion version = curriculumVersionRepository.findByIdAndCurriculum_User_Id(curriculumVersionId, userId)
                 .orElseThrow(() -> new CurriculumVersionNotFoundException(String.format("Curriculum version with ID '%s' not found", curriculumVersionId)));
+
+        if (version.getState() == CurriculumVersionStateEnum.CLOSED) {
+            throw new CurriculumUpdateException("CLOSED curriculum versions cannot be modified (relations are locked)");
+        }
+
+        if (version.getCurriculum() != null && version.getCurriculum().isExternalGraph()) {
+            throw new CurriculumUpdateException("External graph curricula relations are locked");
+        }
+
         CurriculumItem source = curriculumItemRepository.findByIdAndCurriculumVersion_Curriculum_User_Id(sourceItemId, userId)
                 .orElseThrow(() -> new CurriculumItemNotFoundException("Source item not found"));
         CurriculumItem target = null;
@@ -83,6 +93,15 @@ public class CurriculumItemRelationServiceImpl implements CurriculumItemRelation
         CurriculumItemRelation existing = curriculumItemRelationRepository.findByIdAndCurriculumVersion_Curriculum_User_Id(id, userId)
                 .orElseThrow(() -> new CurriculumItemRelationNotFoundException(String.format("Relation with ID '%s' not found", id)));
 
+        if (existing.getCurriculumVersion().getState() == CurriculumVersionStateEnum.CLOSED) {
+            throw new CurriculumUpdateException("CLOSED curriculum versions cannot be modified (relations are locked)");
+        }
+
+        if (existing.getCurriculumVersion().getCurriculum() != null
+                && existing.getCurriculumVersion().getCurriculum().isExternalGraph()) {
+            throw new CurriculumUpdateException("External graph curricula relations are locked");
+        }
+
         if (request.getTargetExternalIri() != null) existing.setTargetExternalIri(request.getTargetExternalIri());
         if (request.getType() != null) existing.setType(request.getType());
         if (request.getSourceItemId() != null) {
@@ -102,6 +121,16 @@ public class CurriculumItemRelationServiceImpl implements CurriculumItemRelation
     @Override
     @Transactional
     public void deleteForUser(UUID id, UUID userId) {
-        getForUser(id, userId).ifPresent(curriculumItemRelationRepository::delete);
+        getForUser(id, userId).ifPresent(existing -> {
+            if (existing.getCurriculumVersion().getState() == CurriculumVersionStateEnum.CLOSED) {
+                throw new CurriculumUpdateException("CLOSED curriculum versions cannot be modified (relations are locked)");
+            }
+
+            if (existing.getCurriculumVersion().getCurriculum() != null && existing.getCurriculumVersion().getCurriculum().isExternalGraph()) {
+                throw new CurriculumUpdateException("External graph curricula relations are locked");
+            }
+
+            curriculumItemRelationRepository.delete(existing);
+        });
     }
 }

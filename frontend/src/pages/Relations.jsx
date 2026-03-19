@@ -15,6 +15,9 @@ export default function Relations() {
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  const selectedVersion = versions.find((v) => v.id === versionId);
+  const versionClosed = selectedVersion?.state === 'CLOSED';
+
   useEffect(() => {
     curriculum.list().then(setCurriculums).catch(() => {});
   }, []);
@@ -36,6 +39,7 @@ export default function Relations() {
 
   function openCreate() {
     if (!versionId) { setError('Vali versioon'); return; }
+    if (versionClosed) { setError('CLOSED versioonis relationeid luua ei saa'); return; }
     if (items.length < 1) { setError('Loo enne vähemalt üks curriculum item'); return; }
     setForm({
       curriculumVersionId: versionId,
@@ -113,7 +117,13 @@ export default function Relations() {
         </select>
       </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button onClick={openCreate} style={{ marginBottom: 16 }} disabled={!versionId || items.length < 1}>Add relation</button>
+      <button
+        onClick={openCreate}
+        style={{ marginBottom: 16 }}
+        disabled={!versionId || items.length < 1 || versionClosed}
+      >
+        Add relation
+      </button>
       {loading && <p>Loading...</p>}
       <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
@@ -131,8 +141,8 @@ export default function Relations() {
               <td>{targetDisplay(row)}</td>
               <td>{row.type}</td>
               <td>
-                <button onClick={() => openEdit(row)}>Edit</button>
-                <button onClick={() => handleDelete(row.id)}>Delete</button>
+                <button onClick={() => openEdit(row)} disabled={versionClosed}>Edit</button>
+                <button onClick={() => handleDelete(row.id)} disabled={versionClosed}>Delete</button>
               </td>
             </tr>
           ))}

@@ -35,10 +35,12 @@ public class CreateCurriculumRequestDto {
     private String provider;
 
     private String relevantOccupation;
+    private String relevantOccupationIri;
     private String identifier;
 
     @NotBlank(message = "Audience is required")
     private String audience;
+    private String audienceIri;
 
     @NotBlank(message = "Subject area iri is required")
     private String subjectAreaIri;
