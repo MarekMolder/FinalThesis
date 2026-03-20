@@ -149,3 +149,7 @@ export const relation = {
   update: (id, body) => api(`/curriculum-item-relation/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (id) => api(`/curriculum-item-relation/${id}`, { method: 'DELETE' }),
 };
+
+export const timeline = {
+  blocks: (curriculumVersionId) => api(`/curriculum-version/${curriculumVersionId}/timeline-blocks`),
+};

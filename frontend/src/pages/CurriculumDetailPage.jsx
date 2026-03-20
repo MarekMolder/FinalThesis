@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { curriculum, getCurrentUser, logout as apiLogout } from '../api';
 import bgImg from '../assets/background.png';
 import logoImg from '../assets/logo.png';
+import CurriculumCalendar from '../components/curriculumTimeline/CurriculumCalendar';
 
 /** Fikseeritud päise kõrgus — sisu nihutamine ja sticky külgribad. */
 const HEADER_PT_CLASS = 'pt-[4.5rem]';
@@ -868,6 +869,18 @@ export default function CurriculumDetailPage() {
 
   const showTimeline = Boolean(data?.externalGraph && externalMainTab === 'timeline');
   const isExternalCurriculum = Boolean(data?.externalGraph);
+  const selectedTimelineVersionId = useMemo(() => {
+    const versions = Array.isArray(data?.curriculumVersions) ? data.curriculumVersions : [];
+    if (versions.length === 0) return null;
+
+    const published = versions
+      .filter((v) => v?.status === 'PUBLISHED')
+      .sort((a, b) => (b?.versionNumber ?? 0) - (a?.versionNumber ?? 0))[0];
+    if (published?.id) return published.id;
+
+    const newest = [...versions].sort((a, b) => (b?.versionNumber ?? 0) - (a?.versionNumber ?? 0))[0];
+    return newest?.id || null;
+  }, [data?.curriculumVersions]);
 
   return (
     <div className="min-h-full">
@@ -1053,11 +1066,17 @@ export default function CurriculumDetailPage() {
             <div className="mt-10 text-center text-sm text-slate-600">Laen…</div>
           ) : data ? (
             showTimeline ? (
-              <div className="mt-10 flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center">
-                <p className="text-lg font-semibold text-slate-700">Siia tuleb ajatelg</p>
-                <p className="mt-2 max-w-md text-sm text-slate-500">
-                  Ajatelje paigutus ja sündmused lisanduvad hiljem.
-                </p>
+              <div className="mt-8">
+                {selectedTimelineVersionId ? (
+                  <CurriculumCalendar curriculumVersionId={selectedTimelineVersionId} />
+                ) : (
+                  <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center">
+                    <p className="text-lg font-semibold text-slate-700">Ajatelje andmed puuduvad</p>
+                    <p className="mt-2 max-w-md text-sm text-slate-500">
+                      Selle õppekava jaoks ei leitud ühtegi versiooni, mille põhjal kalendrit kuvada.
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <>

@@ -11,6 +11,7 @@ import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
 import taltech.ee.FinalThesis.domain.entities.User;
 import taltech.ee.FinalThesis.domain.enums.CurriculumItemSourceTypeEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
+import taltech.ee.FinalThesis.domain.enums.CurriculumVisbilityEnum;
 import taltech.ee.FinalThesis.domain.updateRequests.UpdateCurriculumItemRequest;
 import taltech.ee.FinalThesis.exceptions.CurriculumUpdateException;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumItemNotFoundException;
@@ -78,9 +79,22 @@ public class CurriculumItemServiceImpl implements CurriculumItemService {
 
     @Override
     public Page<CurriculumItem> listByCurriculumVersion(UUID userId, UUID curriculumVersionId, Pageable pageable) {
-        if (curriculumVersionRepository.findByIdAndCurriculum_User_Id(curriculumVersionId, userId).isEmpty()) {
-            throw new CurriculumVersionNotFoundException(String.format("Curriculum version with ID '%s' not found", curriculumVersionId));
+        CurriculumVersion version = curriculumVersionRepository.findById(curriculumVersionId)
+                .orElseThrow(() -> new CurriculumVersionNotFoundException(
+                        String.format("Curriculum version with ID '%s' not found", curriculumVersionId)));
+
+        // Sama loogika mis CurriculumTimelineController: omanik VÕI avalik õppekava (timeline + modal itemite nimekiri).
+        boolean isOwner = version.getCurriculum() != null
+                && version.getCurriculum().getUser() != null
+                && userId.equals(version.getCurriculum().getUser().getId());
+        boolean isPublic = version.getCurriculum() != null
+                && version.getCurriculum().getVisibility() == CurriculumVisbilityEnum.PUBLIC;
+
+        if (!isOwner && !isPublic) {
+            throw new CurriculumVersionNotFoundException(
+                    String.format("Curriculum version with ID '%s' not found", curriculumVersionId));
         }
+
         return curriculumItemRepository.findByCurriculumVersionId(curriculumVersionId, pageable);
     }
 

@@ -34,7 +34,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -326,11 +328,22 @@ public class ExternalCurriculumSyncServiceImpl implements ExternalCurriculumSync
                 if (rt == CurriculumItemTypeEnum.LEARNING_OUTCOME) {
                     continue;
                 }
-                CurriculumItem child = getOrCreateResourceItem(version, r, rt, loItem, byKey, orderIndex);
-                if (child != null) {
-                    saveRelation(version, loItem, child, CurriculumItemRelationTypeEnum.SISALDAB, relationFingerprints);
-                    expandOnOsaParts(version, child, r.getPageTitle(), byKey, relationFingerprints, orderIndex, depth + 1);
+                /* Moodulilehed viitavad ÕV-le läbi Haridus:seotudOpivaljund — see on pöördlink, mitte „ÕV sisaldab moodulit“. */
+                if (rt == CurriculumItemTypeEnum.MODULE) {
+                    continue;
                 }
+                CurriculumItem child = getOrCreateResourceItem(version, r, rt, loItem, byKey, orderIndex);
+                if (child == null) {
+                    continue;
+                }
+                if (child.getType() == CurriculumItemTypeEnum.MODULE) {
+                    continue;
+                }
+                if (isStructuralParentItem(loItem, child)) {
+                    continue;
+                }
+                saveRelation(version, loItem, child, CurriculumItemRelationTypeEnum.SISALDAB, relationFingerprints);
+                expandOnOsaParts(version, child, r.getPageTitle(), byKey, relationFingerprints, orderIndex, depth + 1);
             }
         }
     }
@@ -470,9 +483,12 @@ public class ExternalCurriculumSyncServiceImpl implements ExternalCurriculumSync
         if (r == null) {
             return CurriculumItemTypeEnum.TASK;
         }
+        if (linkedResourceLooksLikeModulePage(r)) {
+            return CurriculumItemTypeEnum.MODULE;
+        }
         String lrt = r.getLearningResourceType();
         if (lrt != null) {
-            String low = lrt.toLowerCase();
+            String low = lrt.toLowerCase(Locale.ROOT);
             if (low.contains("test")) {
                 return CurriculumItemTypeEnum.TEST;
             }
@@ -489,6 +505,37 @@ public class ExternalCurriculumSyncServiceImpl implements ExternalCurriculumSync
             }
         }
         return CurriculumItemTypeEnum.LEARNING_MATERIAL;
+    }
+
+    /**
+     * Graafipäring „kes viitab ÕV-le seotudOpivaljundiga“ tagastab ka moodulilehti; need ei tohiks saada seost ÕV SISALDAB moodul.
+     * @see docs/05_RDF_MODEL.md (moodul: haridus:seotudOpivaljund)
+     */
+    private static boolean linkedResourceLooksLikeModulePage(GraphResourcePageDto r) {
+        if (r == null) {
+            return false;
+        }
+        for (String c : nullSafe(r.getCategories())) {
+            if (c == null) {
+                continue;
+            }
+            String low = c.toLowerCase(Locale.ROOT);
+            if (low.contains("oppekavamoodul") || low.contains("õppekavamoodul")) {
+                return true;
+            }
+            if (low.contains("haridus:oppekavamoodul")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isStructuralParentItem(CurriculumItem loItem, CurriculumItem candidate) {
+        if (loItem == null || candidate == null) {
+            return false;
+        }
+        CurriculumItem p = loItem.getParentItem();
+        return p != null && p.getId() != null && candidate.getId() != null && Objects.equals(p.getId(), candidate.getId());
     }
 
     private static String pageTitleFromLink(GraphLinkedPageDto link) {

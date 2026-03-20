@@ -1,0 +1,407 @@
+.gsm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  /* Kui modaal on kõrgem kui ekraan, saab ülekatet kerida; aken jääb flex-keskele */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.gsm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(32, 33, 36, 0.38);
+  backdrop-filter: blur(2px);
+}
+
+.gsm-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  flex-shrink: 0;
+  margin: auto;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow:
+    0 24px 48px rgba(32, 33, 36, 0.25),
+    0 0 1px rgba(32, 33, 36, 0.15);
+  max-height: min(90vh, calc(100vh - 40px));
+  overflow: auto;
+  color: #202124;
+  font-family:
+    'Google Sans',
+    Roboto,
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.gsm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px 0 14px;
+}
+
+.gsm-drag {
+  width: 20px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px dashed #dadce0;
+  opacity: 0.6;
+}
+
+.gsm-close {
+  border: 0;
+  background: transparent;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1;
+  color: #5f6368;
+  cursor: pointer;
+}
+
+.gsm-close:hover {
+  background: #f1f3f4;
+}
+
+.gsm-body {
+  padding: 0 24px 20px;
+}
+
+.gsm-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.gsm-title-row {
+  margin-bottom: 8px;
+}
+
+.gsm-title-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 2px solid #1a73e8;
+  font-size: 1.45rem;
+  font-weight: 400;
+  padding: 8px 0 10px;
+  outline: none;
+}
+
+.gsm-title-static {
+  font-size: 1.35rem;
+  font-weight: 500;
+  padding: 8px 0 14px;
+  border-bottom: 2px solid #1a73e8;
+}
+
+.gsm-title-select {
+  width: 100%;
+  border: 0;
+  border-bottom: 2px solid #1a73e8;
+  font-size: 1.1rem;
+  padding: 10px 0 12px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+.gsm-tier-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.gsm-tier-tab {
+  border: 1px solid #dadce0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  background: #fff;
+  color: #5f6368;
+  cursor: pointer;
+}
+
+.gsm-tier-tab.active {
+  background: #e8f0fe;
+  color: #1967d2;
+  border-color: #aecbfa;
+}
+
+.gsm-scope-block {
+  margin-bottom: 12px;
+}
+
+.gsm-scope-label {
+  margin-bottom: 6px;
+}
+
+.gsm-lo-scope-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.gsm-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #3c4043;
+  cursor: pointer;
+}
+
+.gsm-select-scope {
+  margin-top: 6px;
+}
+
+.gsm-empty-hint {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #70757a;
+}
+
+.gsm-slot-filter-hint {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  color: #1967d2;
+  line-height: 1.35;
+}
+
+.gsm-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 2px;
+  background: #f1f3f4;
+  border-radius: 999px;
+}
+
+.gsm-tab {
+  border: 0;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #5f6368;
+  cursor: pointer;
+}
+
+.gsm-tab.active {
+  background: #e8f0fe;
+  color: #1967d2;
+}
+
+.gsm-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.gsm-icon {
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+.gsm-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.gsm-datetime-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.gsm-input-dt {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  color: #202124;
+}
+
+.gsm-dash {
+  color: #5f6368;
+  font-weight: 500;
+}
+
+.gsm-sub {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #70757a;
+}
+
+.gsm-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #5f6368;
+  margin-bottom: 6px;
+}
+
+.gsm-select {
+  width: 100%;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.gsm-textarea {
+  width: 100%;
+  border: 1px solid #dadce0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.gsm-row-calendar {
+  margin-top: 4px;
+}
+
+.gsm-calendar-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.gsm-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.gsm-calendar-name {
+  line-height: 1.3;
+}
+
+.gsm-warn {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fef7e0;
+  color: #684e0a;
+  font-size: 0.85rem;
+}
+
+.gsm-err {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fce8e6;
+  color: #a50e0e;
+  font-size: 0.85rem;
+}
+
+.gsm-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e8eaed;
+}
+
+.gsm-footer-right {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.gsm-btn-text {
+  border: 0;
+  background: transparent;
+  color: #1a73e8;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.gsm-btn-text:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gsm-danger {
+  color: #d93025;
+}
+
+.gsm-btn-primary {
+  border: 0;
+  border-radius: 999px;
+  background: #1a73e8;
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 10px 24px;
+  cursor: pointer;
+}
+
+.gsm-btn-primary:hover:not(:disabled) {
+  background: #1967d2;
+}
+
+.gsm-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gsm-btn-secondary {
+  border: 1px solid #dadce0;
+  border-radius: 999px;
+  background: #fff;
+  color: #1967d2;
+  font-weight: 500;
+  font-size: 0.88rem;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+
+.gsm-btn-secondary:hover:not(:disabled) {
+  background: #f8f9fa;
+}
+
+.gsm-btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

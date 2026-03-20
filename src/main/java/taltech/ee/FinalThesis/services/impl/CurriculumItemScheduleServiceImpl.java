@@ -6,8 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import taltech.ee.FinalThesis.domain.createRequests.CreateCurriculumItemScheduleRequest;
+import taltech.ee.FinalThesis.domain.entities.Curriculum;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItemSchedule;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItem;
+import taltech.ee.FinalThesis.domain.enums.CurriculumVisbilityEnum;
 import taltech.ee.FinalThesis.domain.updateRequests.UpdateCurriculumItemScheduleRequest;
 import taltech.ee.FinalThesis.exceptions.CurriculumUpdateException;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumItemNotFoundException;
@@ -29,13 +31,37 @@ public class CurriculumItemScheduleServiceImpl implements CurriculumItemSchedule
     private final CurriculumItemRepository curriculumItemRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Sama ligipääsumudel mis ajateljel / puhvrite puhul: omanik või avalik õppekava.
+     */
+    private static boolean canAccessItemScheduleContext(CurriculumItem item, UUID userId) {
+        if (item == null || item.getCurriculumVersion() == null) {
+            return false;
+        }
+        Curriculum curriculum = item.getCurriculumVersion().getCurriculum();
+        if (curriculum == null) {
+            return false;
+        }
+        boolean isOwner = curriculum.getUser() != null && userId.equals(curriculum.getUser().getId());
+        boolean isPublic = curriculum.getVisibility() == CurriculumVisbilityEnum.PUBLIC;
+        return isOwner || isPublic;
+    }
+
+    private CurriculumItem requireItemForScheduleAccess(UUID curriculumItemId, UUID userId) {
+        CurriculumItem item = curriculumItemRepository.findById(curriculumItemId)
+                .orElseThrow(() -> new CurriculumItemNotFoundException(String.format("Curriculum item with ID '%s' not found", curriculumItemId)));
+        if (!canAccessItemScheduleContext(item, userId)) {
+            throw new CurriculumItemNotFoundException(String.format("Curriculum item with ID '%s' not found", curriculumItemId));
+        }
+        return item;
+    }
+
     @Override
     @Transactional
     public CurriculumItemSchedule create(UUID userId, UUID curriculumItemId, CreateCurriculumItemScheduleRequest request) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(String.format("User with ID '%s' not found", userId)));
-        CurriculumItem item = curriculumItemRepository.findByIdAndCurriculumVersion_Curriculum_User_Id(curriculumItemId, userId)
-                .orElseThrow(() -> new CurriculumItemNotFoundException(String.format("Curriculum item with ID '%s' not found", curriculumItemId)));
+        CurriculumItem item = requireItemForScheduleAccess(curriculumItemId, userId);
 
         CurriculumItemSchedule schedule = new CurriculumItemSchedule();
         schedule.setPlannedStartAt(request.getPlannedStartAt());
@@ -52,16 +78,19 @@ public class CurriculumItemScheduleServiceImpl implements CurriculumItemSchedule
     }
 
     @Override
+    @Transactional
     public Page<CurriculumItemSchedule> listByCurriculumItem(UUID userId, UUID curriculumItemId, Pageable pageable) {
-        if (curriculumItemRepository.findByIdAndCurriculumVersion_Curriculum_User_Id(curriculumItemId, userId).isEmpty()) {
-            throw new CurriculumItemNotFoundException(String.format("Curriculum item with ID '%s' not found", curriculumItemId));
-        }
+        requireItemForScheduleAccess(curriculumItemId, userId);
         return curriculumItemScheduleRepository.findByCurriculumItemId(curriculumItemId, pageable);
     }
 
     @Override
+    @Transactional
     public Optional<CurriculumItemSchedule> getForUser(UUID id, UUID userId) {
-        return curriculumItemScheduleRepository.findByIdAndCurriculumItem_CurriculumVersion_Curriculum_User_Id(id, userId);
+        return curriculumItemScheduleRepository.findById(id).filter(s -> {
+            CurriculumItem item = s.getCurriculumItem();
+            return item != null && canAccessItemScheduleContext(item, userId);
+        });
     }
 
     @Override
@@ -70,8 +99,12 @@ public class CurriculumItemScheduleServiceImpl implements CurriculumItemSchedule
         if (request.getId() == null || !id.equals(request.getId())) {
             throw new CurriculumUpdateException("Schedule ID mismatch");
         }
-        CurriculumItemSchedule existing = curriculumItemScheduleRepository.findByIdAndCurriculumItem_CurriculumVersion_Curriculum_User_Id(id, userId)
+        CurriculumItemSchedule existing = curriculumItemScheduleRepository.findById(id)
                 .orElseThrow(() -> new CurriculumItemScheduleNotFoundException(String.format("Schedule with ID '%s' not found", id)));
+        CurriculumItem item = existing.getCurriculumItem();
+        if (item == null || !canAccessItemScheduleContext(item, userId)) {
+            throw new CurriculumItemScheduleNotFoundException(String.format("Schedule with ID '%s' not found", id));
+        }
 
         if (request.getPlannedStartAt() != null) existing.setPlannedStartAt(request.getPlannedStartAt());
         if (request.getPlannedEndAt() != null) existing.setPlannedEndAt(request.getPlannedEndAt());
