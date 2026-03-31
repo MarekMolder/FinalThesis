@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import taltech.ee.FinalThesis.clients.OppekavaGraphClient;
+import taltech.ee.FinalThesis.domain.dto.graph.GraphContentItemDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumDetailDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumSummaryDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphLearningOutcomeDto;
@@ -13,10 +14,15 @@ import taltech.ee.FinalThesis.domain.dto.graph.GraphModuleDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphResourcePageDto;
 import taltech.ee.FinalThesis.services.OppekavaGraphService;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static taltech.ee.FinalThesis.clients.OppekavaGraphClient.*;
@@ -47,7 +53,87 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
     private static final String RESOURCE_LINKING_LO_PRINTOUTS =
             "?Kategooria|?Schema:learningResourceType|?Schema:headline|?Schema:name";
 
+    /** Content item printouts for tasks and knobits. */
+    private static final String CONTENT_ITEM_PRINTOUTS =
+            "?Schema:headline|?Schema:url|?Haridus:seotudTeema|limit=100";
+
+    /** Content item printouts for materials (includes learningResourceType). */
+    private static final String MATERIAL_ITEM_PRINTOUTS =
+            "?Schema:headline|?Schema:url|?Schema:learningResourceType|?Haridus:seotudTeema|limit=100";
+
+    /** onOsa children printouts. */
+    private static final String ON_OSA_CHILD_PRINTOUTS =
+            "?Schema:headline|?Schema:url|limit=100";
+
+    private static final List<String> KNOWN_EDUCATION_LEVELS = List.of(
+            "Alusharidus", "Põhiharidus", "Keskharidus", "Kutseharidus");
+
+    private static final List<String> KNOWN_SCHOOL_LEVELS = List.of(
+            "Alusharidus", "I kooliaste", "II kooliaste", "III kooliaste", "Gümnaasium");
+
+    private static final List<String> KNOWN_GRADES = List.of(
+            "6-7", "1. klass", "2. klass", "3. klass", "4. klass", "5. klass",
+            "6. klass", "7. klass", "8. klass", "9. klass", "10. klass",
+            "11. klass", "12. klass", "Gümnaasium");
+
     private final OppekavaGraphClient graphClient;
+
+    @Override
+    public Map<String, List<String>> listTaxonomyValues() {
+        Map<String, List<String>> result = new LinkedHashMap<>();
+
+        result.put("subjects", queryPageTitles("[[Category:Haridus:Oppeaine]]"));
+        result.put("subjectAreas", queryPageTitles("[[Category:Haridus:Ainevaldkond]]"));
+        result.put("educationLevels", KNOWN_EDUCATION_LEVELS);
+        result.put("schoolLevels", KNOWN_SCHOOL_LEVELS);
+        result.put("grades", KNOWN_GRADES);
+
+        TreeSet<String> providers = new TreeSet<>();
+        TreeSet<String> audiences = new TreeSet<>();
+        try {
+            String q = "[[" + CATEGORY_OPPEKAVA + "]]|?Schema:provider|?Schema:audience|limit=500";
+            JsonNode queryResult = graphClient.ask(q);
+            JsonNode results = queryResult.path("results");
+            for (Iterator<String> it = results.fieldNames(); it.hasNext(); ) {
+                JsonNode row = results.get(it.next()).path("printouts");
+                String prov = firstText(row.path("Schema:provider"));
+                if (prov == null && !row.path("Schema:provider").isEmpty()) {
+                    JsonNode n = row.path("Schema:provider").get(0);
+                    prov = n.has("fulltext") ? n.get("fulltext").asText(null) : null;
+                }
+                if (prov != null && !prov.isBlank()) providers.add(prov);
+                String aud = firstText(row.path("Schema:audience"));
+                if (aud == null && !row.path("Schema:audience").isEmpty()) {
+                    JsonNode n = row.path("Schema:audience").get(0);
+                    aud = n.has("fulltext") ? n.get("fulltext").asText(null) : null;
+                }
+                if (aud != null && !aud.isBlank()) audiences.add(aud);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to fetch providers/audiences from graph: {}", e.getMessage());
+        }
+        result.put("providers", new ArrayList<>(providers));
+        result.put("audiences", new ArrayList<>(audiences));
+        result.put("verbs", queryPageTitles("[[Category:Haridus:Verb]]"));
+
+        return result;
+    }
+
+    private List<String> queryPageTitles(String query) {
+        try {
+            JsonNode queryResult = graphClient.ask(query);
+            JsonNode results = queryResult.path("results");
+            List<String> titles = new ArrayList<>();
+            for (Iterator<String> it = results.fieldNames(); it.hasNext(); ) {
+                titles.add(it.next());
+            }
+            titles.sort(String::compareToIgnoreCase);
+            return titles;
+        } catch (Exception e) {
+            log.warn("Failed taxonomy query '{}': {}", query, e.getMessage());
+            return List.of();
+        }
+    }
 
     @Override
     public List<GraphCurriculumSummaryDto> listCurriculaFromGraph() {
@@ -275,6 +361,171 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
             log.debug("getOnOsaChildren failed for '{}': {}", pageTitle, e.getMessage());
             return List.of();
         }
+    }
+
+    @Override
+    public List<GraphContentItemDto> getItemsForElement(String iri) {
+        if (iri == null || iri.isBlank()) {
+            return List.of();
+        }
+
+        // Extract pageTitle from IRI: URL decode, take part after last '/'
+        String pageTitle;
+        try {
+            String decoded = URLDecoder.decode(iri, StandardCharsets.UTF_8);
+            int lastSlash = decoded.lastIndexOf('/');
+            pageTitle = lastSlash >= 0 ? decoded.substring(lastSlash + 1) : decoded;
+        } catch (Exception e) {
+            log.warn("Failed to parse pageTitle from IRI '{}': {}", iri, e.getMessage());
+            return List.of();
+        }
+
+        Map<String, GraphContentItemDto> byFullUrl = new LinkedHashMap<>();
+
+        // 1) Tasks linked by seotudOpivaljund
+        queryContentItems(
+                "[[Category:Haridus:Ulesanne]][[Haridus:seotudOpivaljund::" + pageTitle + "]]|" + CONTENT_ITEM_PRINTOUTS,
+                "TASK", byFullUrl);
+
+        // 2) Tasks linked by seotudTeema
+        queryContentItems(
+                "[[Category:Haridus:Ulesanne]][[Haridus:seotudTeema::" + pageTitle + "]]|" + CONTENT_ITEM_PRINTOUTS,
+                "TASK", byFullUrl);
+
+        // 3) Materials linked by seotudOpivaljund
+        queryContentItems(
+                "[[Category:Haridus:Oppematerjal]][[Haridus:seotudOpivaljund::" + pageTitle + "]]|" + MATERIAL_ITEM_PRINTOUTS,
+                "LEARNING_MATERIAL", byFullUrl);
+
+        // 4) Materials linked by seotudTeema
+        queryContentItems(
+                "[[Category:Haridus:Oppematerjal]][[Haridus:seotudTeema::" + pageTitle + "]]|" + MATERIAL_ITEM_PRINTOUTS,
+                "LEARNING_MATERIAL", byFullUrl);
+
+        // 5) Materials via inverse property chain: material whose child (onOsa) has seotudOpivaljund to this LO
+        queryContentItems(
+                "[[Category:Haridus:Oppematerjal]][[-Haridus:onOsa.Haridus:seotudOpivaljund::" + pageTitle + "]]|" + MATERIAL_ITEM_PRINTOUTS,
+                "LEARNING_MATERIAL", byFullUrl);
+
+        // 6) Tasks via inverse property chain (same pattern)
+        queryContentItems(
+                "[[Category:Haridus:Ulesanne]][[-Haridus:onOsa.Haridus:seotudOpivaljund::" + pageTitle + "]]|" + CONTENT_ITEM_PRINTOUTS,
+                "TASK", byFullUrl);
+
+        // 7) Knobits linked by seotudOpivaljund
+        queryContentItems(
+                "[[Category:Haridus:Knobit]][[Haridus:seotudOpivaljund::" + pageTitle + "]]|" + CONTENT_ITEM_PRINTOUTS,
+                "KNOBIT", byFullUrl);
+
+        // 8) Knobits via inverse property chain
+        queryContentItems(
+                "[[Category:Haridus:Knobit]][[-Haridus:onOsa.Haridus:seotudOpivaljund::" + pageTitle + "]]|" + CONTENT_ITEM_PRINTOUTS,
+                "KNOBIT", byFullUrl);
+
+        // 9) For each result, fetch onOsa children
+        for (GraphContentItemDto item : new ArrayList<>(byFullUrl.values())) {
+            List<GraphContentItemDto> children = fetchOnOsaChildren(item.getPageTitle(), item.getType());
+            item.setChildren(children);
+        }
+
+        return new ArrayList<>(byFullUrl.values());
+    }
+
+    private void queryContentItems(String query, String defaultType,
+                                   Map<String, GraphContentItemDto> byFullUrl) {
+        try {
+            JsonNode queryResult = graphClient.ask(query);
+            JsonNode results = queryResult.path("results");
+            for (Iterator<String> it = results.fieldNames(); it.hasNext(); ) {
+                String pt = it.next();
+                JsonNode row = results.get(pt);
+                String fullUrl = row.has("fullurl") ? row.path("fullurl").asText(null) : null;
+                if (fullUrl != null && byFullUrl.containsKey(fullUrl)) continue;
+
+                JsonNode p = row.path("printouts");
+                String headline = firstText(p.path("Schema:headline"));
+                if (headline == null && !p.path("Schema:headline").isEmpty()) {
+                    JsonNode n = p.path("Schema:headline").get(0);
+                    headline = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+                }
+                String url = firstText(p.path("Schema:url"));
+                if (url == null && !p.path("Schema:url").isEmpty()) {
+                    JsonNode n = p.path("Schema:url").get(0);
+                    url = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+                }
+                String topicLabel = firstWpgFulltext(p.path("Haridus:seotudTeema"));
+                String lrt = firstText(p.path("Schema:learningResourceType"));
+                if (lrt == null && !p.path("Schema:learningResourceType").isEmpty()) {
+                    JsonNode n = p.path("Schema:learningResourceType").get(0);
+                    lrt = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+                }
+
+                // Detect type: if default is LEARNING_MATERIAL but lrt contains "Test", it's TEST
+                String type = defaultType;
+                if ("LEARNING_MATERIAL".equals(defaultType) && lrt != null
+                        && lrt.toLowerCase().contains("test")) {
+                    type = "TEST";
+                }
+
+                GraphContentItemDto dto = GraphContentItemDto.builder()
+                        .pageTitle(pt)
+                        .fullUrl(fullUrl)
+                        .headline(headline)
+                        .type(type)
+                        .url(url)
+                        .topicLabel(topicLabel)
+                        .learningResourceType(lrt)
+                        .build();
+
+                String key = fullUrl != null ? fullUrl : pt;
+                byFullUrl.put(key, dto);
+            }
+        } catch (Exception e) {
+            log.warn("queryContentItems failed for query snippet: {}", e.getMessage());
+        }
+    }
+
+    private List<GraphContentItemDto> fetchOnOsaChildren(String parentPageTitle, String parentType) {
+        List<GraphContentItemDto> children = new ArrayList<>();
+        if (parentPageTitle == null || parentPageTitle.isBlank()) return children;
+
+        // Tasks under material/test
+        String childCategory = "KNOBIT".equals(parentType)
+                ? "Category:Haridus:Knobit"
+                : "Category:Haridus:Ulesanne";
+        String childType = "KNOBIT".equals(parentType) ? "KNOBIT" : "TASK";
+
+        String q = "[[" + childCategory + "]][[Haridus:onOsa::" + parentPageTitle + "]]|" + ON_OSA_CHILD_PRINTOUTS;
+        try {
+            JsonNode queryResult = graphClient.ask(q);
+            JsonNode results = queryResult.path("results");
+            for (Iterator<String> it = results.fieldNames(); it.hasNext(); ) {
+                String pt = it.next();
+                JsonNode row = results.get(pt);
+                String fullUrl = row.has("fullurl") ? row.path("fullurl").asText(null) : null;
+                JsonNode p = row.path("printouts");
+                String headline = firstText(p.path("Schema:headline"));
+                if (headline == null && !p.path("Schema:headline").isEmpty()) {
+                    JsonNode n = p.path("Schema:headline").get(0);
+                    headline = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+                }
+                String url = firstText(p.path("Schema:url"));
+                if (url == null && !p.path("Schema:url").isEmpty()) {
+                    JsonNode n = p.path("Schema:url").get(0);
+                    url = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+                }
+                children.add(GraphContentItemDto.builder()
+                        .pageTitle(pt)
+                        .fullUrl(fullUrl)
+                        .headline(headline)
+                        .type(childType)
+                        .url(url)
+                        .build());
+            }
+        } catch (Exception e) {
+            log.debug("fetchOnOsaChildren failed for '{}': {}", parentPageTitle, e.getMessage());
+        }
+        return children;
     }
 
     private static GraphResourcePageDto parseResourcePageRow(String pageTitle, JsonNode row) {
@@ -516,5 +767,254 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
                     .build());
         }
         return list;
+    }
+
+    @Override
+    public Map<String, Object> findItemsByMetadata(String subject, String schoolLevel,
+                                                   String subjectArea, String grade, String educationLevel) {
+        // 1) Query learning outcomes (Category:Haridus:Opivaljund)
+        List<Map<String, Object>> allLos = queryLearningOutcomes(subject, schoolLevel, subjectArea, grade, educationLevel);
+
+        // 2) Query themes (Category:Haridus:Teema)
+        Map<String, String> themeUrls = queryThemes(subject, subjectArea, educationLevel);
+
+        // 3) Modules: OppekavaMoodul items don't carry seotudOppeaine, so they
+        //    cannot be matched to general-education metadata. Return empty list.
+        List<Map<String, Object>> graphModules = List.of();
+
+        // 4) Build themes list: each theme with its matching LOs grouped under it
+        Map<String, List<Map<String, Object>>> byTheme = new LinkedHashMap<>();
+        for (Map<String, Object> lo : allLos) {
+            String theme = (String) lo.get("theme");
+            if (theme != null && !theme.isBlank()) {
+                byTheme.computeIfAbsent(theme, k -> new ArrayList<>()).add(lo);
+            }
+        }
+
+        List<Map<String, Object>> themes = new ArrayList<>();
+        for (var entry : byTheme.entrySet()) {
+            String themeName = entry.getKey();
+            Map<String, Object> t = new LinkedHashMap<>();
+            t.put("title", themeName);
+            t.put("fullUrl", themeUrls.get(themeName));
+            t.put("learningOutcomes", entry.getValue().stream()
+                    .map(lo -> {
+                        Map<String, Object> m = new LinkedHashMap<>();
+                        m.put("title", lo.get("title"));
+                        m.put("fullUrl", lo.get("fullUrl"));
+                        return m;
+                    })
+                    .collect(Collectors.toList()));
+            themes.add(t);
+        }
+        for (var entry : themeUrls.entrySet()) {
+            if (!byTheme.containsKey(entry.getKey())) {
+                Map<String, Object> t = new LinkedHashMap<>();
+                t.put("title", entry.getKey());
+                t.put("fullUrl", entry.getValue());
+                t.put("learningOutcomes", List.of());
+                themes.add(t);
+            }
+        }
+
+        // 5) Flat list of ALL learning outcomes
+        List<Map<String, Object>> flatLos = allLos.stream()
+                .map(lo -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("title", lo.get("title"));
+                    m.put("fullUrl", lo.get("fullUrl"));
+                    return m;
+                }).collect(Collectors.toList());
+
+        // 6) Query content items by subject (with same soft filters as LOs)
+        List<GraphContentItemDto> contentItems = queryContentItemsBySubject(subject, schoolLevel, subjectArea, grade, educationLevel);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("themes", themes);
+        result.put("learningOutcomes", flatLos);
+        result.put("modules", graphModules);
+        result.put("contentItems", contentItems);
+        return result;
+    }
+
+    private static final String FILTER_PRINTOUTS =
+            "|?Haridus:kooliaste|?Haridus:klass|?Haridus:seotudAinevaldkond|?Haridus:seotudHaridusaste";
+
+    private List<GraphContentItemDto> queryContentItemsBySubject(String subject,
+                                                                  String schoolLevel, String subjectArea,
+                                                                  String grade, String educationLevel) {
+        Map<String, GraphContentItemDto> byFullUrl = new LinkedHashMap<>();
+
+        // Tasks by subject
+        queryContentItemsFiltered(
+                "[[Category:Haridus:Ulesanne]][[Haridus:seotudOppeaine::" + subject + "]]|" + CONTENT_ITEM_PRINTOUTS.replace("limit=100", "limit=500") + FILTER_PRINTOUTS,
+                "TASK", byFullUrl, schoolLevel, subjectArea, grade, educationLevel);
+
+        // Materials by subject (includes tests)
+        queryContentItemsFiltered(
+                "[[Category:Haridus:Oppematerjal]][[Haridus:seotudOppeaine::" + subject + "]]|" + MATERIAL_ITEM_PRINTOUTS.replace("limit=100", "limit=500") + FILTER_PRINTOUTS,
+                "LEARNING_MATERIAL", byFullUrl, schoolLevel, subjectArea, grade, educationLevel);
+
+        // Knobits by subject
+        queryContentItemsFiltered(
+                "[[Category:Haridus:Knobit]][[Haridus:seotudOppeaine::" + subject + "]]|" + CONTENT_ITEM_PRINTOUTS.replace("limit=100", "limit=500") + FILTER_PRINTOUTS,
+                "KNOBIT", byFullUrl, schoolLevel, subjectArea, grade, educationLevel);
+
+        return new ArrayList<>(byFullUrl.values());
+    }
+
+    private void queryContentItemsFiltered(String query, String defaultType,
+                                           Map<String, GraphContentItemDto> byFullUrl,
+                                           String schoolLevel, String subjectArea,
+                                           String grade, String educationLevel) {
+        try {
+            JsonNode queryResult = graphClient.ask(query);
+            JsonNode results = queryResult.path("results");
+            for (Iterator<String> it = results.fieldNames(); it.hasNext(); ) {
+                String pt = it.next();
+                JsonNode row = results.get(pt);
+                String fullUrl = row.has("fullurl") ? row.path("fullurl").asText(null) : null;
+                if (fullUrl != null && byFullUrl.containsKey(fullUrl)) continue;
+
+                JsonNode p = row.path("printouts");
+
+                // Soft filters: skip items that don't match metadata (but allow items with no value set)
+                String itemKooliaste = firstText(p.path("Haridus:kooliaste"));
+                String itemKlass = firstText(p.path("Haridus:klass"));
+                String itemAinevaldkond = firstWpgFulltext(p.path("Haridus:seotudAinevaldkond"));
+                String itemHaridusaste = firstWpgFulltext(p.path("Haridus:seotudHaridusaste"));
+
+                if (!matchesSoftFilter(itemKooliaste, schoolLevel)) continue;
+                if (!matchesSoftFilter(itemKlass, grade)) continue;
+                if (!matchesSoftFilter(itemAinevaldkond, subjectArea)) continue;
+                if (!matchesSoftFilter(itemHaridusaste, educationLevel)) continue;
+
+                String headline = firstText(p.path("Schema:headline"));
+                if (headline == null && !p.path("Schema:headline").isEmpty()) {
+                    JsonNode n = p.path("Schema:headline").get(0);
+                    headline = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+                }
+                String url = firstText(p.path("Schema:url"));
+                if (url == null && !p.path("Schema:url").isEmpty()) {
+                    JsonNode n = p.path("Schema:url").get(0);
+                    url = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+                }
+                String topicLabel = firstWpgFulltext(p.path("Haridus:seotudTeema"));
+                String lrt = firstText(p.path("Schema:learningResourceType"));
+                if (lrt == null && !p.path("Schema:learningResourceType").isEmpty()) {
+                    JsonNode n = p.path("Schema:learningResourceType").get(0);
+                    lrt = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+                }
+
+                String type = defaultType;
+                if ("LEARNING_MATERIAL".equals(defaultType) && lrt != null
+                        && lrt.toLowerCase().contains("test")) {
+                    type = "TEST";
+                }
+
+                GraphContentItemDto dto = GraphContentItemDto.builder()
+                        .pageTitle(pt)
+                        .fullUrl(fullUrl)
+                        .headline(headline)
+                        .type(type)
+                        .url(url)
+                        .topicLabel(topicLabel)
+                        .learningResourceType(lrt)
+                        .build();
+
+                String key = fullUrl != null ? fullUrl : pt;
+                byFullUrl.put(key, dto);
+            }
+        } catch (Exception e) {
+            log.warn("queryContentItemsFiltered failed: {}", e.getMessage());
+        }
+    }
+
+    private List<Map<String, Object>> queryLearningOutcomes(String subject, String schoolLevel,
+                                                              String subjectArea, String grade, String educationLevel) {
+        String q = "[[Category:Haridus:Opivaljund]][[Haridus:seotudOppeaine::" + subject + "]]"
+                + "|?Schema:name|?Haridus:seotudTeema|?Haridus:kooliaste|?Haridus:klass"
+                + "|?Haridus:seotudAinevaldkond|?Haridus:seotudHaridusaste|limit=500";
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        try {
+            JsonNode queryResult = graphClient.ask(q);
+            JsonNode rows = queryResult.path("results");
+            for (Iterator<String> it = rows.fieldNames(); it.hasNext(); ) {
+                String pageTitle = it.next();
+                JsonNode row = rows.get(pageTitle);
+                String fullUrl = row.has("fullurl") ? row.path("fullurl").asText(null) : null;
+                JsonNode p = row.path("printouts");
+
+                String itemKooliaste = firstText(p.path("Haridus:kooliaste"));
+                String itemKlass = firstText(p.path("Haridus:klass"));
+                String itemAinevaldkond = firstWpgFulltext(p.path("Haridus:seotudAinevaldkond"));
+                String itemHaridusaste = firstWpgFulltext(p.path("Haridus:seotudHaridusaste"));
+
+                if (!matchesSoftFilter(itemKooliaste, schoolLevel)) continue;
+                if (!matchesSoftFilter(itemKlass, grade)) continue;
+                if (!matchesSoftFilter(itemAinevaldkond, subjectArea)) continue;
+                if (!matchesSoftFilter(itemHaridusaste, educationLevel)) continue;
+
+                String name = resolveSchemaName(p);
+                String title = name != null && !name.isBlank() ? name : pageTitle;
+                String theme = firstWpgFulltext(p.path("Haridus:seotudTeema"));
+
+                Map<String, Object> lo = new LinkedHashMap<>();
+                lo.put("title", title);
+                lo.put("fullUrl", fullUrl);
+                lo.put("pageTitle", pageTitle);
+                lo.put("theme", theme);
+                results.add(lo);
+            }
+        } catch (Exception e) {
+            log.warn("queryLearningOutcomes failed for subject='{}': {}", subject, e.getMessage());
+        }
+        return results;
+    }
+
+    private boolean matchesSoftFilter(String itemValue, String metaValue) {
+        if (metaValue == null || metaValue.isBlank()) return true;
+        if (itemValue == null || itemValue.isBlank()) return true;
+        return itemValue.equalsIgnoreCase(metaValue);
+    }
+
+    private Map<String, String> queryThemes(String subject, String subjectArea, String educationLevel) {
+        String q = "[[Category:Haridus:Teema]][[Haridus:seotudOppeaine::" + subject + "]]"
+                + "|?Schema:name|?Haridus:seotudAinevaldkond|?Haridus:seotudHaridusaste|limit=500";
+
+        Map<String, String> themeToUrl = new LinkedHashMap<>();
+        try {
+            JsonNode queryResult = graphClient.ask(q);
+            JsonNode rows = queryResult.path("results");
+            for (Iterator<String> it = rows.fieldNames(); it.hasNext(); ) {
+                String pageTitle = it.next();
+                JsonNode row = rows.get(pageTitle);
+                String fullUrl = row.has("fullurl") ? row.path("fullurl").asText(null) : null;
+                JsonNode p = row.path("printouts");
+
+                String itemAinevaldkond = firstWpgFulltext(p.path("Haridus:seotudAinevaldkond"));
+                String itemHaridusaste = firstWpgFulltext(p.path("Haridus:seotudHaridusaste"));
+
+                if (!matchesSoftFilter(itemAinevaldkond, subjectArea)) continue;
+                if (!matchesSoftFilter(itemHaridusaste, educationLevel)) continue;
+
+                String name = resolveSchemaName(p);
+                String title = name != null && !name.isBlank() ? name : pageTitle;
+                themeToUrl.put(title, fullUrl);
+            }
+        } catch (Exception e) {
+            log.warn("queryThemes failed for subject='{}': {}", subject, e.getMessage());
+        }
+        return themeToUrl;
+    }
+
+    private static String resolveSchemaName(JsonNode printouts) {
+        String name = firstText(printouts.path("Schema:name"));
+        if (name == null && !printouts.path("Schema:name").isEmpty()) {
+            JsonNode n = printouts.path("Schema:name").get(0);
+            name = n.isTextual() ? n.asText() : (n.has("fulltext") ? n.get("fulltext").asText(null) : null);
+        }
+        return name;
     }
 }

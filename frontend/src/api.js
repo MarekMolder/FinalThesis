@@ -14,7 +14,6 @@ export async function api(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   if (res.status === 401) {
     logout();
-    window.location.href = '/login';
     throw new Error('Unauthorized');
   }
   if (!res.ok) {
@@ -53,9 +52,18 @@ export function isLoggedIn() {
   return !!getToken();
 }
 
-/** Remove token (e.g. logout). Redirect to /login optional. */
+/** Token present and JWT payload parses (user info available for the UI). */
+export function isAuthenticatedSession() {
+  if (!getToken()) return false;
+  return getCurrentUser() != null;
+}
+
+/** Remove token and go to login. */
 export function logout() {
   localStorage.removeItem('token');
+  if (typeof window !== 'undefined') {
+    window.location.assign('/login');
+  }
 }
 
 function base64UrlDecode(input) {
@@ -112,6 +120,15 @@ export const graph = {
   curricula: () => api('/graph/curricula'),
   /** Impordi puuduvad õppekavad graafist DB-sse (externalGraph=true, versioon CLOSED). */
   sync: () => api('/graph/sync', { method: 'POST' }),
+  /** Fetch content items related to a specific element by IRI. */
+  itemsForElement: (iri) => api(`/graph/items-for-element?iri=${encodeURIComponent(iri)}`),
+  /** Fetch content items by metadata (subject, schoolLevel, grade). */
+  contentByMetadata: ({ subject, schoolLevel, grade }) => {
+    const params = new URLSearchParams({ subject });
+    if (schoolLevel) params.set('schoolLevel', schoolLevel);
+    if (grade) params.set('grade', grade);
+    return api(`/graph/items-by-metadata?${params}`);
+  },
 };
 
 export const curriculumVersion = {
@@ -121,11 +138,13 @@ export const curriculumVersion = {
   create: (body) => api('/curriculum-version', { method: 'POST', body: JSON.stringify(body) }),
   update: (id, body) => api(`/curriculum-version/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (id) => api(`/curriculum-version/${id}`, { method: 'DELETE' }),
+  generateContentJson: (id) =>
+    api(`/curriculum-version/${id}/generate-content-json`, { method: 'POST' }),
 };
 
 export const curriculumItem = {
   list: (curriculumVersionId, params) =>
-    api('/curriculum-item?' + new URLSearchParams({ curriculumVersionId, ...params })).then((p) => p.content ?? p),
+    api('/curriculum-item?' + new URLSearchParams({ curriculumVersionId, size: 10000, ...params })).then((p) => p.content ?? p),
   get: (id) => api(`/curriculum-item/${id}`),
   create: (body) => api('/curriculum-item', { method: 'POST', body: JSON.stringify(body) }),
   update: (id, body) => api(`/curriculum-item/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
@@ -152,4 +171,22 @@ export const relation = {
 
 export const timeline = {
   blocks: (curriculumVersionId) => api(`/curriculum-version/${curriculumVersionId}/timeline-blocks`),
+};
+
+export const graphCatalog = {
+  forMeta: (pageTitle) => api(`/graph/curriculum?pageTitle=${encodeURIComponent(pageTitle)}`),
+  list: () => api('/graph/curricula'),
+  taxonomy: () => api('/graph/taxonomy'),
+  itemsByMetadata: (subject, schoolLevel, subjectArea, grade, educationLevel) => {
+    const params = new URLSearchParams({ subject });
+    if (schoolLevel) params.set('schoolLevel', schoolLevel);
+    if (subjectArea) params.set('subjectArea', subjectArea);
+    if (grade) params.set('grade', grade);
+    if (educationLevel) params.set('educationLevel', educationLevel);
+    return api(`/graph/items-by-metadata?${params}`);
+  },
+};
+
+export const ai = {
+  chat: (messages) => api('/ai/chat', { method: 'POST', body: JSON.stringify({ messages }) }),
 };

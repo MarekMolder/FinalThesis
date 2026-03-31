@@ -826,7 +826,7 @@ export default function CurriculumDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    if (!id || !data?.externalGraph) {
+    if (!id || !data) {
       setStructure(null);
       setStructureSource(null);
       return;
@@ -841,13 +841,20 @@ export default function CurriculumDetailPage() {
           setStructureSource('database');
         }
       } catch {
-        try {
-          const g = await curriculum.getGraphStructure(id);
-          if (!ignore) {
-            setStructure(normalizeGraphToStructure(g));
-            setStructureSource('graph');
+        if (data.externalGraph) {
+          try {
+            const g = await curriculum.getGraphStructure(id);
+            if (!ignore) {
+              setStructure(normalizeGraphToStructure(g));
+              setStructureSource('graph');
+            }
+          } catch {
+            if (!ignore) {
+              setStructure(null);
+              setStructureSource(null);
+            }
           }
-        } catch {
+        } else {
           if (!ignore) {
             setStructure(null);
             setStructureSource(null);
@@ -860,11 +867,10 @@ export default function CurriculumDetailPage() {
     return () => {
       ignore = true;
     };
-  }, [id, data?.externalGraph]);
+  }, [id, data]);
 
   function logout() {
     apiLogout();
-    navigate('/login');
   }
 
   const showTimeline = Boolean(data?.externalGraph && externalMainTab === 'timeline');
@@ -894,7 +900,13 @@ export default function CurriculumDetailPage() {
       <header className="fixed inset-x-0 top-0 z-40 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
           <div className="flex items-center gap-3">
-            <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
+            <Link
+              to="/"
+              className="flex shrink-0 items-center rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-sky-400"
+              title="Avaleht"
+            >
+              <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
+            </Link>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button
@@ -1009,12 +1021,20 @@ export default function CurriculumDetailPage() {
                 </a>
               )}
               {!data?.externalGraph && (
-                <Link
-                  to="/curriculum-versions"
-                  className="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
-                >
-                  Ava versioonid
-                </Link>
+                <>
+                  <Link
+                    to={`/curriculum/new?edit=${id}`}
+                    className="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
+                  >
+                    Edasi muutma
+                  </Link>
+                  <Link
+                    to="/curriculum-versions"
+                    className="rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white"
+                  >
+                    Versioonid
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -1085,17 +1105,17 @@ export default function CurriculumDetailPage() {
                   et näha providerit, IRI-sid, allikat ja ajatemplid.
                 </p>
 
-                {data.externalGraph && structureLoading && (
+                {structureLoading && (
                   <div className="mt-8 text-center text-sm text-slate-600">Laen struktuuri…</div>
                 )}
 
-                {data.externalGraph && !structureLoading && structure && (
+                {!structureLoading && structure && (
                   <CurriculumStructureExplorer structure={structure} dataSource={structureSource} />
                 )}
 
-                {data.externalGraph && !structureLoading && !structure && !loading && (
+                {!structureLoading && !structure && !loading && (
                   <div className="mt-8 text-center text-sm text-slate-500">
-                    Struktuuri ei õnnestunud laadida (ei DB-st ega graafist).
+                    Struktuuri ei leitud. {!data.externalGraph && 'Kasuta "Edasi muutma" nuppu elementide lisamiseks.'}
                   </div>
                 )}
               </>

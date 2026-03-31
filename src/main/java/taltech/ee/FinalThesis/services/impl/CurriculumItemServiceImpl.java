@@ -148,10 +148,14 @@ public class CurriculumItemServiceImpl implements CurriculumItemService {
             if (existing.getCurriculumVersion().getState() == CurriculumVersionStateEnum.CLOSED) {
                 throw new CurriculumUpdateException("CLOSED curriculum versions cannot delete items");
             }
-            if (existing.getSourceType() == CurriculumItemSourceTypeEnum.OPPEKAVAWEB) {
-                throw new CurriculumUpdateException("OPPEKAVAWEB curriculum items cannot be deleted (base fields are locked)");
-            }
-            curriculumItemRepository.delete(existing);
+            deleteRecursive(existing);
         });
+    }
+
+    private void deleteRecursive(CurriculumItem item) {
+        for (CurriculumItem child : curriculumItemRepository.findAllByParentItem_Id(item.getId())) {
+            deleteRecursive(child);
+        }
+        curriculumItemRepository.delete(item);
     }
 }

@@ -1,5 +1,6 @@
 package taltech.ee.FinalThesis.services;
 
+import taltech.ee.FinalThesis.domain.dto.graph.GraphContentItemDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumDetailDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumSummaryDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphLearningOutcomeDto;
@@ -8,11 +9,18 @@ import taltech.ee.FinalThesis.domain.dto.graph.GraphModuleDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphResourcePageDto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service for querying curriculum data from oppekava.edu.ee graph (Semantic MediaWiki Ask API).
  */
 public interface OppekavaGraphService {
+
+    /**
+     * Returns taxonomy dropdown values sourced from oppekava.edu.ee:
+     * subjects, subjectAreas, educationLevels, schoolLevels, grades, providers, audiences.
+     */
+    Map<String, List<String>> listTaxonomyValues();
 
     /**
      * List all curricula in category Haridus:Oppekava.
@@ -49,4 +57,20 @@ public interface OppekavaGraphService {
 
     /** Wiki lehe lühikokkuvõte (kategooriad, tüüp) — klassifitseerimiseks. */
     GraphResourcePageDto getResourcePageSummary(String pageTitle);
+
+    /**
+     * Query oppekava.edu.ee for curriculum items matching given metadata filters.
+     * Returns a map with keys:
+     *   "themes"            – Category:Haridus:Teema items, each with nested learningOutcomes
+     *   "learningOutcomes"  – flat list of all Category:Haridus:Opivaljund items
+     *   "modules"           – Category:Haridus:OppekavaMoodul items
+     */
+    Map<String, Object> findItemsByMetadata(String subject, String schoolLevel,
+                                            String subjectArea, String grade, String educationLevel);
+
+    /**
+     * Returns content items (tasks, materials, knobits) linked to the given element IRI,
+     * including onOsa children for each item.
+     */
+    List<GraphContentItemDto> getItemsForElement(String iri);
 }

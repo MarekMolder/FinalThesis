@@ -166,7 +166,6 @@ export default function Curriculums() {
 
   function logout() {
     apiLogout();
-    navigate('/login');
   }
 
   return (
@@ -183,7 +182,13 @@ export default function Curriculums() {
       <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
           <div className="flex items-center gap-3">
-            <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
+            <Link
+              to="/"
+              className="flex shrink-0 items-center rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-sky-400"
+              title="Avaleht"
+            >
+              <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
+            </Link>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button
@@ -303,11 +308,10 @@ export default function Curriculums() {
           {activeTab === 'mine' && (
             <div className="mb-4">
               <button
-                onClick={openCreate}
-                disabled={saving}
-                className="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-50"
+                onClick={() => navigate('/curriculum/new')}
+                className="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
               >
-                Lisa õppekava
+                Loo uus õppekava
               </button>
             </div>
           )}
@@ -395,10 +399,10 @@ export default function Curriculums() {
                               <td className="px-4 py-3 text-right">
                                 <button
                                   type="button"
-                                  onClick={() => openEdit(row)}
+                                  onClick={() => navigate(`/curriculum/${row.id}`)}
                                   className="mr-2 rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-white"
                                 >
-                                  Muuda
+                                  Vaata
                                 </button>
                                 <button
                                   type="button"
@@ -614,7 +618,7 @@ export default function Curriculums() {
           <button
             type="button"
             className="flex w-full items-center justify-between rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
-            onClick={openCreate}
+            onClick={() => navigate('/curriculum/new')}
           >
             <span>Loo uus õppekava</span>
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/15">

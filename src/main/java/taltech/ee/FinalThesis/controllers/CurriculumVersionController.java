@@ -19,6 +19,7 @@ import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
 import taltech.ee.FinalThesis.domain.updateRequests.UpdateCurriculumVersionRequest;
 import taltech.ee.FinalThesis.mappers.CurriculumVersionMapper;
 import taltech.ee.FinalThesis.security.CurriculumUserDetails;
+import taltech.ee.FinalThesis.services.ContentJsonGeneratorService;
 import taltech.ee.FinalThesis.services.CurriculumVersionService;
 
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class CurriculumVersionController {
 
     private final CurriculumVersionMapper curriculumVersionMapper;
     private final CurriculumVersionService curriculumVersionService;
+    private final ContentJsonGeneratorService contentJsonGeneratorService;
 
     @PostMapping
     public ResponseEntity<CreateCurriculumVersionResponseDto> create(
@@ -77,5 +79,16 @@ public class CurriculumVersionController {
             @PathVariable UUID versionId) {
         curriculumVersionService.deleteForUser(versionId, userDetails.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{versionId}/generate-content-json")
+    public ResponseEntity<GetCurriculumVersionDetailsResponseDto> generateContentJson(
+            @AuthenticationPrincipal CurriculumUserDetails userDetails,
+            @PathVariable UUID versionId) {
+        contentJsonGeneratorService.generateAndSave(versionId, userDetails.getId());
+        return curriculumVersionService.getForUser(versionId, userDetails.getId())
+                .map(curriculumVersionMapper::toGetDetailsResponseDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

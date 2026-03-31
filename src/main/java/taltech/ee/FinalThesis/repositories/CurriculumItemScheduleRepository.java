@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItemSchedule;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,4 +16,6 @@ public interface CurriculumItemScheduleRepository extends JpaRepository<Curricul
     Page<CurriculumItemSchedule> findByCurriculumItemId(UUID curriculumItemId, Pageable pageable);
 
     Optional<CurriculumItemSchedule> findByIdAndCurriculumItem_CurriculumVersion_Curriculum_User_Id(UUID id, UUID userId);
+
+    List<CurriculumItemSchedule> findByCurriculumItem_CurriculumVersion_Id(UUID curriculumVersionId);
 }

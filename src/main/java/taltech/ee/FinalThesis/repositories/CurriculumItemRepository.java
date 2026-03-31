@@ -23,4 +23,6 @@ public interface CurriculumItemRepository extends JpaRepository<CurriculumItem, 
     @EntityGraph(attributePaths = {"parentItem"})
     @Query("select i from CurriculumItem i where i.curriculumVersion.id = :vid order by i.orderIndex asc, i.id asc")
     List<CurriculumItem> findAllWithParentByCurriculumVersion_Id(@Param("vid") UUID curriculumVersionId);
+
+    List<CurriculumItem> findAllByParentItem_Id(UUID parentItemId);
 }

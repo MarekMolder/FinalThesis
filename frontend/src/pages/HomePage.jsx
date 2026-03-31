@@ -197,7 +197,6 @@ export default function HomePage() {
 
   function logout() {
     apiLogout();
-    navigate('/login');
   }
 
   return (
@@ -214,7 +213,13 @@ export default function HomePage() {
       <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
           <div className="flex items-center gap-3">
-            <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
+            <Link
+              to="/"
+              className="flex shrink-0 items-center rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-sky-400"
+              title="Avaleht"
+            >
+              <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
+            </Link>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button
@@ -303,7 +308,7 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">Minu töökavad</h1>
               <div className="mt-1 text-sm text-slate-600">Halda ja ava oma õppekavasid</div>
             </div>
-            <div className="flex w-full max-w-[420px] items-center gap-3">
+            <div className="flex w-full max-w-[520px] items-center gap-3">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -381,8 +386,7 @@ export default function HomePage() {
         <aside className="h-[calc(100vh-120px)] w-[320px] overflow-auto rounded-3xl border border-white/60 bg-white/55 p-5 shadow-sm backdrop-blur-md">
           <button
             className="flex w-full items-center justify-between rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
-            onClick={() => navigate('/curriculums')}
-            title="Praegu viib olemasolevale CRUD lehele"
+            onClick={() => navigate('/curriculum/new')}
           >
             <span>Loo uus töökava</span>
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/15">

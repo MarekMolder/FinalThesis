@@ -3,6 +3,7 @@ package taltech.ee.FinalThesis.domain.dto.listResponses;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import taltech.ee.FinalThesis.domain.enums.CurriculumItemSourceTypeEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumItemTypeEnum;
 
 import java.util.UUID;
@@ -18,4 +19,6 @@ public class ListCurriculumItemResponseDto {
     private String title;
     private Integer orderIndex;
     private UUID userId;
+    private CurriculumItemSourceTypeEnum sourceType;
+    private String externalIri;
 }

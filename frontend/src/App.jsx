@@ -1,7 +1,6 @@
-import { Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
-import { isLoggedIn, logout as apiLogout } from './api';
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
+import { isAuthenticatedSession, logout as apiLogout } from './api';
+import AuthPage from './pages/auth/AuthPage';
 import HomePage from './pages/HomePage';
 import Curriculums from './pages/Curriculums';
 import CurriculumVersions from './pages/CurriculumVersions';
@@ -12,12 +11,11 @@ import GuidePage from './pages/GuidePage';
 import SettingsPage from './pages/SettingsPage';
 import SampleCurriculumPage from './pages/SampleCurriculumPage';
 import CurriculumDetailPage from './pages/CurriculumDetailPage';
+import CreateCurriculumPage from './pages/wizard/CreateCurriculumPage';
 
 function Layout({ children }) {
-  const navigate = useNavigate();
   function logout() {
     apiLogout();
-    navigate('/login');
   }
   return (
     <>
@@ -37,19 +35,20 @@ function Layout({ children }) {
 }
 
 function Protected({ children }) {
-  if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  if (!isAuthenticatedSession()) return <Navigate to="/login" replace />;
   return <Layout>{children}</Layout>;
 }
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={isLoggedIn() ? <Navigate to="/" replace /> : <LoginPage />} />
-      <Route path="/register" element={isLoggedIn() ? <Navigate to="/" replace /> : <RegisterPage />} />
+      <Route path="/login" element={isAuthenticatedSession() ? <Navigate to="/" replace /> : <AuthPage />} />
+      <Route path="/register" element={isAuthenticatedSession() ? <Navigate to="/" replace /> : <AuthPage />} />
       <Route path="/" element={<Protected><HomePage /></Protected>} />
       <Route path="/guide" element={<Protected><GuidePage /></Protected>} />
       <Route path="/settings" element={<Protected><SettingsPage /></Protected>} />
       <Route path="/sample" element={<Protected><SampleCurriculumPage /></Protected>} />
+      <Route path="/curriculum/new" element={<Protected><CreateCurriculumPage /></Protected>} />
       <Route path="/curriculum/:id" element={<Protected><CurriculumDetailPage /></Protected>} />
 
       {/* Legacy CRUD pages */}
