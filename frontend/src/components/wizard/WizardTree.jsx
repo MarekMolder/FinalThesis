@@ -1,7 +1,7 @@
 import TreeNode from './TreeNode';
 
-export default function WizardTree({ items, mode, onEdit, onDelete, onAddChild, onImport, renderExtraButtons }) {
-  const roots = buildTree(items);
+export default function WizardTree({ items, mode, scheduleMap, onEdit, onDelete, onAddChild, onImport, renderExtraButtons }) {
+  const roots = buildTree(items, scheduleMap ?? {});
 
   if (roots.length === 0) {
     return (
@@ -12,19 +12,21 @@ export default function WizardTree({ items, mode, onEdit, onDelete, onAddChild, 
   }
 
   return (
-    <div className="space-y-1">
-      {roots.map((node) => renderNode(node, 0, mode, onEdit, onDelete, onAddChild, onImport, renderExtraButtons))}
+    <div className="flex flex-col gap-2">
+      {roots.map((node) => renderNode(node, 0, mode, scheduleMap ?? {}, items, onEdit, onDelete, onAddChild, onImport, renderExtraButtons))}
     </div>
   );
 }
 
-function renderNode(node, depth, mode, onEdit, onDelete, onAddChild, onImport, renderExtraButtons) {
+function renderNode(node, depth, mode, scheduleMap, allItems, onEdit, onDelete, onAddChild, onImport, renderExtraButtons) {
   return (
     <TreeNode
       key={node.item.id}
       item={node.item}
+      allItems={allItems}
       depth={depth}
       mode={mode}
+      scheduleInfo={scheduleMap[node.item.id] ?? null}
       onEdit={onEdit}
       onDelete={onDelete}
       onAddChild={onAddChild}
@@ -32,13 +34,13 @@ function renderNode(node, depth, mode, onEdit, onDelete, onAddChild, onImport, r
       renderExtraButtons={renderExtraButtons}
     >
       {node.children.length > 0
-        ? node.children.map((child) => renderNode(child, depth + 1, mode, onEdit, onDelete, onAddChild, onImport, renderExtraButtons))
+        ? node.children.map((child) => renderNode(child, depth + 1, mode, scheduleMap, allItems, onEdit, onDelete, onAddChild, onImport, renderExtraButtons))
         : null}
     </TreeNode>
   );
 }
 
-function buildTree(items) {
+function buildTree(items, scheduleMap) {
   const map = {};
   items.forEach((item) => { map[item.id] = { item, children: [] }; });
   const roots = [];
@@ -50,7 +52,22 @@ function buildTree(items) {
     }
   });
   const sort = (nodes) => {
-    nodes.sort((a, b) => (a.item.orderIndex ?? 0) - (b.item.orderIndex ?? 0));
+    nodes.sort((a, b) => {
+      // TEST items always at the bottom within their parent
+      const aIsTest = a.item.type === 'TEST';
+      const bIsTest = b.item.type === 'TEST';
+      if (aIsTest !== bIsTest) return aIsTest ? 1 : -1;
+
+      const schedA = scheduleMap[a.item.id];
+      const schedB = scheduleMap[b.item.id];
+      if (schedA?.plannedStartAt && schedB?.plannedStartAt) {
+        return schedA.plannedStartAt < schedB.plannedStartAt ? -1
+             : schedA.plannedStartAt > schedB.plannedStartAt ? 1 : 0;
+      }
+      if (schedA?.plannedStartAt) return -1;
+      if (schedB?.plannedStartAt) return 1;
+      return (a.item.orderIndex ?? 0) - (b.item.orderIndex ?? 0);
+    });
     nodes.forEach((n) => sort(n.children));
     return nodes;
   };

@@ -108,7 +108,8 @@ export const curriculum = {
   /** For external curricula: graph structure (modules, learning outcomes). */
   getGraphStructure: (id) => api(`/curriculum/${id}/graph-structure`),
   /** Imporditud õppekava struktuur DB-st (EELDAB/KOOSNEB jms). */
-  getImportedStructure: (id) => api(`/curriculum/${id}/imported-structure`),
+  getImportedStructure: (id, versionId) =>
+    api(`/curriculum/${id}/imported-structure${versionId ? '?versionId=' + versionId : ''}`),
   create: (body) => api('/curriculum', { method: 'POST', body: JSON.stringify(body) }),
   update: (id, body) => api(`/curriculum/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (id) => api(`/curriculum/${id}`, { method: 'DELETE' }),
@@ -138,6 +139,8 @@ export const curriculumVersion = {
   create: (body) => api('/curriculum-version', { method: 'POST', body: JSON.stringify(body) }),
   update: (id, body) => api(`/curriculum-version/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (id) => api(`/curriculum-version/${id}`, { method: 'DELETE' }),
+  duplicate: (id) =>
+    api(`/curriculum-version/${id}/duplicate`, { method: 'POST' }),
   generateContentJson: (id) =>
     api(`/curriculum-version/${id}/generate-content-json`, { method: 'POST' }),
 };

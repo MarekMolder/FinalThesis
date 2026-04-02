@@ -157,7 +157,7 @@
 
 .cgantt-time-tick {
   position: absolute;
-  top: 2px;
+  top: 24px;
   max-height: 17px;
   border-left: 1px solid #e8eaed;
   padding-left: 4px;
@@ -326,4 +326,67 @@
   font-size: 0.78rem;
   color: #5f6368;
   margin-top: 4px;
+}
+
+/* School week header row */
+.cgantt-week-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 24px;
+  display: flex;
+  pointer-events: none;
+}
+
+.cgantt-week-cell {
+  position: absolute;
+  top: 0;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #1967d2;
+  background: #e8f0fe;
+  border-right: 1px solid #aecbfa;
+  border-bottom: 1px solid #aecbfa;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.cgantt-week-cell--holiday {
+  background: repeating-linear-gradient(
+    45deg,
+    #f1f3f4,
+    #f1f3f4 4px,
+    #e8eaed 4px,
+    #e8eaed 8px
+  );
+  color: #80868b;
+}
+
+/* Vertical week separator lines */
+.cgantt-week-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #c5cae9;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.cgantt-week-line--holiday {
+  background: #ef9a9a;
+  opacity: 0.35;
+}
+
+/* Holiday background zones */
+.cgantt-holiday-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(241, 243, 244, 0.45);
+  pointer-events: none;
 }

@@ -129,12 +129,13 @@ public class CurriculumController {
     @GetMapping(path = "/{curriculumId}/imported-structure")
     public ResponseEntity<ImportedCurriculumStructureDto> getCurriculumImportedStructure(
             @AuthenticationPrincipal CurriculumUserDetails userDetails,
-            @PathVariable UUID curriculumId
+            @PathVariable UUID curriculumId,
+            @RequestParam(required = false) UUID versionId
     ) {
         if (curriculumService.getCurriculumForUserOrPublic(curriculumId, userDetails.getId()).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return curriculumService.getImportedStructureForCurriculum(curriculumId)
+        return curriculumService.getImportedStructureForCurriculum(curriculumId, versionId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

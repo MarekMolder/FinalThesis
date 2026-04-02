@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { curriculum, curriculumVersion, graphCatalog } from '../../../api';
+import { getDefaultBreaks } from '../../../utils/schoolWeeks';
 
 const FRAMEWORKS = [{ value: 'ESTONIAN_NATIONAL_CURRICULUM', label: 'Estonian National Curriculum' }];
 const LANGUAGES = [{ value: 'et', label: 'Eesti keel (ET)' }, { value: 'en', label: 'English (EN)' }];
@@ -20,12 +21,19 @@ const EMPTY_FORM = {
   audience: '',
   identifier: '',
   curriculumType: 'teacher_work_plan',
+  schoolYearStartDate: '',
+  schoolBreaks: [],
 };
 
 export default function MetadataStep({ onDone, initialMetadata, existingCurriculumId, existingVersionId }) {
   const [form, setForm] = useState(() => {
     if (initialMetadata && Object.keys(initialMetadata).length > 0) {
-      return { ...EMPTY_FORM, ...initialMetadata };
+      const merged = { ...EMPTY_FORM, ...initialMetadata };
+      if (typeof merged.schoolBreaks === 'string') {
+        try { merged.schoolBreaks = JSON.parse(merged.schoolBreaks); } catch { merged.schoolBreaks = []; }
+      }
+      if (!Array.isArray(merged.schoolBreaks)) merged.schoolBreaks = [];
+      return merged;
     }
     return { ...EMPTY_FORM };
   });
@@ -102,12 +110,15 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
           complianceReportJson: '{}',
           status: 'NOT_PUBLISHED',
           publishedError: '',
+          schoolYearStartDate: form.schoolYearStartDate || null,
+          schoolBreaksJson: form.schoolBreaks.length > 0 ? JSON.stringify(form.schoolBreaks) : null,
         });
         verIdFinal = version.id;
       } else {
         await curriculum.update(curId, {
           title: form.title,
           description: form.description || '',
+          curriculumType: form.curriculumType,
           provider: form.provider || 'N/A',
           audience: form.audience || 'N/A',
           subjectAreaIri: form.subjectAreaIri,
@@ -137,10 +148,12 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
         }
       }
 
-      if (fetchedCatalog && verIdFinal) {
-        await curriculumVersion.update(verIdFinal, {
-          retrievedCatalogJson: JSON.stringify(fetchedCatalog),
-        });
+      if (verIdFinal) {
+        const versionUpdate = { id: verIdFinal };
+        if (fetchedCatalog) versionUpdate.retrievedCatalogJson = JSON.stringify(fetchedCatalog);
+        versionUpdate.schoolYearStartDate = form.schoolYearStartDate || null;
+        versionUpdate.schoolBreaksJson = form.schoolBreaks.length > 0 ? JSON.stringify(form.schoolBreaks) : null;
+        await curriculumVersion.update(verIdFinal, versionUpdate);
       }
 
       onDone({
@@ -159,9 +172,9 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
   return (
     <form onSubmit={handleSubmit} className="p-6 max-w-3xl">
       <div className="mb-5">
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">Uus õppekava — Metaandmed</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Vali väljad oppekava.edu.ee andmete põhjal või sisesta käsitsi.
+        <h2 className="text-xl font-bold text-slate-900 leading-tight">Uus õppekava — Metaandmed</h2>
+        <p className="mt-1 text-[13px] text-slate-500">
+          Sisesta põhiandmed. Nende põhjal tehakse automaatne päring oppekava.edu.ee graafi.
         </p>
       </div>
 
@@ -276,11 +289,90 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
         </div>
       </FieldGroup>
 
-      <div className="mt-6 flex justify-end">
+      <Divider />
+
+      <FieldGroup label="Õppeaasta ja vaheajad">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Õppeaasta algus">
+            <input
+              type="date"
+              value={form.schoolYearStartDate}
+              onChange={(e) => {
+                const val = e.target.value;
+                set('schoolYearStartDate', val);
+                if (val && form.schoolBreaks.length === 0) {
+                  const defaults = getDefaultBreaks(val);
+                  if (defaults.length > 0) {
+                    set('schoolBreaks', defaults);
+                  }
+                }
+              }}
+            />
+          </Field>
+        </div>
+
+        {form.schoolYearStartDate && (
+          <div className="mt-3 space-y-2">
+            <div className="text-[11px] font-semibold text-slate-500">Koolivaheajad</div>
+            {form.schoolBreaks.map((b, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={b.startDate}
+                  onChange={(e) => {
+                    const updated = [...form.schoolBreaks];
+                    updated[i] = { ...updated[i], startDate: e.target.value };
+                    set('schoolBreaks', updated);
+                  }}
+                  className="w-full rounded-xl border border-slate-200/90 bg-white/75 px-3 py-2 text-[13px] text-slate-800 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]"
+                />
+                <span className="text-slate-400">{'\u2013'}</span>
+                <input
+                  type="date"
+                  value={b.endDate}
+                  onChange={(e) => {
+                    const updated = [...form.schoolBreaks];
+                    updated[i] = { ...updated[i], endDate: e.target.value };
+                    set('schoolBreaks', updated);
+                  }}
+                  className="w-full rounded-xl border border-slate-200/90 bg-white/75 px-3 py-2 text-[13px] text-slate-800 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = form.schoolBreaks.filter((_, j) => j !== i);
+                    set('schoolBreaks', updated);
+                  }}
+                  className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1.5 text-xs text-rose-600 hover:bg-rose-100"
+                >
+                  Eemalda
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                set('schoolBreaks', [...form.schoolBreaks, { startDate: '', endDate: '' }]);
+              }}
+              className="rounded-xl border border-dashed border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-500 hover:border-sky-400 hover:text-sky-600"
+            >
+              + Lisa vaheaeg
+            </button>
+          </div>
+        )}
+      </FieldGroup>
+
+      <div className="mt-6 flex justify-end gap-2.5">
+        <button
+          type="button"
+          className="rounded-xl border border-slate-200/80 bg-white/70 px-4 py-[7px] text-xs font-semibold text-slate-500 hover:bg-white/90"
+        >
+          Tühista
+        </button>
         <button
           type="submit"
           disabled={loading}
-          className="rounded-2xl bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
+          className="rounded-xl bg-sky-600 px-5 py-[7px] text-xs font-semibold text-white shadow-[0_2px_6px_rgba(2,132,199,.25)] hover:brightness-105 disabled:opacity-60"
         >
           {loading ? 'Laen…' : 'Edasi — Struktuur →'}
         </button>
@@ -330,7 +422,7 @@ function ComboField({ label, value, onChange, options, placeholder, required, gr
 
   return (
     <div className="flex flex-col gap-1" ref={wrapRef}>
-      <span className="text-xs font-medium text-slate-600">{label}</span>
+      <span className="text-[11px] font-semibold text-slate-500 tracking-[.03em]">{label}</span>
       <div className="relative">
         <input
           ref={inputRef}
@@ -339,7 +431,7 @@ function ComboField({ label, value, onChange, options, placeholder, required, gr
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           required={required}
-          className={['w-full rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30', showGraphLink ? 'pr-14' : 'pr-8'].join(' ')}
+          className={['w-full rounded-xl border border-slate-200/90 bg-white/75 px-3 py-2 text-[13px] text-slate-800 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] placeholder:text-slate-400 focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]', showGraphLink ? 'pr-14' : 'pr-8'].join(' ')}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {showGraphLink && (
@@ -405,7 +497,7 @@ function ComboField({ label, value, onChange, options, placeholder, required, gr
 function FieldGroup({ label, children }) {
   return (
     <div className="mb-4">
-      <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+      <div className="mb-3 text-[11px] font-bold uppercase tracking-[.07em] text-slate-400">{label}</div>
       {children}
     </div>
   );
@@ -414,10 +506,10 @@ function FieldGroup({ label, children }) {
 function Field({ label, children }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-slate-600">{label}</span>
+      <span className="text-[11px] font-semibold text-slate-500 tracking-[.03em]">{label}</span>
       {React.Children.map(children, (child) =>
         React.cloneElement(child, {
-          className: 'w-full rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30',
+          className: 'w-full rounded-xl border border-slate-200/90 bg-white/75 px-3 py-2 text-[13px] text-slate-800 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] placeholder:text-slate-400 focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]',
         })
       )}
     </label>
@@ -425,5 +517,5 @@ function Field({ label, children }) {
 }
 
 function Divider() {
-  return <div className="my-4 h-px bg-slate-100" />;
+  return <div className="my-4 h-px bg-slate-200/50" />;
 }

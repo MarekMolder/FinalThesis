@@ -3,7 +3,7 @@ package taltech.ee.FinalThesis.services.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItem;
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorService {
 
     private final CurriculumVersionRepository versionRepository;
@@ -30,6 +29,19 @@ public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorServ
     private final CurriculumItemRelationRepository relationRepository;
     private final CurriculumItemScheduleRepository scheduleRepository;
     private final ObjectMapper objectMapper;
+
+    public ContentJsonGeneratorServiceImpl(
+            CurriculumVersionRepository versionRepository,
+            CurriculumItemRepository itemRepository,
+            CurriculumItemRelationRepository relationRepository,
+            CurriculumItemScheduleRepository scheduleRepository,
+            @Qualifier("jackson2ObjectMapper") ObjectMapper objectMapper) {
+        this.versionRepository = versionRepository;
+        this.itemRepository = itemRepository;
+        this.relationRepository = relationRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     @Transactional
@@ -154,6 +166,7 @@ public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorServ
         try {
             String json = objectMapper.writeValueAsString(root);
             version.setContentJson(json);
+            version.setState(taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum.FINAL);
             versionRepository.save(version);
             return json;
         } catch (Exception e) {

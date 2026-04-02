@@ -6,6 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { api, curriculumItem, relation, schedule, timeline } from '../../api';
 import GoogleScheduleModal, { parseLocalDateTime, validateStrictParentWindow } from './GoogleScheduleModal';
 import CurriculumGantt from './CurriculumGantt';
+import { findSchoolWeek, formatSchoolWeekLabel } from '../../utils/schoolWeeks';
 import './curriculum-calendar.css';
 
 function cn(...xs) {
@@ -196,7 +197,7 @@ function rangeTitle(view, anchorDate) {
   return anchorDate.toLocaleDateString('et-EE', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function YearMiniMonth({ monthDate, eventsByDay, onDayClick }) {
+function YearMiniMonth({ monthDate, eventsByDay, onDayClick, schoolWeeks }) {
   const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
   const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
   const gridStart = startOfWeekMonday(monthStart);
@@ -209,32 +210,42 @@ function YearMiniMonth({ monthDate, eventsByDay, onDayClick }) {
   return (
     <div className="cc-mini-month">
       <div className="cc-mini-month-title">{monthStart.toLocaleDateString('et-EE', { month: 'long' })}</div>
-      <div className="cc-mini-weekdays">
+      <div className="cc-mini-weekdays cc-mini-weekdays--with-wk">
+        <span className="cc-mini-wk-header">Õ</span>
         {['E', 'T', 'K', 'N', 'R', 'L', 'P'].map((d) => (
           <span key={d}>{d}</span>
         ))}
       </div>
-      <div className="cc-mini-grid">
-        {cells.map((d) => {
+      <div className="cc-mini-grid cc-mini-grid--with-wk">
+        {cells.map((d, i) => {
           const key = dateKey(startOfDay(d));
           const events = eventsByDay.get(key) || [];
           const inMonth = d >= monthStart && d <= monthEnd;
           const isToday = key === todayKey;
+          const isRowStart = i % 7 === 0;
+          const sw = isRowStart && schoolWeeks?.length ? findSchoolWeek(d, schoolWeeks) : null;
           return (
-            <button
-              key={`${monthStart.getMonth()}-${key}`}
-              type="button"
-              className={cn('cc-mini-cell', 'cc-mini-cell-clickable', !inMonth && 'cc-mini-cell-outside')}
-              onClick={() => onDayClick?.(d)}
-            >
-              <span className={cn('cc-mini-day-number', isToday && 'cc-mini-today-ring')}>{d.getDate()}</span>
-              <div className="cc-mini-dots" aria-hidden>
-                {events.slice(0, 10).map((ev) => (
-                  <span key={ev.id} className="cc-mini-dot" style={{ backgroundColor: ev.color }} title={ev.title} />
-                ))}
-                {events.length > 10 && <span className="cc-mini-dot-more">+{events.length - 10}</span>}
-              </div>
-            </button>
+            <>
+              {isRowStart && (
+                <span key={`wk-${i}`} className={cn('cc-mini-wk-label', sw?.isHoliday && 'cc-mini-wk-label--holiday')} title={sw ? formatSchoolWeekLabel(sw) : ''}>
+                  {sw?.weekNumber ?? ''}
+                </span>
+              )}
+              <button
+                key={`${monthStart.getMonth()}-${key}`}
+                type="button"
+                className={cn('cc-mini-cell', 'cc-mini-cell-clickable', !inMonth && 'cc-mini-cell-outside')}
+                onClick={() => onDayClick?.(d)}
+              >
+                <span className={cn('cc-mini-day-number', isToday && 'cc-mini-today-ring')}>{d.getDate()}</span>
+                <div className="cc-mini-dots" aria-hidden>
+                  {events.slice(0, 10).map((ev) => (
+                    <span key={ev.id} className="cc-mini-dot" style={{ backgroundColor: ev.color }} title={ev.title} />
+                  ))}
+                  {events.length > 10 && <span className="cc-mini-dot-more">+{events.length - 10}</span>}
+                </div>
+              </button>
+            </>
           );
         })}
       </div>
@@ -242,7 +253,7 @@ function YearMiniMonth({ monthDate, eventsByDay, onDayClick }) {
   );
 }
 
-function MonthGrid({ anchorDate, eventsByDay, onDayClick, onEventClick }) {
+function MonthGrid({ anchorDate, eventsByDay, onDayClick, onEventClick, schoolWeeks }) {
   const monthStart = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1);
   const monthEnd = new Date(anchorDate.getFullYear(), anchorDate.getMonth() + 1, 0);
   const gridStart = startOfWeekMonday(monthStart);
@@ -251,18 +262,27 @@ function MonthGrid({ anchorDate, eventsByDay, onDayClick, onEventClick }) {
 
   return (
     <div className="cc-month">
-      <div className="cc-month-weekdays">
+      <div className="cc-month-weekdays cc-month-weekdays--with-wk">
+        <div className="cc-month-wk-header">Õ</div>
         {['E', 'T', 'K', 'N', 'R', 'L', 'P'].map((d) => (
           <div key={d}>{d}</div>
         ))}
       </div>
-      <div className="cc-month-grid">
-        {cells.map((d) => {
+      <div className="cc-month-grid cc-month-grid--with-wk">
+        {cells.map((d, i) => {
           const key = dateKey(startOfDay(d));
           const dayEvents = eventsByDay.get(key) || [];
           const inMonth = d >= monthStart && d <= monthEnd;
           const isToday = dateKey(startOfDay(new Date())) === key;
+          const isRowStart = i % 7 === 0;
+          const sw = isRowStart && schoolWeeks?.length ? findSchoolWeek(d, schoolWeeks) : null;
           return (
+            <>
+            {isRowStart && (
+              <div key={`mwk-${i}`} className={cn('cc-month-wk-label', sw?.isHoliday && 'cc-month-wk-label--holiday')} title={sw ? formatSchoolWeekLabel(sw) : ''}>
+                {sw?.weekNumber ?? ''}
+              </div>
+            )}
             <div key={key} className={cn('cc-month-cell', !inMonth && 'cc-month-cell-outside')}>
               <div className="cc-month-cell-inner">
                 <div className="cc-month-ribbons" role="list" aria-label="Ajastused sel päeval">
@@ -298,6 +318,7 @@ function MonthGrid({ anchorDate, eventsByDay, onDayClick, onEventClick }) {
                 </div>
               </div>
             </div>
+            </>
           );
         })}
       </div>
@@ -305,7 +326,7 @@ function MonthGrid({ anchorDate, eventsByDay, onDayClick, onEventClick }) {
   );
 }
 
-export default function CurriculumCalendar({ curriculumVersionId }) {
+export default function CurriculumCalendar({ curriculumVersionId, schoolWeeks, staticData }) {
   const [view, setView] = useState('YEAR');
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [loading, setLoading] = useState(false);
@@ -323,13 +344,20 @@ export default function CurriculumCalendar({ curriculumVersionId }) {
   const [slotContext, setSlotContext] = useState(null);
 
   const refreshBlocks = useCallback(() => {
-    if (!curriculumVersionId) return Promise.resolve();
+    if (staticData || !curriculumVersionId) return Promise.resolve();
     return timeline.blocks(curriculumVersionId).then((rows) => {
       setBlocks(Array.isArray(rows) ? rows : []);
     });
-  }, [curriculumVersionId]);
+  }, [curriculumVersionId, staticData]);
 
   useEffect(() => {
+    if (staticData) {
+      setBlocks(staticData.blocks || []);
+      setItems(staticData.items || []);
+      setRelations(staticData.relations || []);
+      setLoading(false);
+      return;
+    }
     if (!curriculumVersionId) return;
     let ignore = false;
     setLoading(true);
@@ -576,7 +604,14 @@ export default function CurriculumCalendar({ curriculumVersionId }) {
               ›
             </button>
           </div>
-          <h2 className="cc-title">{rangeTitle(view, anchorDate)}</h2>
+          <h2 className="cc-title">
+            {rangeTitle(view, anchorDate)}
+            {schoolWeeks?.length > 0 && (view === 'WEEK' || view === 'DAY') && (() => {
+              const sw = findSchoolWeek(anchorDate, schoolWeeks);
+              if (!sw || sw.weekNumber == null) return null;
+              return <span className="cc-week-badge">{formatSchoolWeekLabel(sw)}</span>;
+            })()}
+          </h2>
         </div>
 
         <div className="cc-view-switch">
@@ -617,6 +652,7 @@ export default function CurriculumCalendar({ curriculumVersionId }) {
                 <YearMiniMonth
                   key={idx}
                   monthDate={new Date(anchorDate.getFullYear(), idx, 1)}
+                  schoolWeeks={schoolWeeks}
                   eventsByDay={eventsByDay}
                   onDayClick={(d) => {
                     const { start, end } = defaultDayRange(d);
@@ -631,6 +667,7 @@ export default function CurriculumCalendar({ curriculumVersionId }) {
             <MonthGrid
               anchorDate={anchorDate}
               eventsByDay={eventsByDay}
+              schoolWeeks={schoolWeeks}
               onDayClick={(d) => {
                 const { start, end } = defaultDayRange(d);
                 openCreate(start, end, 'fullDay');
@@ -647,6 +684,7 @@ export default function CurriculumCalendar({ curriculumVersionId }) {
               anchorDate={anchorDate}
               onBlockClick={(b) => openEdit(b)}
               typeToColor={(t) => typeToColor(t)}
+              schoolWeeks={schoolWeeks}
             />
           )}
 

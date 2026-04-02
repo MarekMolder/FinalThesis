@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { curriculum, getCurrentUser, logout as apiLogout } from '../api';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { curriculum, curriculumItem, curriculumVersion, getCurrentUser, logout as apiLogout, relation, timeline } from '../api';
 import bgImg from '../assets/background.png';
 import logoImg from '../assets/logo.png';
 import CurriculumCalendar from '../components/curriculumTimeline/CurriculumCalendar';
+import CurriculumGantt from '../components/curriculumTimeline/CurriculumGantt';
+import { computeSchoolWeeks, findSchoolWeek, findSchoolWeeksInRange, formatSchoolWeekLabel } from '../utils/schoolWeeks';
 
 /** Fikseeritud päise kõrgus — sisu nihutamine ja sticky külgribad. */
 const HEADER_PT_CLASS = 'pt-[4.5rem]';
@@ -22,23 +24,28 @@ function normalizeGraphToStructure(graph) {
     modules: (graph.modules || []).map((m, i) => ({
       id: m.fullUrl || m.title || `mod-${i}`,
       title: (m.schemaName && String(m.schemaName).trim()) || m.title || 'Moodul',
+      type: 'MODULE',
       wikiTitle: m.title,
       fullUrl: m.fullUrl,
       eapLabel: m.numberOfCredits != null ? `${m.numberOfCredits} EAP` : null,
       learningOutcomes: (m.learningOutcomes || []).map((lo, j) => ({
         id: lo.fullUrl || lo.title || `lo-${i}-${j}`,
         title: lo.title,
+        type: 'LEARNING_OUTCOME',
         fullUrl: lo.fullUrl,
         eeldab: [],
         koosneb: [],
+        children: [],
       })),
     })),
     curriculumLevelLearningOutcomes: (graph.curriculumLevelLearningOutcomes || []).map((lo, j) => ({
       id: lo.fullUrl || lo.title || `clo-${j}`,
       title: lo.title,
+      type: 'LEARNING_OUTCOME',
       fullUrl: lo.fullUrl,
       eeldab: [],
       koosneb: [],
+      children: [],
     })),
   };
 }
@@ -191,29 +198,126 @@ function LoSemanticRelations({ lo }) {
   );
 }
 
-/** Visuaalne „3. tase“ — selgitab hierarhiat (andmed tulevad versioonist / elementidest). */
-function HierarchyLeafPlaceholder() {
+const CHILD_TYPE_LABELS = {
+  TASK: 'Ülesanne',
+  TEST: 'Test',
+  LEARNING_MATERIAL: 'Õppematerjal',
+  KNOBIT: 'Knobit',
+  LEARNING_OUTCOME: 'Õpiväljund',
+  TOPIC: 'Teema',
+  MODULE: 'Moodul',
+};
+
+const CHILD_TYPE_COLORS = {
+  TASK: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200/80' },
+  TEST: { bg: 'bg-rose-100', text: 'text-rose-800', border: 'border-rose-200/80' },
+  LEARNING_MATERIAL: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200/80' },
+  KNOBIT: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200/80' },
+};
+const DEFAULT_CHILD_COLOR = { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200/80' };
+
+function ChildItemCard({ item, depth = 0, schoolWeeks }) {
+  const [open, setOpen] = useState(false);
+  const children = item.children || [];
+  const hasChildren = children.length > 0;
+  const colors = CHILD_TYPE_COLORS[item.type] || DEFAULT_CHILD_COLOR;
+  const typeLabel = CHILD_TYPE_LABELS[item.type] || item.type;
+
   return (
-    <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-dashed border-amber-200/90 bg-gradient-to-br from-amber-50/60 via-white to-slate-50/40 px-3 py-2.5">
-      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-amber-100 text-amber-800 shadow-sm">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path d="M4 7h16M4 12h10M4 17h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      </span>
-      <div className="min-w-0">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-amber-800/90">3. tase — alamelemendid</div>
-        <p className="mt-0.5 text-[11px] leading-relaxed text-slate-600">
-          Ülesanded, testid, õppematerjalid ja knobitid on hierarhias selle õpiväljundi all. Täpsema puu näed{' '}
-          <span className="font-semibold text-slate-700">õppekava versioonide</span> ja{' '}
-          <span className="font-semibold text-slate-700">elementide</span> lehel pärast importi.
-        </p>
+    <div className={cn('rounded-xl border bg-white/95 shadow-sm', colors.border, depth > 0 && 'ml-4')}>
+      <div
+        className={cn(
+          'flex items-start gap-2.5 px-3 py-2.5',
+          hasChildren && 'cursor-pointer hover:bg-slate-50/80'
+        )}
+        onClick={hasChildren ? () => setOpen(!open) : undefined}
+      >
+        <span className={cn('mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg text-[10px] font-bold', colors.bg, colors.text)}>
+          {item.type === 'TASK' && '✎'}
+          {item.type === 'TEST' && '✓'}
+          {item.type === 'LEARNING_MATERIAL' && '📄'}
+          {item.type === 'KNOBIT' && '⚡'}
+          {!['TASK', 'TEST', 'LEARNING_MATERIAL', 'KNOBIT'].includes(item.type) && '•'}
+        </span>
+        <div className={"min-w-0 flex-1"}>
+          <div className={cn('text-[9px] font-bold uppercase tracking-wider', colors.text)}>
+            {typeLabel}
+            <WeekBadges startAt={item.plannedStartAt} endAt={item.plannedEndAt} schoolWeeks={schoolWeeks} />
+          </div>
+          <p className={"text-sm font-medium leading-snug text-slate-900"}>{item.title}</p>
+          {item.description && (
+            <p className={"mt-0.5 text-[11px] leading-relaxed text-slate-500 line-clamp-2"}>{item.description}</p>
+          )}
+        </div>
+        {hasChildren && (
+          <ChevronDownIcon open={open} className="mt-1 h-4 w-4 text-slate-400" />
+        )}
       </div>
+      {open && hasChildren && (
+        <div className="border-t border-slate-100 px-3 py-2 space-y-2">
+          {children.map((child) => (
+            <ChildItemCard key={child.id} item={child} depth={depth + 1} schoolWeeks={schoolWeeks} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-/** Õpiväljundite vertikaalne „puu“ (katkendlik joon + sõlmed). */
-function LearningOutcomeTree({ items, accent = 'emerald' }) {
+/** Parse a date that may be ISO string or Jackson array [y,m,d,h,min,s]. */
+function parseItemDate(raw) {
+  if (!raw) return null;
+  let str = raw;
+  if (Array.isArray(raw)) {
+    const [y, mo, da, h = 0, mi = 0, s = 0] = raw;
+    str = `${y}-${String(mo).padStart(2, '0')}-${String(da).padStart(2, '0')}T${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+  const d = new Date(str);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** Small inline badges showing which school weeks an item spans. */
+function WeekBadges({ startAt, endAt, schoolWeeks }) {
+  if (!schoolWeeks?.length || !startAt) return null;
+  const start = parseItemDate(startAt);
+  if (!start) return null;
+  const end = parseItemDate(endAt) || start;
+  const weeks = findSchoolWeeksInRange(start, end, schoolWeeks);
+  if (weeks.length === 0) return null;
+  return (
+    <span className="inline-flex flex-wrap gap-1 ml-1">
+      {weeks.map((w) => (
+        <span key={w.weekNumber} className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700" title={formatSchoolWeekLabel(w)}>
+          Õ{w.weekNumber}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function ChildrenList({ children, schoolWeeks }) {
+  if (!children || children.length === 0) return null;
+  const sorted = [...children].sort((a, b) => {
+    const aT = a.type === 'TEST' ? 1 : 0;
+    const bT = b.type === 'TEST' ? 1 : 0;
+    return aT - bT;
+  });
+  return (
+    <div className="mt-3 space-y-2">
+      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200" />
+        <span>Alamelemendid ({children.length})</span>
+        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200" />
+      </div>
+      {sorted.map((child) => (
+        <ChildItemCard key={child.id} item={child} schoolWeeks={schoolWeeks} />
+      ))}
+    </div>
+  );
+}
+
+/** Õpiväljundite vertikaalne „puu" (katkendlik joon + sõlmed). */
+function LearningOutcomeTree({ items, accent = 'emerald', schoolWeeks }) {
   const list = Array.isArray(items) ? items : [];
   const n = list.length;
   if (n === 0) {
@@ -228,14 +332,19 @@ function LearningOutcomeTree({ items, accent = 'emerald' }) {
 
   return (
     <div className="space-y-0">
-      {list.map((lo, i) => (
+      {list.map((lo, i) => {
+        const isTest = lo.type === 'TEST';
+        const itemDot = isTest ? 'bg-rose-500 shadow-rose-200/50' : dot;
+        const itemLabelColor = isTest ? 'text-rose-700' : labelColor;
+        const itemCardBorder = isTest ? 'border-rose-100/90' : cardBorder;
+        return (
         <div key={lo.id || i} className="flex gap-3 sm:gap-4">
           <div className="flex w-8 shrink-0 flex-col items-center sm:w-9">
             {i > 0 ? <div className="h-3 w-px border-l-2 border-dashed border-slate-300" aria-hidden /> : <div className="h-3" />}
             <div
               className={cn(
                 'z-10 h-3.5 w-3.5 shrink-0 rounded-full ring-[5px] ring-white shadow-md sm:h-4 sm:w-4',
-                dot
+                itemDot
               )}
               aria-hidden
             />
@@ -249,22 +358,26 @@ function LearningOutcomeTree({ items, accent = 'emerald' }) {
             <div
               className={cn(
                 'rounded-2xl border bg-white/95 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-5 sm:py-4',
-                cardBorder
+                itemCardBorder
               )}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className={cn('text-[10px] font-bold uppercase tracking-wider', labelColor)}>Õpiväljund</div>
+                  <div className={cn('text-[10px] font-bold uppercase tracking-wider', itemLabelColor)}>
+                    {lo.type === 'TEST' ? 'Test' : lo.type === 'TOPIC' ? 'Teema' : 'Õpiväljund'}
+                    <WeekBadges startAt={lo.plannedStartAt} endAt={lo.plannedEndAt} schoolWeeks={schoolWeeks} />
+                  </div>
                   <p className="mt-1.5 text-sm font-semibold leading-snug text-slate-900 sm:text-[15px]">{lo.title}</p>
                 </div>
                 <GraphExternalLink href={lo.fullUrl} />
               </div>
               <LoSemanticRelations lo={lo} />
-              <HierarchyLeafPlaceholder />
+              <ChildrenList children={lo.children} schoolWeeks={schoolWeeks} />
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -282,33 +395,46 @@ function ChevronDownIcon({ open, className }) {
   );
 }
 
-/** Moodul — päis on nupp; sisu avaneb klõpsuga (vähem kerimist). */
-function ModuleAccordionItem({ mod, index, expanded, onToggle }) {
+/** Moodul/Teema — päis on nupp; sisu avaneb klõpsuga (vähem kerimist). */
+function ModuleAccordionItem({ mod, index, expanded, onToggle, schoolWeeks }) {
   const title = moduleTitleLine(mod);
   const wikiTitle = mod.wikiTitle;
   const eap = moduleEapLine(mod);
   const loList = mod.learningOutcomes || [];
   const loCount = loList.length;
+  const isTopic = mod.type === 'TOPIC';
+  const typeLabel = isTopic ? 'Teema' : 'Moodul';
 
   return (
     <div
       id={`structure-mod-${index}`}
       className="scroll-mt-24 overflow-hidden rounded-3xl border border-indigo-200/50 bg-white/90 shadow-md backdrop-blur-sm sm:scroll-mt-28"
     >
-      <div className="flex min-h-[4.5rem] items-stretch bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-600">
+      <div className={cn(
+        'flex min-h-[4.5rem] items-stretch',
+        isTopic
+          ? 'bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600'
+          : 'bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-600'
+      )}>
         <button
           type="button"
           onClick={onToggle}
           className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left text-white sm:gap-4 sm:px-5 sm:py-4"
         >
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/20 ring-1 ring-white/25 sm:h-12 sm:w-12">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-white" aria-hidden>
-              <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h5A2.5 2.5 0 0 1 14 6.5V10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 9.5v-3Z" stroke="currentColor" strokeWidth="1.6" />
-              <path d="M10 14h7.5A2.5 2.5 0 0 1 20 16.5V18a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-4Z" stroke="currentColor" strokeWidth="1.6" />
-            </svg>
+            {isTopic ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-white" aria-hidden>
+                <path d="M4 6h16M4 10h16M4 14h10M4 18h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-white" aria-hidden>
+                <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h5A2.5 2.5 0 0 1 14 6.5V10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 9.5v-3Z" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M10 14h7.5A2.5 2.5 0 0 1 20 16.5V18a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-4Z" stroke="currentColor" strokeWidth="1.6" />
+              </svg>
+            )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-white/85">Moodul {index + 1}</div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-white/85">{typeLabel} {index + 1}</div>
             <div className="line-clamp-2 text-sm font-bold leading-snug sm:text-base">{title}</div>
             {wikiTitle && wikiTitle !== title && (
               <div className="mt-0.5 line-clamp-1 text-[10px] text-white/75 sm:text-[11px]">Wiki: {wikiTitle}</div>
@@ -316,8 +442,20 @@ function ModuleAccordionItem({ mod, index, expanded, onToggle }) {
             <div className="mt-1.5 flex flex-wrap gap-1.5 text-[10px] font-semibold text-white/90 sm:text-[11px]">
               {eap && <span className="rounded-full bg-black/20 px-2 py-0.5">{eap}</span>}
               <span className="rounded-full bg-black/20 px-2 py-0.5">
-                {loCount} {loCount === 1 ? 'OÕ' : 'OÕ-d'}
+                {loCount} {loCount === 1 ? 'element' : 'elementi'}
               </span>
+              {(() => {
+                const start = parseItemDate(mod.plannedStartAt);
+                if (!start || !schoolWeeks?.length) return null;
+                const end = parseItemDate(mod.plannedEndAt) || start;
+                const weeks = findSchoolWeeksInRange(start, end, schoolWeeks);
+                if (weeks.length === 0) return null;
+                return weeks.map((w) => (
+                  <span key={w.weekNumber} className="rounded-full bg-white/30 px-2 py-0.5" title={formatSchoolWeekLabel(w)}>
+                    Õ{w.weekNumber}
+                  </span>
+                ));
+              })()}
             </div>
           </div>
           <ChevronDownIcon open={expanded} className="text-white/90" />
@@ -331,10 +469,82 @@ function ModuleAccordionItem({ mod, index, expanded, onToggle }) {
         <div className="border-t border-indigo-100/60 bg-gradient-to-b from-slate-50/50 to-white/90 px-4 py-4 sm:px-6 sm:py-5">
           <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200" />
-            <span>2. tase — õpiväljundid</span>
+            <span>2. tase — elemendid</span>
             <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200" />
           </div>
-          <LearningOutcomeTree items={loList} accent="emerald" />
+          {(() => {
+            // TEST items always at the bottom
+            const testLast = (a, b) => {
+              const aT = a.type === 'TEST' ? 1 : 0;
+              const bT = b.type === 'TEST' ? 1 : 0;
+              if (aT !== bT) return aT - bT;
+              const da = parseItemDate(a.plannedStartAt);
+              const db = parseItemDate(b.plannedStartAt);
+              if (!da && !db) return 0;
+              if (!da) return 1;
+              if (!db) return -1;
+              return da - db;
+            };
+            if (!schoolWeeks?.length) {
+              return <LearningOutcomeTree items={[...loList].sort(testLast)} accent="emerald" schoolWeeks={schoolWeeks} />;
+            }
+            // Sort LOs by start date, TEST last
+            const sorted = [...loList].sort(testLast);
+            // Build flat list of { type: 'week-header' | 'lo', ... } entries.
+            // Each LO appears once; week headers are emitted for ALL weeks the LO spans.
+            const entries = [];
+            const emittedWeeks = new Set();
+            const scheduledLos = [];
+            const noWeekLos = [];
+            for (const lo of sorted) {
+              const start = parseItemDate(lo.plannedStartAt);
+              if (start) {
+                const end = parseItemDate(lo.plannedEndAt) || start;
+                const weeks = findSchoolWeeksInRange(start, end, schoolWeeks);
+                if (weeks.length > 0) {
+                  // Emit week headers for all weeks this LO spans (if not already emitted)
+                  for (const sw of weeks) {
+                    if (!emittedWeeks.has(sw.weekNumber)) {
+                      emittedWeeks.add(sw.weekNumber);
+                      entries.push({ type: 'week-header', week: sw, label: formatSchoolWeekLabel(sw) });
+                    }
+                  }
+                  // Emit the LO itself once
+                  entries.push({ type: 'lo', lo });
+                  scheduledLos.push(lo);
+                  continue;
+                }
+              }
+              noWeekLos.push(lo);
+            }
+            if (scheduledLos.length === 0) {
+              return <LearningOutcomeTree items={loList} accent="emerald" schoolWeeks={schoolWeeks} />;
+            }
+            return (
+              <div className="space-y-3">
+                {entries.map((entry) => {
+                  if (entry.type === 'week-header') {
+                    return (
+                      <div key={`wh-${entry.week.weekNumber}`} className="flex items-center gap-2 pt-1">
+                        <span className="text-[11px] font-semibold text-indigo-600">{entry.label}</span>
+                        <span className="h-px flex-1 bg-gradient-to-r from-indigo-200 to-transparent" />
+                      </div>
+                    );
+                  }
+                  return <LearningOutcomeTree key={entry.lo.id || entry.lo.title} items={[entry.lo]} accent="emerald" schoolWeeks={schoolWeeks} />;
+                })}
+                {noWeekLos.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-[11px] font-semibold text-slate-400">Ajastamata</span>
+                      <span className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent" />
+                    </div>
+                    <LearningOutcomeTree items={noWeekLos} accent="emerald" schoolWeeks={schoolWeeks} />
+                  </>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -342,7 +552,7 @@ function ModuleAccordionItem({ mod, index, expanded, onToggle }) {
 }
 
 /** Õppekava taseme OÕ-d — akordion. */
-function CurriculumLevelAccordion({ items, expanded, onToggle }) {
+function CurriculumLevelAccordion({ items, expanded, onToggle, schoolWeeks }) {
   const list = Array.isArray(items) ? items : [];
   if (list.length === 0) return null;
 
@@ -370,14 +580,14 @@ function CurriculumLevelAccordion({ items, expanded, onToggle }) {
           <p className="mb-4 text-xs leading-relaxed text-slate-600 sm:text-sm">
             Graafis on need seotud <strong className="text-slate-800">õppekavaga</strong>, mitte konkreetse mooduliga.
           </p>
-          <LearningOutcomeTree items={list} accent="sky" />
+          <LearningOutcomeTree items={list} accent="sky" schoolWeeks={schoolWeeks} />
         </div>
       )}
     </section>
   );
 }
 
-function CurriculumStructureExplorer({ structure, dataSource }) {
+function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
   const [openModules, setOpenModules] = useState(() => new Set());
   const [curriculumOpen, setCurriculumOpen] = useState(false);
 
@@ -447,11 +657,8 @@ function CurriculumStructureExplorer({ structure, dataSource }) {
       <header>
         <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{title}</h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
-          <strong className="text-slate-800">Moodulid</strong> on vaikimisi kokku klapitud — ava üks korraga või vali{' '}
-          <strong className="text-slate-800">hüppemenüüst</strong>.{' '}
-          <strong className="text-slate-800">Eeldab / koosneb</strong> kuvatakse imporditud õpiväljunditel, kui need on DB-s
-          seotud (RDF <code className="rounded bg-slate-100 px-1 text-xs">Haridus:eeldab</code>,{' '}
-          <code className="rounded bg-slate-100 px-1 text-xs">Haridus:koosneb</code>).
+          Elemendid on vaikimisi kokku klapitud — ava üks korraga või vali{' '}
+          <strong className="text-slate-800">hüppemenüüst</strong>.
         </p>
       </header>
 
@@ -479,11 +686,14 @@ function CurriculumStructureExplorer({ structure, dataSource }) {
               )}
             >
               <option value="">Vali moodul või sektsioon…</option>
-              {modules.map((mod, idx) => (
-                <option key={mod.id || idx} value={String(idx)}>
-                  M{idx + 1}: {moduleTitleLine(mod)}
-                </option>
-              ))}
+              {modules.map((mod, idx) => {
+                const prefix = mod.type === 'TOPIC' ? 'T' : 'M';
+                return (
+                  <option key={mod.id || idx} value={String(idx)}>
+                    {prefix}{idx + 1}: {moduleTitleLine(mod)}
+                  </option>
+                );
+              })}
               {hasCurriculumLos && (
                 <option value="co">Õppekava taseme õpiväljundid ({curriculumLos.length})</option>
               )}
@@ -524,26 +734,86 @@ function CurriculumStructureExplorer({ structure, dataSource }) {
         </div>
       </div>
 
-      {hasModules && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-700">Moodulid</span>
-            <span className="h-px flex-1 bg-gradient-to-r from-indigo-200 to-transparent" />
-            <span className="text-xs text-slate-500">{modules.length} tk</span>
-          </div>
-          <div className="space-y-3">
-            {modules.map((mod, idx) => (
-              <ModuleAccordionItem
-                key={mod.id || idx}
-                mod={mod}
-                index={idx}
-                expanded={openModules.has(idx)}
-                onToggle={() => toggleModule(idx)}
-              />
+      {hasModules && (() => {
+        const MONTH_NAMES_ET = ['Jaanuar','Veebruar','Märts','Aprill','Mai','Juuni','Juuli','August','September','Oktoober','November','Detsember'];
+
+        // Group modules by month (top level), modules inside months
+        const scheduled = [];
+        const unscheduled = [];
+        for (const mod of modules) {
+          const startDate = parseItemDate(mod.plannedStartAt);
+          if (startDate) {
+            const key = `${startDate.getFullYear()}-${String(startDate.getMonth()).padStart(2, '0')}`;
+            scheduled.push({ mod, key, date: startDate });
+          } else {
+            unscheduled.push(mod);
+          }
+        }
+        scheduled.sort((a, b) => a.date - b.date);
+        const monthGroups = [];
+        let lastKey = null;
+        for (const entry of scheduled) {
+          if (entry.key !== lastKey) {
+            monthGroups.push({ key: entry.key, label: `${MONTH_NAMES_ET[entry.date.getMonth()]} ${entry.date.getFullYear()}`, items: [] });
+            lastKey = entry.key;
+          }
+          monthGroups[monthGroups.length - 1].items.push(entry.mod);
+        }
+
+        return (
+          <>
+            {monthGroups.map((mg) => (
+              <div key={mg.key} className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-sky-700">{mg.label}</span>
+                  <span className="h-px flex-1 bg-gradient-to-r from-sky-200 to-transparent" />
+                  <span className="text-xs text-slate-500">{mg.items.length} tk</span>
+                </div>
+                <div className="space-y-3">
+                  {mg.items.map((mod) => {
+                    const idx = modules.indexOf(mod);
+                    return (
+                      <ModuleAccordionItem
+                        key={mod.id || idx}
+                        mod={mod}
+                        index={idx}
+                        expanded={openModules.has(idx)}
+                        onToggle={() => toggleModule(idx)}
+                        schoolWeeks={schoolWeeks}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             ))}
-          </div>
-        </div>
-      )}
+
+            {unscheduled.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Ajastamata</span>
+                  <span className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent" />
+                  <span className="text-xs text-slate-500">{unscheduled.length} tk</span>
+                </div>
+                <div className="space-y-3">
+                  {unscheduled.map((mod) => {
+                    const idx = modules.indexOf(mod);
+                    return (
+                      <ModuleAccordionItem
+                        key={mod.id || idx}
+                        mod={mod}
+                        index={idx}
+                        expanded={openModules.has(idx)}
+                        onToggle={() => toggleModule(idx)}
+                        schoolWeeks={schoolWeeks}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {hasCurriculumLos && (
         <div className={cn(hasModules && 'pt-2')}>
@@ -551,6 +821,7 @@ function CurriculumStructureExplorer({ structure, dataSource }) {
             items={curriculumLos}
             expanded={curriculumOpen}
             onToggle={() => setCurriculumOpen((v) => !v)}
+            schoolWeeks={schoolWeeks}
           />
         </div>
       )}
@@ -789,6 +1060,8 @@ function SidebarItem({ to, icon, label, active }) {
 
 export default function CurriculumDetailPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const versionParam = searchParams.get('version');
   const navigate = useNavigate();
   const user = getCurrentUser();
   const [data, setData] = useState(null);
@@ -798,11 +1071,23 @@ export default function CurriculumDetailPage() {
   const [structureLoading, setStructureLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  /** Väline õppekava: 'detail' = praegune ülevaade, 'timeline' = ajatelg (placeholder). */
-  const [externalMainTab, setExternalMainTab] = useState('detail');
+  const [activeView, setActiveView] = useState('structure');
+  const [ganttData, setGanttData] = useState({ blocks: [], items: [], relations: [] });
+  const [ganttLoading, setGanttLoading] = useState(false);
+  const [versionsOpen, setVersionsOpen] = useState(false);
+  const [versions, setVersions] = useState([]);
+
+  const schoolWeeks = useMemo(() => {
+    if (!structure?.schoolYearStartDate) return [];
+    let breaks = [];
+    if (structure.schoolBreaksJson) {
+      try { breaks = JSON.parse(structure.schoolBreaksJson); } catch { breaks = []; }
+    }
+    return computeSchoolWeeks(structure.schoolYearStartDate, breaks);
+  }, [structure?.schoolYearStartDate, structure?.schoolBreaksJson]);
 
   useEffect(() => {
-    setExternalMainTab('detail');
+    setActiveView('structure');
   }, [id, data?.externalGraph]);
 
   useEffect(() => {
@@ -835,7 +1120,7 @@ export default function CurriculumDetailPage() {
     setStructureLoading(true);
     (async () => {
       try {
-        const s = await curriculum.getImportedStructure(id);
+        const s = await curriculum.getImportedStructure(id, versionParam || undefined);
         if (!ignore) {
           setStructure(s);
           setStructureSource('database');
@@ -867,13 +1152,13 @@ export default function CurriculumDetailPage() {
     return () => {
       ignore = true;
     };
-  }, [id, data]);
+  }, [id, data, versionParam]);
 
   function logout() {
     apiLogout();
   }
 
-  const showTimeline = Boolean(data?.externalGraph && externalMainTab === 'timeline');
+  const showTimeline = activeView === 'calendar' || activeView === 'gantt';
   const isExternalCurriculum = Boolean(data?.externalGraph);
   const selectedTimelineVersionId = useMemo(() => {
     const versions = Array.isArray(data?.curriculumVersions) ? data.curriculumVersions : [];
@@ -887,6 +1172,25 @@ export default function CurriculumDetailPage() {
     const newest = [...versions].sort((a, b) => (b?.versionNumber ?? 0) - (a?.versionNumber ?? 0))[0];
     return newest?.id || null;
   }, [data?.curriculumVersions]);
+
+  // Fetch gantt data when switching to gantt view
+  useEffect(() => {
+    if (activeView !== 'gantt' || !selectedTimelineVersionId) return;
+    let ignore = false;
+    setGanttLoading(true);
+    Promise.all([
+      timeline.blocks(selectedTimelineVersionId).then((rows) => (Array.isArray(rows) ? rows : [])),
+      curriculumItem.list(selectedTimelineVersionId, { page: 0, size: 3000 }),
+      relation.list(selectedTimelineVersionId, { page: 0, size: 5000 }),
+    ])
+      .then(([blocks, items, rels]) => {
+        if (ignore) return;
+        setGanttData({ blocks, items: Array.isArray(items) ? items : [], relations: Array.isArray(rels) ? rels : [] });
+      })
+      .catch(() => {})
+      .finally(() => { if (!ignore) setGanttLoading(false); });
+    return () => { ignore = true; };
+  }, [activeView, selectedTimelineVersionId]);
 
   return (
     <div className="min-h-full">
@@ -998,7 +1302,7 @@ export default function CurriculumDetailPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-sky-700">
-                {showTimeline ? 'Ajatelg' : 'Detailvaade'}
+                Detailvaade
               </div>
               <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{data?.title || 'Õppekava'}</h1>
               <div className="mt-2 text-sm text-slate-600">{data?.description || ''}</div>
@@ -1026,53 +1330,153 @@ export default function CurriculumDetailPage() {
                     to={`/curriculum/new?edit=${id}`}
                     className="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
                   >
-                    Edasi muutma
+                    Muuda
                   </Link>
-                  <Link
-                    to="/curriculum-versions"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (versions.length === 0) {
+                        curriculumVersion.list(id).then(setVersions).catch(() => {});
+                      }
+                      setVersionsOpen(!versionsOpen);
+                    }}
                     className="rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white"
                   >
                     Versioonid
-                  </Link>
+                  </button>
+                  {data?.user?.id === user?.id && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!window.confirm('Kas oled kindel, et soovid selle õppekava kustutada? Seda toimingut ei saa tagasi võtta.')) return;
+                        curriculum.delete(id)
+                          .then(() => navigate('/'))
+                          .catch((e) => alert(e.message || 'Kustutamine ebaõnnestus'));
+                      }}
+                      className="rounded-2xl border border-rose-200 bg-rose-50/90 px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-100"
+                    >
+                      Kustuta
+                    </button>
+                  )}
                 </>
               )}
             </div>
           </div>
 
-          {isExternalCurriculum && !loading && data && (
+          {versionParam && (
+            <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-2 text-sm text-amber-800">
+              Vaatad versiooni <strong>{versions.find((v) => v.id === versionParam)?.versionNumber ?? '...'}</strong>.{' '}
+              <Link to={`/curriculum/${id}`} className="font-semibold text-amber-900 underline hover:no-underline">
+                Tagasi viimase versiooni juurde
+              </Link>
+            </div>
+          )}
+
+          {versionsOpen && (
+            <div className="mt-4 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur-md">
+              <h3 className="mb-3 text-sm font-bold text-slate-900">Versioonid</h3>
+              {versions.length === 0 ? (
+                <p className="text-sm text-slate-500">Laen…</p>
+              ) : (
+                <div className="space-y-2">
+                  {[...versions]
+                    .sort((a, b) => (b.versionNumber ?? 0) - (a.versionNumber ?? 0))
+                    .map((v) => {
+                      const isActive = versionParam ? v.id === versionParam : v.id === structure?.curriculumVersionId;
+                      return (
+                        <div
+                          key={v.id}
+                          className={cn(
+                            'flex items-center justify-between rounded-xl border px-3 py-2 text-sm',
+                            isActive
+                              ? 'border-sky-300 bg-sky-50/90 text-sky-900'
+                              : 'border-slate-200/80 bg-white/90 text-slate-700'
+                          )}
+                        >
+                          <div>
+                            <span className="font-semibold">Versioon {v.versionNumber}</span>
+                            <span className={cn(
+                              'ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase',
+                              v.state === 'FINAL' && 'bg-emerald-100 text-emerald-800',
+                              v.state === 'DRAFT' && 'bg-amber-100 text-amber-800',
+                              v.state === 'REVIEW' && 'bg-blue-100 text-blue-800',
+                              v.state === 'ARCHIVED' && 'bg-slate-100 text-slate-600',
+                              v.state === 'CLOSED' && 'bg-rose-100 text-rose-700',
+                            )}>
+                              {v.state}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {!isActive && (
+                              <Link
+                                to={`/curriculum/${id}?version=${v.id}`}
+                                className="rounded-lg bg-sky-600 px-3 py-1 text-xs font-semibold text-white hover:bg-sky-700"
+                                onClick={() => setVersionsOpen(false)}
+                              >
+                                Vaata
+                              </Link>
+                            )}
+                            {isActive && (
+                              <span className="text-xs font-semibold text-sky-600">Aktiivne</span>
+                            )}
+                            {v.state !== 'CLOSED' && versions.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!window.confirm(`Kustuta versioon ${v.versionNumber}?`)) return;
+                                  try {
+                                    await curriculumVersion.delete(v.id);
+                                    const updated = versions.filter((x) => x.id !== v.id);
+                                    setVersions(updated);
+                                    if (isActive && updated.length > 0) {
+                                      const latest = [...updated].sort((a, b) => (b.versionNumber ?? 0) - (a.versionNumber ?? 0))[0];
+                                      navigate(`/curriculum/${id}?version=${latest.id}`, { replace: true });
+                                    }
+                                  } catch (err) {
+                                    alert(err.message || 'Kustutamine eba\u00f5nnestus');
+                                  }
+                                }}
+                                className="rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-100"
+                              >
+                                Kustuta
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!loading && data && (
             <div
               className="mt-5 inline-flex rounded-2xl border border-white/55 bg-white/35 p-1 shadow-[0_2px_10px_rgba(15,23,42,0.06)] backdrop-blur-md"
               role="tablist"
               aria-label="Õppekava vaade"
             >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={externalMainTab === 'detail'}
-                onClick={() => setExternalMainTab('detail')}
-                className={cn(
-                  'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
-                  externalMainTab === 'detail'
-                    ? 'bg-sky-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                )}
-              >
-                Ülevaade
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={externalMainTab === 'timeline'}
-                onClick={() => setExternalMainTab('timeline')}
-                className={cn(
-                  'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
-                  externalMainTab === 'timeline'
-                    ? 'bg-sky-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                )}
-              >
-                Ajatelg
-              </button>
+              {[
+                { key: 'structure', label: 'Struktuur' },
+                { key: 'calendar', label: 'Kalender' },
+                { key: 'gantt', label: 'Gantt' },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeView === tab.key}
+                  onClick={() => setActiveView(tab.key)}
+                  className={cn(
+                    'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
+                    activeView === tab.key
+                      ? 'bg-sky-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
           )}
 
@@ -1085,41 +1489,79 @@ export default function CurriculumDetailPage() {
           {loading ? (
             <div className="mt-10 text-center text-sm text-slate-600">Laen…</div>
           ) : data ? (
-            showTimeline ? (
-              <div className="mt-8">
-                {selectedTimelineVersionId ? (
-                  <CurriculumCalendar curriculumVersionId={selectedTimelineVersionId} />
-                ) : (
-                  <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center">
-                    <p className="text-lg font-semibold text-slate-700">Ajatelje andmed puuduvad</p>
-                    <p className="mt-2 max-w-md text-sm text-slate-500">
-                      Selle õppekava jaoks ei leitud ühtegi versiooni, mille põhjal kalendrit kuvada.
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <p className="mt-6 rounded-2xl border border-sky-100/80 bg-sky-50/40 px-4 py-3 text-sm text-slate-600">
-                  <span className="font-semibold text-sky-800">Üldandmed</span> on koondatud paremale paneelile — keri seal alla,
-                  et näha providerit, IRI-sid, allikat ja ajatemplid.
-                </p>
+            <>
+              {activeView === 'structure' && (
+                <>
+                  <p className="mt-6 rounded-2xl border border-sky-100/80 bg-sky-50/40 px-4 py-3 text-sm text-slate-600">
+                    <span className="font-semibold text-sky-800">Üldandmed</span> on koondatud paremale paneelile — keri seal alla,
+                    et näha providerit, IRI-sid, allikat ja ajatemplid.
+                  </p>
 
-                {structureLoading && (
-                  <div className="mt-8 text-center text-sm text-slate-600">Laen struktuuri…</div>
-                )}
+                  {structureLoading && (
+                    <div className="mt-8 text-center text-sm text-slate-600">Laen struktuuri…</div>
+                  )}
 
-                {!structureLoading && structure && (
-                  <CurriculumStructureExplorer structure={structure} dataSource={structureSource} />
-                )}
+                  {!structureLoading && structure && (
+                    <CurriculumStructureExplorer structure={structure} dataSource={structureSource} schoolWeeks={schoolWeeks} />
+                  )}
 
-                {!structureLoading && !structure && !loading && (
-                  <div className="mt-8 text-center text-sm text-slate-500">
-                    Struktuuri ei leitud. {!data.externalGraph && 'Kasuta "Edasi muutma" nuppu elementide lisamiseks.'}
-                  </div>
-                )}
-              </>
-            )
+                  {!structureLoading && !structure && !loading && (
+                    <div className="mt-8 text-center text-sm text-slate-500">
+                      Struktuuri ei leitud. {!data.externalGraph && 'Kasuta "Edasi muutma" nuppu elementide lisamiseks.'}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {activeView === 'calendar' && (
+                <div className="mt-8">
+                  {selectedTimelineVersionId ? (
+                    <CurriculumCalendar curriculumVersionId={selectedTimelineVersionId} schoolWeeks={schoolWeeks} />
+                  ) : (
+                    <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center">
+                      <p className="text-lg font-semibold text-slate-700">Kalendri andmed puuduvad</p>
+                      <p className="mt-2 max-w-md text-sm text-slate-500">
+                        Selle õppekava jaoks ei leitud ühtegi versiooni, mille põhjal kalendrit kuvada.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeView === 'gantt' && (
+                <div className="mt-8">
+                  {ganttLoading ? (
+                    <div className="text-center text-sm text-slate-600">Laen Gantt-vaadet…</div>
+                  ) : selectedTimelineVersionId && ganttData.blocks.length > 0 ? (
+                    <CurriculumGantt
+                      blocks={ganttData.blocks}
+                      items={ganttData.items}
+                      relations={ganttData.relations}
+                      anchorDate={new Date().toISOString().slice(0, 10)}
+                      onBlockClick={() => {}}
+                      typeToColor={(type) => {
+                        switch (type) {
+                          case 'MODULE': return '#6366f1';
+                          case 'TOPIC': return '#0ea5e9';
+                          case 'LEARNING_OUTCOME': return '#10b981';
+                          case 'TEST': return '#f43f5e';
+                          case 'TASK': return '#f59e0b';
+                          default: return '#94a3b8';
+                        }
+                      }}
+                      schoolWeeks={schoolWeeks}
+                    />
+                  ) : (
+                    <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center">
+                      <p className="text-lg font-semibold text-slate-700">Gantt andmed puuduvad</p>
+                      <p className="mt-2 max-w-md text-sm text-slate-500">
+                        Selle õppekava jaoks ei leitud ajakava andmeid, mille põhjal Gantt-diagrammi kuvada.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
             <div className="mt-10 text-center text-sm text-slate-600">Ei leitud.</div>
           )}
@@ -1156,12 +1598,19 @@ export default function CurriculumDetailPage() {
                 Töökavad
               </Link>
               {!data?.externalGraph && (
-                <Link
-                  to="/curriculum-versions"
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (versions.length === 0) {
+                      curriculumVersion.list(id).then(setVersions).catch(() => {});
+                    }
+                    setVersionsOpen(!versionsOpen);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
                   className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white"
                 >
                   Versioonid
-                </Link>
+                </button>
               )}
               <button
                 type="button"

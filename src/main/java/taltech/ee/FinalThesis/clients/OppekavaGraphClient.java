@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -18,13 +19,17 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class OppekavaGraphClient {
 
     public static final String DEFAULT_BASE_URL = "https://oppekava.edu.ee/w/api.php";
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+
+    public OppekavaGraphClient(RestTemplate restTemplate, @Qualifier("jackson2ObjectMapper") ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Runs an Ask API query and returns the "query" part of the response.

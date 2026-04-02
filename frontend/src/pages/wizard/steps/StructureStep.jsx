@@ -4,11 +4,11 @@ import WizardTree from '../../../components/wizard/WizardTree';
 import ImportPanel from '../../../components/wizard/ImportPanel';
 import ItemFormModal from '../../../components/wizard/ItemFormModal';
 
-const STRUCTURE_TYPES = ['MODULE', 'TOPIC', 'LEARNING_OUTCOME'];
+const STRUCTURE_TYPES = ['MODULE', 'TOPIC', 'LEARNING_OUTCOME', 'TEST'];
 
-export default function StructureStep({ versionId, metadata, catalogJson, items, onItemsChange, verbs }) {
+export default function StructureStep({ versionId, metadata, catalogJson, items, onItemsChange, verbs, scheduleMap }) {
   const [loading, setLoading] = useState(items.length === 0);
-  const [importOpen, setImportOpen] = useState(false);
+  const [importParent, setImportParent] = useState(null);
   const [modal, setModal] = useState(null);
   const [error, setError] = useState('');
 
@@ -83,7 +83,8 @@ export default function StructureStep({ versionId, metadata, catalogJson, items,
   }
 
   async function handleImport(nodes) {
-    setImportOpen(false);
+    const targetParentId = importParent?.id ?? null;
+    setImportParent(null);
     const created = [];
     for (const node of nodes) {
       try {
@@ -94,8 +95,8 @@ export default function StructureStep({ versionId, metadata, catalogJson, items,
           type: node.type,
           sourceType: 'OPPEKAVAWEB',
           externalIri: node.externalIri ?? '',
-          orderIndex: items.length + created.length,
-          parentItemId: null,
+          orderIndex: items.filter((i) => i.parentItemId === targetParentId).length + created.filter((i) => i.parentItemId === targetParentId).length,
+          parentItemId: targetParentId,
         });
         created.push(parent);
         for (const child of node.children ?? []) {
@@ -106,7 +107,7 @@ export default function StructureStep({ versionId, metadata, catalogJson, items,
             type: child.type,
             sourceType: 'OPPEKAVAWEB',
             externalIri: child.externalIri ?? '',
-            orderIndex: created.length,
+            orderIndex: created.filter((i) => i.parentItemId === parent.id).length,
             parentItemId: parent.id,
           });
           created.push(createdChild);
@@ -125,23 +126,23 @@ export default function StructureStep({ versionId, metadata, catalogJson, items,
   );
 
   return (
-    <div className="relative p-6">
+    <div className="relative px-6 py-5">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Õppekava struktuur</h2>
-          <p className="mt-1 text-sm text-slate-500">{metadata.subjectLabel ?? ''} · {metadata.grade ?? ''}</p>
+          <h2 className="text-xl font-bold text-slate-900 leading-tight">Õppekava struktuur</h2>
+          <p className="mt-1 text-[13px] text-slate-500">{metadata.subjectLabel ?? ''} · {metadata.grade ?? ''}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => setImportOpen(true)} className="rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
+          <button onClick={() => setImportParent({ id: null })} className="rounded-xl border border-indigo-200/25 bg-gradient-to-r from-violet-100 to-blue-100 px-3.5 py-[7px] text-xs font-semibold text-indigo-700 hover:brightness-105 transition">
             ⬇ Impordi graafist
           </button>
-          <button onClick={() => setModal({ item: null, type: 'MODULE', parentItem: null })} className="rounded-2xl bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-700">
+          <button onClick={() => setModal({ item: null, type: 'MODULE', parentItem: null })} className="rounded-xl bg-sky-600 px-3.5 py-[7px] text-xs font-semibold text-white shadow-[0_2px_6px_rgba(2,132,199,.25)] hover:bg-sky-700">
             + Moodul
           </button>
-          <button onClick={() => setModal({ item: null, type: 'TOPIC', parentItem: null })} className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white/90">
+          <button onClick={() => setModal({ item: null, type: 'TOPIC', parentItem: null })} className="rounded-xl border border-sky-200/60 bg-sky-50/80 px-3.5 py-[7px] text-xs font-semibold text-sky-700 hover:bg-sky-100/80">
             + Teema
           </button>
-          <button onClick={() => setModal({ item: null, type: 'LEARNING_OUTCOME', parentItem: null })} className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white/90">
+          <button onClick={() => setModal({ item: null, type: 'LEARNING_OUTCOME', parentItem: null })} className="rounded-xl border border-sky-200/60 bg-sky-50/80 px-3.5 py-[7px] text-xs font-semibold text-sky-700 hover:bg-sky-100/80">
             + Õpiväljund
           </button>
         </div>
@@ -152,19 +153,20 @@ export default function StructureStep({ versionId, metadata, catalogJson, items,
         <WizardTree
           items={items.filter((i) => STRUCTURE_TYPES.includes(i.type))}
           mode="structure"
+          scheduleMap={scheduleMap}
           onEdit={(item) => setModal({ item, type: item.type, parentItem: null })}
           onDelete={handleDelete}
           onAddChild={(parentItem, type) => setModal({ item: null, type, parentItem })}
-          onImport={() => setImportOpen(true)}
+          onImport={(parentItem) => setImportParent(parentItem ?? { id: null })}
         />
       )}
 
-      {importOpen && (
+      {importParent && (
         <ImportPanel
           catalogJson={catalogJson}
           existingExternalIris={existingIris}
           onImport={handleImport}
-          onClose={() => setImportOpen(false)}
+          onClose={() => setImportParent(null)}
         />
       )}
 

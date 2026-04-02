@@ -504,3 +504,66 @@
   }
 }
 
+/* School week column — mini month (year view) */
+.cc-mini-weekdays--with-wk,
+.cc-mini-grid--with-wk {
+  grid-template-columns: 20px repeat(7, minmax(0, 1fr));
+}
+.cc-mini-wk-header {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #6366f1;
+}
+.cc-mini-wk-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+  color: #6366f1;
+  line-height: 1;
+}
+.cc-mini-wk-label--holiday {
+  color: #e07a7a;
+}
+
+/* School week column — month view */
+.cc-month-weekdays--with-wk,
+.cc-month-grid--with-wk {
+  grid-template-columns: 32px repeat(7, minmax(0, 1fr));
+}
+.cc-month-wk-header {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6366f1;
+  border-bottom: 1px solid #e8eaed;
+  padding: 8px 0;
+}
+.cc-month-wk-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6366f1;
+  border-right: 1px solid #e8eaed;
+}
+.cc-month-wk-label--holiday {
+  color: #e07a7a;
+  background: rgba(224,122,122,0.06);
+}
+
+/* School week badge in toolbar */
+.cc-week-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+

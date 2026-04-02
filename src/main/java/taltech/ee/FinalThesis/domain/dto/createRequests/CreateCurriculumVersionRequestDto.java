@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionPublishStatusEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -43,4 +44,7 @@ public class CreateCurriculumVersionRequestDto {
 
     @NotNull(message = "Published error is required")
     private String publishedError;
+
+    private LocalDate schoolYearStartDate;
+    private String schoolBreaksJson;
 }

@@ -42,6 +42,7 @@ function toDatetimeLocalValue(d) {
 function typeLabel(t) {
   if (!t) return '';
   if (t === 'LEARNING_OUTCOME') return 'ÕV';
+  if (t === 'TOPIC') return 'Teema';
   return String(t).replace(/_/g, ' ');
 }
 
@@ -83,6 +84,7 @@ export function validateStrictParentWindow(itemId, start, end, items, blocks) {
   const it = itemById.get(itemId);
   if (!it) return { ok: true };
   if (it.type === 'MODULE') return { ok: true };
+  if (it.type === 'TOPIC' && !it.parentItemId) return { ok: true };
   if (it.type === 'LEARNING_OUTCOME' && isStandaloneLearningOutcome(it, itemById)) return { ok: true };
   if (!it.parentItemId) return { ok: true };
   const win = parentScheduleWindow(it.parentItemId, blocks, parseLocalDateTime);
@@ -155,6 +157,8 @@ export default function GoogleScheduleModal({
 
   const modules = useMemo(() => sortedItems.filter((i) => i.type === 'MODULE'), [sortedItems]);
 
+  const topics = useMemo(() => sortedItems.filter((i) => i.type === 'TOPIC'), [sortedItems]);
+
   const modulesFiltered = useMemo(() => {
     if (!effectiveSlotFilter?.moduleIds.length) return modules;
     const allow = new Set(effectiveSlotFilter.moduleIds);
@@ -180,11 +184,12 @@ export default function GoogleScheduleModal({
   }, [sortedItems, effectiveSlotFilter, itemById]);
 
   const [entryKind, setEntryKind] = useState('SCHEDULE');
-  /** MODULE | LEARNING_OUTCOME | ACTIVITY */
+  /** MODULE | TOPIC | LEARNING_OUTCOME | ACTIVITY */
   const [itemTier, setItemTier] = useState('MODULE');
   /** STANDALONE ÕV vs mooduli all */
   const [loScope, setLoScope] = useState('STANDALONE');
   const [scopeModuleId, setScopeModuleId] = useState('');
+  const [scopeTopicId, setScopeTopicId] = useState('');
   const [scopeLoId, setScopeLoId] = useState('');
 
   const [curriculumItemId, setCurriculumItemId] = useState('');
@@ -196,10 +201,45 @@ export default function GoogleScheduleModal({
   const [deleting, setDeleting] = useState(false);
   const [localError, setLocalError] = useState('');
 
+  const isStandaloneTopic = (t) => {
+    if (!t.parentItemId) return true;
+    const p = itemById.get(t.parentItemId);
+    return !p || p.type !== 'MODULE';
+  };
+
+  const topicsForScope = useMemo(() => {
+    if (!scopeModuleId) return topics;
+    return topics.filter((t) => String(t.parentItemId) === String(scopeModuleId) || isStandaloneTopic(t));
+  }, [topics, scopeModuleId, itemById]);
+
+  /** LOs filtered by module/topic scope — used in ACTIVITY tier */
+  const activityLosFiltered = useMemo(() => {
+    const allLos = learningOutcomesFilteredForSlot;
+    if (scopeTopicId) {
+      return allLos.filter((i) => String(i.parentItemId) === String(scopeTopicId));
+    }
+    if (scopeModuleId) {
+      // LOs directly under module, under module's topics, or under standalone topics
+      const relevantTopicIds = new Set(
+        topics
+          .filter((t) => String(t.parentItemId) === String(scopeModuleId) || isStandaloneTopic(t))
+          .map((t) => String(t.id))
+      );
+      return allLos.filter((i) => {
+        const pid = String(i.parentItemId);
+        return pid === String(scopeModuleId) || relevantTopicIds.has(pid);
+      });
+    }
+    return allLos;
+  }, [learningOutcomesFilteredForSlot, scopeModuleId, scopeTopicId, topics]);
+
   const selectableItems = useMemo(() => {
     if (itemTier === 'MODULE') {
-      /** Uut moodulit sama päeva peale ei tohi peita: alati kõik moodulid (filter kehtib ÕV / tegevuse juures). */
       return modules;
+    }
+    if (itemTier === 'TOPIC') {
+      if (!scopeModuleId) return topics;
+      return topics.filter((t) => String(t.parentItemId) === String(scopeModuleId));
     }
     if (itemTier === 'LEARNING_OUTCOME') {
       if (loScope === 'STANDALONE') {
@@ -209,9 +249,32 @@ export default function GoogleScheduleModal({
           return effectiveSlotFilter.loIds.includes(String(i.id));
         });
       }
-      if (!scopeModuleId) return [];
+      // If scoped under a topic, show LOs under that topic
+      if (scopeTopicId) {
+        return sortedItems.filter((i) => {
+          if (i.type !== 'LEARNING_OUTCOME') return false;
+          return String(i.parentItemId) === String(scopeTopicId);
+        });
+      }
+      if (!scopeModuleId && !scopeTopicId) {
+        // No filter selected — show all non-standalone LOs
+        return sortedItems.filter((i) => {
+          if (i.type !== 'LEARNING_OUTCOME') return false;
+          if (isStandaloneLearningOutcome(i, itemById)) return false;
+          if (!effectiveSlotFilter?.loIds.length) return true;
+          return effectiveSlotFilter.loIds.includes(String(i.id));
+        });
+      }
+      // Module selected, no topic — LOs under module or under module's/standalone topics
+      const relevantTopicIds = new Set(
+        topics
+          .filter((t) => String(t.parentItemId) === String(scopeModuleId) || isStandaloneTopic(t))
+          .map((t) => String(t.id))
+      );
       return sortedItems.filter((i) => {
-        if (i.type !== 'LEARNING_OUTCOME' || String(i.parentItemId) !== String(scopeModuleId)) return false;
+        if (i.type !== 'LEARNING_OUTCOME') return false;
+        const pid = String(i.parentItemId);
+        if (pid !== String(scopeModuleId) && !relevantTopicIds.has(pid)) return false;
         if (!effectiveSlotFilter?.loIds.length) return true;
         return effectiveSlotFilter.loIds.includes(String(i.id));
       });
@@ -221,7 +284,7 @@ export default function GoogleScheduleModal({
       return sortedItems.filter((i) => i.parentItemId === scopeLoId && ACTIVITY_TYPES.includes(i.type));
     }
     return sortedItems;
-  }, [itemTier, loScope, scopeModuleId, scopeLoId, sortedItems, itemById, modules, effectiveSlotFilter]);
+  }, [itemTier, loScope, scopeModuleId, scopeTopicId, scopeLoId, sortedItems, itemById, modules, topics, effectiveSlotFilter]);
 
   /** Vanema aken (hoiatus / info), kui valik on juba tehtud */
   const strictHint = useMemo(() => {
@@ -251,21 +314,36 @@ export default function GoogleScheduleModal({
         const it = itemById.get(editingBlock.curriculumItemId);
         if (it?.type === 'MODULE') {
           setItemTier('MODULE');
+          setScopeTopicId('');
+        } else if (it?.type === 'TOPIC') {
+          setItemTier('TOPIC');
+          const p = it.parentItemId ? itemById.get(it.parentItemId) : null;
+          setScopeModuleId(p?.type === 'MODULE' ? p.id : '');
+          setScopeTopicId('');
         } else if (it?.type === 'LEARNING_OUTCOME') {
           setItemTier('LEARNING_OUTCOME');
           const p = it.parentItemId ? itemById.get(it.parentItemId) : null;
           if (p?.type === 'MODULE') {
             setLoScope('UNDER_MODULE');
             setScopeModuleId(p.id);
+            setScopeTopicId('');
+          } else if (p?.type === 'TOPIC') {
+            setLoScope('UNDER_MODULE');
+            setScopeTopicId(p.id);
+            const grandparent = p.parentItemId ? itemById.get(p.parentItemId) : null;
+            setScopeModuleId(grandparent?.type === 'MODULE' ? grandparent.id : '');
           } else {
             setLoScope('STANDALONE');
             setScopeModuleId('');
+            setScopeTopicId('');
           }
         } else if (ACTIVITY_TYPES.includes(it?.type)) {
           setItemTier('ACTIVITY');
           setScopeLoId(it.parentItemId || '');
+          setScopeTopicId('');
         } else {
           setItemTier('MODULE');
+          setScopeTopicId('');
         }
         setCurriculumItemId(editingBlock.curriculumItemId || '');
         setStartStr(toDatetimeLocalValue(parseLocalDateTime(editingBlock.plannedStartAt)));
@@ -292,6 +370,7 @@ export default function GoogleScheduleModal({
       setItemTier('ACTIVITY');
       setLoScope('STANDALONE');
       setScopeModuleId('');
+      setScopeTopicId('');
       setScopeLoId(loOnly[0]);
       const acts = sortedItems.filter(
         (i) => String(i.parentItemId) === String(loOnly[0]) && ACTIVITY_TYPES.includes(i.type)
@@ -301,6 +380,7 @@ export default function GoogleScheduleModal({
       setItemTier('ACTIVITY');
       setLoScope('STANDALONE');
       setScopeModuleId('');
+      setScopeTopicId('');
       setScopeLoId(loOnly[0]);
       const acts = sortedItems.filter(
         (i) => String(i.parentItemId) === String(loOnly[0]) && ACTIVITY_TYPES.includes(i.type)
@@ -310,6 +390,7 @@ export default function GoogleScheduleModal({
       setItemTier('LEARNING_OUTCOME');
       setLoScope('UNDER_MODULE');
       setScopeModuleId(f.moduleIds[0]);
+      setScopeTopicId('');
       setScopeLoId('');
       const under = sortedItems.filter(
         (i) => i.type === 'LEARNING_OUTCOME' && String(i.parentItemId) === String(f.moduleIds[0])
@@ -319,12 +400,14 @@ export default function GoogleScheduleModal({
       setItemTier('MODULE');
       setLoScope('STANDALONE');
       setScopeModuleId('');
+      setScopeTopicId('');
       setScopeLoId('');
       setCurriculumItemId(modF[0]?.id || '');
     } else {
       setItemTier('MODULE');
       setLoScope('STANDALONE');
       setScopeModuleId('');
+      setScopeTopicId('');
       setScopeLoId('');
       setCurriculumItemId(modules[0]?.id || '');
     }
@@ -517,6 +600,7 @@ export default function GoogleScheduleModal({
                       setItemTier('MODULE');
                       setLoScope('STANDALONE');
                       setScopeModuleId('');
+                      setScopeTopicId('');
                       setScopeLoId('');
                       setCurriculumItemId(modules[0]?.id || '');
                     }}
@@ -525,9 +609,24 @@ export default function GoogleScheduleModal({
                   </button>
                   <button
                     type="button"
+                    className={cn('gsm-tier-tab', itemTier === 'TOPIC' && 'active')}
+                    onClick={() => {
+                      setItemTier('TOPIC');
+                      setLoScope('STANDALONE');
+                      setScopeModuleId('');
+                      setScopeTopicId('');
+                      setScopeLoId('');
+                      setCurriculumItemId(topics[0]?.id || '');
+                    }}
+                  >
+                    Teema
+                  </button>
+                  <button
+                    type="button"
                     className={cn('gsm-tier-tab', itemTier === 'LEARNING_OUTCOME' && 'active')}
                     onClick={() => {
                       setItemTier('LEARNING_OUTCOME');
+                      setScopeTopicId('');
                       setScopeLoId('');
                       const standalone = sortedItems.filter((i) => {
                         if (!isStandaloneLearningOutcome(i, itemById)) return false;
@@ -546,6 +645,7 @@ export default function GoogleScheduleModal({
                     className={cn('gsm-tier-tab', itemTier === 'ACTIVITY' && 'active')}
                     onClick={() => {
                       setItemTier('ACTIVITY');
+                      setScopeTopicId('');
                       const firstLo = learningOutcomesFilteredForSlot[0];
                       setScopeLoId(firstLo?.id || '');
                       const acts = firstLo
@@ -565,6 +665,27 @@ export default function GoogleScheduleModal({
                   </p>
                 )}
 
+                {itemTier === 'TOPIC' && (
+                  <div className="gsm-scope-block">
+                    <label className="gsm-label" htmlFor="gsm-scope-topic-mod">
+                      Moodul (teema vanem)
+                    </label>
+                    <select
+                      id="gsm-scope-topic-mod"
+                      className="gsm-select"
+                      value={scopeModuleId}
+                      onChange={(ev) => setScopeModuleId(ev.target.value)}
+                    >
+                      <option value="">Kõik teemad</option>
+                      {modulesFiltered.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.title || m.id}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 {itemTier === 'LEARNING_OUTCOME' && (
                   <div className="gsm-scope-block">
                     <div className="gsm-sub gsm-scope-label">Õpiväljundi ulatus</div>
@@ -577,40 +698,91 @@ export default function GoogleScheduleModal({
                           onChange={() => {
                             setLoScope('STANDALONE');
                             setScopeModuleId('');
+                            setScopeTopicId('');
                           }}
                         />
-                        Iseseisvad ÕV (pole mooduli all)
+                        Iseseisvad ÕV (pole mooduli / teema all)
                       </label>
                       <label className="gsm-radio">
                         <input
                           type="radio"
                           name="loScope"
                           checked={loScope === 'UNDER_MODULE'}
-                          onChange={() => setLoScope('UNDER_MODULE')}
+                          onChange={() => {
+                            setLoScope('UNDER_MODULE');
+                          }}
                         />
-                        Konkreetse mooduli all
+                        Kitsenda mooduli / teema järgi
                       </label>
                     </div>
                     {loScope === 'UNDER_MODULE' && (
-                      <select
-                        className="gsm-select gsm-select-scope"
-                        value={scopeModuleId}
-                        onChange={(ev) => setScopeModuleId(ev.target.value)}
-                        required
-                      >
-                        <option value="">Vali moodul…</option>
-                        {modulesFiltered.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.title || m.id}
-                          </option>
-                        ))}
-                      </select>
+                      <>
+                        <select
+                          className="gsm-select gsm-select-scope"
+                          value={scopeModuleId}
+                          onChange={(ev) => {
+                            setScopeModuleId(ev.target.value);
+                            setScopeTopicId('');
+                          }}
+                        >
+                          <option value="">Kõik moodulid</option>
+                          {modulesFiltered.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.title || m.id}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          className="gsm-select gsm-select-scope"
+                          value={scopeTopicId}
+                          onChange={(ev) => setScopeTopicId(ev.target.value)}
+                        >
+                          <option value="">Kõik teemad</option>
+                          {topicsForScope.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.title || t.id}
+                            </option>
+                          ))}
+                        </select>
+                      </>
                     )}
                   </div>
                 )}
 
                 {itemTier === 'ACTIVITY' && (
                   <div className="gsm-scope-block">
+                    <label className="gsm-label">Kitsenda (valikuline)</label>
+                    <select
+                      className="gsm-select gsm-select-scope"
+                      value={scopeModuleId}
+                      onChange={(ev) => {
+                        setScopeModuleId(ev.target.value);
+                        setScopeTopicId('');
+                        setScopeLoId('');
+                      }}
+                    >
+                      <option value="">Kõik moodulid</option>
+                      {modulesFiltered.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.title || m.id}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className="gsm-select gsm-select-scope"
+                      value={scopeTopicId}
+                      onChange={(ev) => {
+                        setScopeTopicId(ev.target.value);
+                        setScopeLoId('');
+                      }}
+                    >
+                      <option value="">Kõik teemad</option>
+                      {topicsForScope.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.title || t.id}
+                        </option>
+                      ))}
+                    </select>
                     <label className="gsm-label" htmlFor="gsm-scope-lo">
                       ÕV (tegevuse vanem)
                     </label>
@@ -622,7 +794,7 @@ export default function GoogleScheduleModal({
                       required
                     >
                       <option value="">Vali õpiväljund…</option>
-                      {learningOutcomesFilteredForSlot.map((i) => (
+                      {activityLosFiltered.map((i) => (
                         <option key={i.id} value={i.id}>
                           {i.title || i.id}
                         </option>

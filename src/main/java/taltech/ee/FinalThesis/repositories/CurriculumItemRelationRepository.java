@@ -20,4 +20,6 @@ public interface CurriculumItemRelationRepository extends JpaRepository<Curricul
 
     @EntityGraph(attributePaths = {"sourceItem", "targetItem"})
     List<CurriculumItemRelation> findAllByCurriculumVersion_Id(UUID curriculumVersionId);
+
+    void deleteByCurriculumVersion_Id(UUID curriculumVersionId);
 }

@@ -368,13 +368,19 @@ export default function HomePage() {
                     >
                       Ava
                     </button>
-                    <button
-                      className="rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white"
-                      onClick={() => navigate('/curriculum-versions')}
-                      title="Versioonid (praegune demo-leht)"
-                    >
-                      Versioonid
-                    </button>
+                    {!c.externalGraph && (
+                      <button
+                        className="rounded-2xl border border-rose-200 bg-rose-50/90 px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-100"
+                        onClick={() => {
+                          if (!window.confirm('Kas oled kindel, et soovid selle õppekava kustutada?')) return;
+                          curriculum.delete(c.id)
+                            .then(() => setCurriculums((prev) => prev.filter((x) => x.id !== c.id)))
+                            .catch((e) => alert(e.message || 'Kustutamine ebaõnnestus'));
+                        }}
+                      >
+                        Kustuta
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

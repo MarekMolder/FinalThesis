@@ -10,32 +10,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Õpiväljund imporditud versioonist koos RDF-i järgi salvestatud seostega
- * (curriculum_item_relation: EELDAB, KOOSNEB).
- */
+/** 3./4. tase element (TASK, TEST, LEARNING_MATERIAL, KNOBIT, vms). */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ImportedLearningOutcomeDto {
+public class ImportedChildItemDto {
     private UUID id;
     private String title;
+    private String description;
     private String type;
     private String fullUrl;
     private Integer orderIndex;
     private LocalDateTime plannedStartAt;
     private LocalDateTime plannedEndAt;
 
-    /** See õpiväljund eeldab neid (suhe source=see, type=EELDAB, target=…). */
-    @Builder.Default
-    private List<ImportedLoRefDto> eeldab = new ArrayList<>();
-
-    /** See õpiväljund koosneb neist (suhe source=see, type=KOOSNEB, target=…). */
-    @Builder.Default
-    private List<ImportedLoRefDto> koosneb = new ArrayList<>();
-
-    /** 3. tase — alamelemendid (TASK, TEST, LEARNING_MATERIAL, KNOBIT jne). */
+    /** 4. tase — alamelemendid. */
     @Builder.Default
     private List<ImportedChildItemDto> children = new ArrayList<>();
 }

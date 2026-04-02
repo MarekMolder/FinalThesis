@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionPublishStatusEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,8 +68,15 @@ public class CurriculumVersion {
     @Column(name = "published_at", updatable = false)
     private LocalDateTime publishedAt;
 
-    @Column(name = "published_error", nullable = false)
+    @Column(name = "published_error")
     private String publishedError;
+
+    @Column(name = "school_year_start_date")
+    private LocalDate schoolYearStartDate;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "school_breaks_json")
+    private String schoolBreaksJson;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "curriculum_id")

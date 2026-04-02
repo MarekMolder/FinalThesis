@@ -19,15 +19,18 @@ import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumNotFoundEx
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.UserNotFoundException;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumDetailDto;
 import taltech.ee.FinalThesis.domain.dto.imported.ImportedCurriculumStructureDto;
+import taltech.ee.FinalThesis.domain.dto.imported.ImportedChildItemDto;
 import taltech.ee.FinalThesis.domain.dto.imported.ImportedLearningOutcomeDto;
 import taltech.ee.FinalThesis.domain.dto.imported.ImportedLoRefDto;
 import taltech.ee.FinalThesis.domain.dto.imported.ImportedModuleDto;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItem;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItemRelation;
+import taltech.ee.FinalThesis.domain.entities.CurriculumItemSchedule;
 import taltech.ee.FinalThesis.domain.enums.CurriculumItemRelationTypeEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumItemTypeEnum;
 import taltech.ee.FinalThesis.repositories.CurriculumItemRelationRepository;
 import taltech.ee.FinalThesis.repositories.CurriculumItemRepository;
+import taltech.ee.FinalThesis.repositories.CurriculumItemScheduleRepository;
 import taltech.ee.FinalThesis.repositories.CurriculumRepository;
 import taltech.ee.FinalThesis.repositories.CurriculumVersionRepository;
 import taltech.ee.FinalThesis.repositories.UserRepository;
@@ -35,6 +38,7 @@ import taltech.ee.FinalThesis.services.CurriculumService;
 import taltech.ee.FinalThesis.services.OppekavaGraphService;
 import taltech.ee.FinalThesis.util.ExternalPageIriUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -56,6 +60,7 @@ public class CurriculumServiceImpl implements CurriculumService {
     private final CurriculumVersionRepository curriculumVersionRepository;
     private final CurriculumItemRepository curriculumItemRepository;
     private final CurriculumItemRelationRepository curriculumItemRelationRepository;
+    private final CurriculumItemScheduleRepository curriculumItemScheduleRepository;
     private final OppekavaGraphService oppekavaGraphService;
 
     @Override
@@ -146,71 +151,138 @@ public class CurriculumServiceImpl implements CurriculumService {
                 });
     }
 
+    private static final Set<CurriculumItemTypeEnum> TOP_LEVEL_TYPES = Set.of(
+            CurriculumItemTypeEnum.MODULE, CurriculumItemTypeEnum.TOPIC);
+
+    private static final Set<CurriculumItemTypeEnum> SECOND_LEVEL_TYPES = Set.of(
+            CurriculumItemTypeEnum.LEARNING_OUTCOME, CurriculumItemTypeEnum.TOPIC, CurriculumItemTypeEnum.TEST);
+
+    private static final Comparator<CurriculumItem> ORDER_COMPARATOR =
+            Comparator.comparing(CurriculumItem::getOrderIndex, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(CurriculumItem::getId);
+
+    /** TEST items always sort last within their parent, then by orderIndex. */
+    private static final Comparator<CurriculumItem> TEST_LAST_ORDER =
+            Comparator.<CurriculumItem, Boolean>comparing(i -> i.getType() == CurriculumItemTypeEnum.TEST)
+                    .thenComparing(ORDER_COMPARATOR);
+
     @Override
     @Transactional
     public Optional<ImportedCurriculumStructureDto> getImportedStructureForCurriculum(UUID curriculumId) {
+        return getImportedStructureForCurriculum(curriculumId, null);
+    }
+
+    @Override
+    @Transactional
+    public Optional<ImportedCurriculumStructureDto> getImportedStructureForCurriculum(UUID curriculumId, UUID versionId) {
         return curriculumRepository.findById(curriculumId)
-                .filter(Curriculum::isExternalGraph)
                 .flatMap(curriculum -> {
-                    Page<CurriculumVersion> firstVersionPage = curriculumVersionRepository.findByCurriculumId(
-                            curriculumId,
-                            PageRequest.of(0, 1, Sort.by(Sort.Direction.ASC, "versionNumber"))
-                    );
-                    List<CurriculumVersion> versions = firstVersionPage.getContent();
-                    if (versions.isEmpty()) {
-                        return Optional.empty();
-                    }
-                    CurriculumVersion version = versions.getFirst();
-                    UUID vid = version.getId();
-
-                    List<CurriculumItem> items = curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(vid);
-                    List<CurriculumItemRelation> relations =
-                            curriculumItemRelationRepository.findAllByCurriculumVersion_Id(vid);
-
-                    Map<UUID, List<CurriculumItemRelation>> outgoingBySource = relations.stream()
-                            .filter(r -> r.getSourceItem() != null)
-                            .collect(Collectors.groupingBy(r -> r.getSourceItem().getId()));
-
-                    List<CurriculumItem> modules = items.stream()
-                            .filter(i -> i.getType() == CurriculumItemTypeEnum.MODULE)
-                            .sorted(Comparator.comparing(CurriculumItem::getOrderIndex, Comparator.nullsLast(Comparator.naturalOrder()))
-                                    .thenComparing(CurriculumItem::getId))
-                            .toList();
-
-                    List<ImportedModuleDto> moduleDtos = new ArrayList<>();
-                    for (CurriculumItem mod : modules) {
-                        final UUID modId = mod.getId();
-                        List<ImportedLearningOutcomeDto> modLos = items.stream()
-                                .filter(i -> i.getType() == CurriculumItemTypeEnum.LEARNING_OUTCOME
-                                        && i.getParentItem() != null
-                                        && modId.equals(i.getParentItem().getId()))
-                                .sorted(Comparator.comparing(CurriculumItem::getOrderIndex, Comparator.nullsLast(Comparator.naturalOrder()))
-                                        .thenComparing(CurriculumItem::getId))
-                                .map(lo -> toImportedLearningOutcomeDto(lo, outgoingBySource))
-                                .toList();
-                        moduleDtos.add(ImportedModuleDto.builder()
-                                .id(mod.getId())
-                                .title(mod.getTitle())
-                                .eapLabel(eapLabelFromNotation(mod.getNotation()))
-                                .fullUrl(mod.getExternalIri())
-                                .learningOutcomes(modLos)
-                                .build());
+                    UUID vid;
+                    if (versionId != null) {
+                        // Use specific version
+                        vid = versionId;
+                    } else {
+                        // Use latest version
+                        Page<CurriculumVersion> latestPage = curriculumVersionRepository.findByCurriculumId(
+                                curriculumId,
+                                PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "versionNumber"))
+                        );
+                        List<CurriculumVersion> versions = latestPage.getContent();
+                        if (versions.isEmpty()) {
+                            return Optional.empty();
+                        }
+                        vid = versions.getFirst().getId();
                     }
 
-                    List<ImportedLearningOutcomeDto> curriculumLevelLos = items.stream()
-                            .filter(i -> i.getType() == CurriculumItemTypeEnum.LEARNING_OUTCOME
-                                    && i.getParentItem() == null)
-                            .sorted(Comparator.comparing(CurriculumItem::getOrderIndex, Comparator.nullsLast(Comparator.naturalOrder()))
-                                    .thenComparing(CurriculumItem::getId))
-                            .map(lo -> toImportedLearningOutcomeDto(lo, outgoingBySource))
-                            .toList();
-
-                    return Optional.of(ImportedCurriculumStructureDto.builder()
-                            .curriculumVersionId(vid)
-                            .modules(moduleDtos)
-                            .curriculumLevelLearningOutcomes(curriculumLevelLos)
-                            .build());
+                    return buildStructureForVersion(vid);
                 });
+    }
+
+    private Optional<ImportedCurriculumStructureDto> buildStructureForVersion(UUID vid) {
+        CurriculumVersion version = curriculumVersionRepository.findById(vid).orElse(null);
+        List<CurriculumItem> items = curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(vid);
+        List<CurriculumItemRelation> relations =
+                curriculumItemRelationRepository.findAllByCurriculumVersion_Id(vid);
+        List<CurriculumItemSchedule> schedules =
+                curriculumItemScheduleRepository.findByCurriculumItem_CurriculumVersion_Id(vid);
+
+        Map<UUID, LocalDateTime> scheduleByItem = schedules.stream()
+                .filter(s -> s.getCurriculumItem() != null && s.getPlannedStartAt() != null)
+                .collect(Collectors.toMap(
+                        s -> s.getCurriculumItem().getId(),
+                        CurriculumItemSchedule::getPlannedStartAt,
+                        (a, b) -> a.isBefore(b) ? a : b
+                ));
+
+        Map<UUID, LocalDateTime> scheduleEndByItem = schedules.stream()
+                .filter(s -> s.getCurriculumItem() != null && s.getPlannedEndAt() != null)
+                .collect(Collectors.toMap(
+                        s -> s.getCurriculumItem().getId(),
+                        CurriculumItemSchedule::getPlannedEndAt,
+                        (a, b) -> a.isAfter(b) ? a : b
+                ));
+
+        // TEST items always sort last within their parent
+        Comparator<CurriculumItem> testLastThenSchedule = Comparator
+                .<CurriculumItem, Boolean>comparing(
+                        i -> i.getType() == CurriculumItemTypeEnum.TEST)
+                .thenComparing(
+                        i -> scheduleByItem.get(i.getId()),
+                        Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(ORDER_COMPARATOR);
+        Comparator<CurriculumItem> scheduleAwareOrder = testLastThenSchedule;
+
+        Map<UUID, List<CurriculumItemRelation>> outgoingBySource = relations.stream()
+                .filter(r -> r.getSourceItem() != null)
+                .collect(Collectors.groupingBy(r -> r.getSourceItem().getId()));
+
+        Map<UUID, List<CurriculumItem>> childrenByParent = items.stream()
+                .filter(i -> i.getParentItem() != null)
+                .collect(Collectors.groupingBy(i -> i.getParentItem().getId()));
+
+        List<CurriculumItem> topLevel = items.stream()
+                .filter(i -> TOP_LEVEL_TYPES.contains(i.getType()) && i.getParentItem() == null)
+                .sorted(scheduleAwareOrder)
+                .toList();
+
+        List<ImportedModuleDto> moduleDtos = new ArrayList<>();
+        for (CurriculumItem mod : topLevel) {
+            final UUID modId = mod.getId();
+            List<CurriculumItem> modChildren = childrenByParent.getOrDefault(modId, List.of())
+                    .stream().sorted(scheduleAwareOrder).toList();
+
+            List<ImportedLearningOutcomeDto> modLos = modChildren.stream()
+                    .filter(i -> SECOND_LEVEL_TYPES.contains(i.getType()))
+                    .map(lo -> toImportedLearningOutcomeDto(lo, outgoingBySource, childrenByParent, scheduleByItem, scheduleEndByItem))
+                    .toList();
+
+            moduleDtos.add(ImportedModuleDto.builder()
+                    .id(mod.getId())
+                    .title(mod.getTitle())
+                    .type(mod.getType().name())
+                    .eapLabel(eapLabelFromNotation(mod.getNotation()))
+                    .fullUrl(mod.getExternalIri())
+                    .orderIndex(mod.getOrderIndex())
+                    .plannedStartAt(scheduleByItem.get(mod.getId()))
+                    .plannedEndAt(scheduleEndByItem.get(mod.getId()))
+                    .learningOutcomes(modLos)
+                    .build());
+        }
+
+        List<ImportedLearningOutcomeDto> curriculumLevelLos = items.stream()
+                .filter(i -> i.getType() == CurriculumItemTypeEnum.LEARNING_OUTCOME
+                        && i.getParentItem() == null)
+                .sorted(scheduleAwareOrder)
+                .map(lo -> toImportedLearningOutcomeDto(lo, outgoingBySource, childrenByParent, scheduleByItem, scheduleEndByItem))
+                .toList();
+
+        return Optional.of(ImportedCurriculumStructureDto.builder()
+                .curriculumVersionId(vid)
+                .schoolYearStartDate(version != null ? version.getSchoolYearStartDate() : null)
+                .schoolBreaksJson(version != null ? version.getSchoolBreaksJson() : null)
+                .modules(moduleDtos)
+                .curriculumLevelLearningOutcomes(curriculumLevelLos)
+                .build());
     }
 
     private static String eapLabelFromNotation(String notation) {
@@ -226,7 +298,10 @@ public class CurriculumServiceImpl implements CurriculumService {
 
     private static ImportedLearningOutcomeDto toImportedLearningOutcomeDto(
             CurriculumItem lo,
-            Map<UUID, List<CurriculumItemRelation>> outgoingBySource
+            Map<UUID, List<CurriculumItemRelation>> outgoingBySource,
+            Map<UUID, List<CurriculumItem>> childrenByParent,
+            Map<UUID, LocalDateTime> scheduleByItem,
+            Map<UUID, LocalDateTime> scheduleEndByItem
     ) {
         List<ImportedLoRefDto> eeldab = new ArrayList<>();
         List<ImportedLoRefDto> koosneb = new ArrayList<>();
@@ -246,12 +321,51 @@ public class CurriculumServiceImpl implements CurriculumService {
                 koosneb.add(ref);
             }
         }
+
+        // 3rd level children (TASK, TEST, LEARNING_MATERIAL, KNOBIT, etc.)
+        List<ImportedChildItemDto> children = childrenByParent.getOrDefault(lo.getId(), List.of())
+                .stream()
+                .sorted(TEST_LAST_ORDER)
+                .map(child -> toImportedChildItemDto(child, childrenByParent, scheduleByItem, scheduleEndByItem))
+                .toList();
+
         return ImportedLearningOutcomeDto.builder()
                 .id(lo.getId())
                 .title(lo.getTitle())
+                .type(lo.getType().name())
                 .fullUrl(lo.getExternalIri())
+                .orderIndex(lo.getOrderIndex())
+                .plannedStartAt(scheduleByItem.get(lo.getId()))
+                .plannedEndAt(scheduleEndByItem.get(lo.getId()))
                 .eeldab(eeldab)
                 .koosneb(koosneb)
+                .children(children)
+                .build();
+    }
+
+    /** Recursive: builds child item tree (3rd, 4th, … level). */
+    private static ImportedChildItemDto toImportedChildItemDto(
+            CurriculumItem item,
+            Map<UUID, List<CurriculumItem>> childrenByParent,
+            Map<UUID, LocalDateTime> scheduleByItem,
+            Map<UUID, LocalDateTime> scheduleEndByItem
+    ) {
+        List<ImportedChildItemDto> subChildren = childrenByParent.getOrDefault(item.getId(), List.of())
+                .stream()
+                .sorted(TEST_LAST_ORDER)
+                .map(child -> toImportedChildItemDto(child, childrenByParent, scheduleByItem, scheduleEndByItem))
+                .toList();
+
+        return ImportedChildItemDto.builder()
+                .id(item.getId())
+                .title(item.getTitle())
+                .description(item.getDescription())
+                .type(item.getType().name())
+                .fullUrl(item.getExternalIri())
+                .orderIndex(item.getOrderIndex())
+                .plannedStartAt(scheduleByItem.get(item.getId()))
+                .plannedEndAt(scheduleEndByItem.get(item.getId()))
+                .children(subChildren)
                 .build();
     }
 
@@ -276,29 +390,27 @@ public class CurriculumServiceImpl implements CurriculumService {
             throw new CurriculumUpdateException("Cannot update an external graph curriculum");
         }
 
-        existingCurriculum.setTitle(curriculum.getTitle());
-        existingCurriculum.setDescription(curriculum.getDescription());
-        existingCurriculum.setCurriculumType(curriculum.getCurriculumType());
-        existingCurriculum.setStatus(curriculum.getStatus());
-        existingCurriculum.setVisibility(curriculum.getVisibility());
-        existingCurriculum.setProvider(curriculum.getProvider());
-        existingCurriculum.setRelevantOccupation(curriculum.getRelevantOccupation());
+        if (curriculum.getTitle() != null) existingCurriculum.setTitle(curriculum.getTitle());
+        if (curriculum.getDescription() != null) existingCurriculum.setDescription(curriculum.getDescription());
+        if (curriculum.getCurriculumType() != null) existingCurriculum.setCurriculumType(curriculum.getCurriculumType());
+        if (curriculum.getStatus() != null) existingCurriculum.setStatus(curriculum.getStatus());
+        if (curriculum.getVisibility() != null) existingCurriculum.setVisibility(curriculum.getVisibility());
+        if (curriculum.getProvider() != null) existingCurriculum.setProvider(curriculum.getProvider());
+        if (curriculum.getRelevantOccupation() != null) existingCurriculum.setRelevantOccupation(curriculum.getRelevantOccupation());
         if (curriculum.getRelevantOccupationIri() != null) existingCurriculum.setRelevantOccupationIri(curriculum.getRelevantOccupationIri());
-        existingCurriculum.setIdentifier(curriculum.getIdentifier());
-        existingCurriculum.setAudience(curriculum.getAudience());
+        if (curriculum.getIdentifier() != null) existingCurriculum.setIdentifier(curriculum.getIdentifier());
+        if (curriculum.getAudience() != null) existingCurriculum.setAudience(curriculum.getAudience());
         if (curriculum.getAudienceIri() != null) existingCurriculum.setAudienceIri(curriculum.getAudienceIri());
-        existingCurriculum.setSubjectAreaIri(curriculum.getSubjectAreaIri());
-        existingCurriculum.setSubjectIri(curriculum.getSubjectIri());
-        existingCurriculum.setEducationalLevelIri(curriculum.getEducationalLevelIri());
-        existingCurriculum.setSchoolLevel(curriculum.getSchoolLevel());
-        existingCurriculum.setGrade(curriculum.getGrade());
-        if (curriculum.getEducationalFramework() != null) {
-            existingCurriculum.setEducationalFramework(curriculum.getEducationalFramework());
-        }
-        existingCurriculum.setLanguage(curriculum.getLanguage());
-        existingCurriculum.setVolumeHours(curriculum.getVolumeHours());
-        existingCurriculum.setExternalSource(curriculum.getExternalSource());
-        existingCurriculum.setExternalPageIri(curriculum.getExternalPageIri() != null ? curriculum.getExternalPageIri() : "");
+        if (curriculum.getSubjectAreaIri() != null) existingCurriculum.setSubjectAreaIri(curriculum.getSubjectAreaIri());
+        if (curriculum.getSubjectIri() != null) existingCurriculum.setSubjectIri(curriculum.getSubjectIri());
+        if (curriculum.getEducationalLevelIri() != null) existingCurriculum.setEducationalLevelIri(curriculum.getEducationalLevelIri());
+        if (curriculum.getSchoolLevel() != null) existingCurriculum.setSchoolLevel(curriculum.getSchoolLevel());
+        if (curriculum.getGrade() != null) existingCurriculum.setGrade(curriculum.getGrade());
+        if (curriculum.getEducationalFramework() != null) existingCurriculum.setEducationalFramework(curriculum.getEducationalFramework());
+        if (curriculum.getLanguage() != null) existingCurriculum.setLanguage(curriculum.getLanguage());
+        if (curriculum.getVolumeHours() != null) existingCurriculum.setVolumeHours(curriculum.getVolumeHours());
+        if (curriculum.getExternalSource() != null) existingCurriculum.setExternalSource(curriculum.getExternalSource());
+        if (curriculum.getExternalPageIri() != null) existingCurriculum.setExternalPageIri(curriculum.getExternalPageIri());
 
         List<UpdateCurriculumVersionRequest> versionRequests = Optional.ofNullable(curriculum.getCurriculumVersions())
                 .orElse(Collections.emptyList());
@@ -339,6 +451,15 @@ public class CurriculumServiceImpl implements CurriculumService {
             if (c.isExternalGraph()) {
                 throw new CurriculumUpdateException("Cannot delete an external graph curriculum");
             }
+            // Delete child records for each version to avoid FK constraint violations
+            for (CurriculumVersion v : c.getCurriculumVersions()) {
+                UUID vid = v.getId();
+                curriculumItemScheduleRepository.deleteByCurriculumItem_CurriculumVersion_Id(vid);
+                curriculumItemRelationRepository.deleteByCurriculumVersion_Id(vid);
+                curriculumItemRepository.nullifyParentsByCurriculumVersionId(vid);
+                curriculumItemRepository.deleteByCurriculumVersion_Id(vid);
+            }
+            curriculumVersionRepository.deleteAll(c.getCurriculumVersions());
             curriculumRepository.delete(c);
         });
     }

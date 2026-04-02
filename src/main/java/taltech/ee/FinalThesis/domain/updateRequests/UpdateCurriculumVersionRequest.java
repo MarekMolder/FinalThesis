@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionPublishStatusEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -24,4 +25,6 @@ public class UpdateCurriculumVersionRequest {
     private String externalPageIri;
     private CurriculumVersionPublishStatusEnum status;
     private String publishedError;
+    private LocalDate schoolYearStartDate;
+    private String schoolBreaksJson;
 }

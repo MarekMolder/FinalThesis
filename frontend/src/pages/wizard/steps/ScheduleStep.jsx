@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { curriculumVersion } from '../../../api';
 import CurriculumCalendar from '../../../components/curriculumTimeline/CurriculumCalendar';
 
-export default function ScheduleStep({ versionId, curriculumId, items, onFinish }) {
+export default function ScheduleStep({ versionId, curriculumId, items, onFinish, schoolWeeks }) {
   const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState('');
 
@@ -36,7 +36,7 @@ export default function ScheduleStep({ versionId, curriculumId, items, onFinish 
 
       {error && <div className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
 
-      <CurriculumCalendar curriculumVersionId={versionId} />
+      <CurriculumCalendar curriculumVersionId={versionId} schoolWeeks={schoolWeeks} />
     </div>
   );
 }

@@ -1,0 +1,36 @@
+.tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.55);
+  transition: opacity 0.3s ease;
+}
+
+.tutorial-highlight {
+  position: fixed;
+  z-index: 9999;
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 4000px rgba(0, 0, 0, 0.55),
+    0 0 20px 4px rgba(14, 165, 233, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.tutorial-popup {
+  position: fixed;
+  z-index: 10000;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tutorial-popup-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.tutorial-popup-active {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -6,8 +6,9 @@ const DAY_MS = 86400000;
 /** Ribal kuvatav minimaalne „lõpu“ akna pikkus: kui tegelik ajavahemik on pikem, näidatakse viimast N ööpäeva. */
 const DISPLAY_SPAN_MS = 5 * DAY_MS;
 const ROW_H = 44;
+const MIN_BAR_PX = 28;
 /** Ajaskaala päise kõrgus (võrgusamm + kasti lõpu kuupäevad). */
-const TIME_HEADER_H = 40;
+const TIME_HEADER_H = 64;
 const LABEL_W = 220;
 
 const RELATION_COLORS = {
@@ -69,6 +70,14 @@ function formatBarEndHeaderLabel(endMs) {
 }
 
 function cubicPath(x1, y1, x2, y2) {
+  const dx = Math.abs(x2 - x1);
+  const dy = Math.abs(y2 - y1);
+  // When items are nearly vertical (same day), use a gentle offset so the arrow
+  // doesn't collapse into a straight line or make an ugly S-shape
+  if (dx < 20) {
+    const offset = -Math.max(30, dy * 0.3);
+    return `M ${x1} ${y1} C ${x1 + offset} ${y1}, ${x2 + offset} ${y2}, ${x2} ${y2}`;
+  }
   const mid = (x1 + x2) / 2;
   return `M ${x1} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}`;
 }
@@ -141,7 +150,7 @@ function orderItemsTree(scheduledIds, itemById) {
  * @param {(b: object) => void} props.onBlockClick
  * @param {(type: string, kind?: string) => string} props.typeToColor
  */
-export default function CurriculumGantt({ blocks, items, relations, anchorDate, onBlockClick, typeToColor }) {
+export default function CurriculumGantt({ blocks, items, relations, anchorDate, onBlockClick, typeToColor, schoolWeeks }) {
   const [pixelsPerDay, setPixelsPerDay] = useState(48);
   const [showModule, setShowModule] = useState(true);
   const [showLO, setShowLO] = useState(true);
@@ -239,8 +248,15 @@ export default function CurriculumGantt({ blocks, items, relations, anchorDate, 
       const e = parseMs(block.plannedEndAt);
       if (!Number.isFinite(s) || !Number.isFinite(e) || e <= s) return;
       const { d0, d1 } = displayRangeMs(s, e);
-      const left = timeToX(d0);
-      const right = timeToX(d1);
+      let left = timeToX(d0);
+      let right = timeToX(d1);
+      // Ensure minimum visible width, centered on the midpoint
+      const rawW = right - left;
+      if (rawW < MIN_BAR_PX) {
+        const mid = (left + right) / 2;
+        left = mid - MIN_BAR_PX / 2;
+        right = mid + MIN_BAR_PX / 2;
+      }
       const arr = byItem.get(key) || [];
       arr.push({
         left,
@@ -426,6 +442,22 @@ export default function CurriculumGantt({ blocks, items, relations, anchorDate, 
     return out;
   }, [rangeStart, rangeEnd, totalMs, timeToX]);
 
+  const schoolWeekTicks = useMemo(() => {
+    if (!schoolWeeks?.length) return [];
+    return schoolWeeks
+      .filter((w) => {
+        const wEnd = w.endDate.getTime();
+        const wStart = w.startDate.getTime();
+        return wEnd >= rangeStart.getTime() && wStart <= rangeEnd.getTime();
+      })
+      .map((w) => ({
+        ...w,
+        x: timeToX(w.startDate.getTime()),
+        xEnd: timeToX(w.endDate.getTime() + DAY_MS),
+        label: w.weekNumber != null ? `\u00d5${w.weekNumber}` : '',
+      }));
+  }, [schoolWeeks, rangeStart, rangeEnd, timeToX]);
+
   /** Kasti lõpu X + täieliku lõpu kuupäeva silt päises (min. pikslivahe, et sildid ei kattuks). */
   const barEndHeaderMarkers = useMemo(() => {
     const raw = [];
@@ -456,12 +488,20 @@ export default function CurriculumGantt({ blocks, items, relations, anchorDate, 
     return timeToX(now);
   }, [rangeStart, rangeEnd, timeToX]);
 
+  const anchorX = useMemo(() => {
+    const t = startOfDay(anchorDate).getTime();
+    if (t < rangeStart.getTime() || t > rangeEnd.getTime()) return null;
+    return timeToX(t);
+  }, [anchorDate, rangeStart, rangeEnd, timeToX]);
+
   useEffect(() => {
-    if (!scrollRef.current || todayX == null) return;
+    if (!scrollRef.current) return;
     const el = scrollRef.current;
-    const target = todayX - el.clientWidth / 3;
+    const x = anchorX ?? todayX;
+    if (x == null) return;
+    const target = x - el.clientWidth / 3;
     el.scrollLeft = Math.max(0, target);
-  }, [todayX, innerWidth, anchorDate]);
+  }, [anchorX, todayX, innerWidth]);
 
   const onZoom = (delta) => {
     setPixelsPerDay((p) => Math.min(120, Math.max(16, p + delta)));
@@ -589,6 +629,24 @@ export default function CurriculumGantt({ blocks, items, relations, anchorDate, 
         <div className="cgantt-scroll" ref={scrollRef}>
           <div className="cgantt-timeline-inner" style={{ width: innerWidth, height: gridHeight }}>
             <div className="cgantt-time-header" style={{ width: innerWidth }}>
+              {/* School week header row */}
+              {schoolWeekTicks.length > 0 && (
+                <div className="cgantt-week-header" style={{ width: innerWidth }}>
+                  {schoolWeekTicks.map((wt, i) => (
+                    <div
+                      key={i}
+                      className={`cgantt-week-cell ${wt.isHoliday ? 'cgantt-week-cell--holiday' : ''}`}
+                      style={{
+                        left: wt.x,
+                        width: Math.max(wt.xEnd - wt.x, 20),
+                      }}
+                      title={wt.isHoliday ? 'Vaheaeg' : `${wt.weekNumber}. \u00f5ppen\u00e4dal`}
+                    >
+                      {wt.label}
+                    </div>
+                  ))}
+                </div>
+              )}
               {ticks.map((tk) => (
                 <div
                   key={tk.t}
@@ -616,6 +674,24 @@ export default function CurriculumGantt({ blocks, items, relations, anchorDate, 
                   key={`g-${tk.t}`}
                   className={`cgantt-grid-line ${tk.major ? 'cgantt-grid-line--week' : ''}`}
                   style={{ left: tk.x }}
+                />
+              ))}
+              {schoolWeekTicks.map((wt, i) => (
+                <div
+                  key={`sw-${i}`}
+                  className={`cgantt-week-line ${wt.isHoliday ? 'cgantt-week-line--holiday' : ''}`}
+                  style={{ left: wt.x }}
+                />
+              ))}
+
+              {schoolWeekTicks.filter((w) => w.isHoliday).map((wt, i) => (
+                <div
+                  key={`sh-${i}`}
+                  className="cgantt-holiday-bg"
+                  style={{
+                    left: wt.x,
+                    width: Math.max(wt.xEnd - wt.x, 0),
+                  }}
                 />
               ))}
             </div>
@@ -678,7 +754,7 @@ export default function CurriculumGantt({ blocks, items, relations, anchorDate, 
                       className="cgantt-bar cgantt-bar--buffer"
                       style={{
                         left: seg.left,
-                        width: Math.max(4, seg.right - seg.left),
+                        width: seg.right - seg.left,
                         top: seg.innerTop,
                         background: 'rgba(229, 115, 115, 0.22)',
                         borderLeftColor: '#c62828',
@@ -723,7 +799,7 @@ export default function CurriculumGantt({ blocks, items, relations, anchorDate, 
                           className="cgantt-bar"
                           style={{
                             left: seg.left,
-                            width: Math.max(4, seg.right - seg.left),
+                            width: seg.right - seg.left,
                             top: seg.innerTop,
                             background: col,
                             borderLeftColor: col,

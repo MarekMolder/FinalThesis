@@ -19,4 +19,6 @@ public interface CurriculumVersionService {
     CurriculumVersion updateForUser(UUID id, UUID userId, UpdateCurriculumVersionRequest request);
 
     void deleteForUser(UUID id, UUID userId);
+
+    CurriculumVersion duplicateVersion(UUID sourceVersionId, UUID userId);
 }

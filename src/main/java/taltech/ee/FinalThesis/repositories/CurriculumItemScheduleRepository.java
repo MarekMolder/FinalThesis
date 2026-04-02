@@ -18,4 +18,6 @@ public interface CurriculumItemScheduleRepository extends JpaRepository<Curricul
     Optional<CurriculumItemSchedule> findByIdAndCurriculumItem_CurriculumVersion_Curriculum_User_Id(UUID id, UUID userId);
 
     List<CurriculumItemSchedule> findByCurriculumItem_CurriculumVersion_Id(UUID curriculumVersionId);
+
+    void deleteByCurriculumItem_CurriculumVersion_Id(UUID curriculumVersionId);
 }

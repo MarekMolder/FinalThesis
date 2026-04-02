@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { getCurrentUser, logout as apiLogout, curriculum, curriculumVersion, curriculumItem, graphCatalog } from '../../api';
+import { getCurrentUser, logout as apiLogout, curriculum, curriculumVersion, curriculumItem, graphCatalog, timeline } from '../../api';
 import bgImg from '../../assets/background.png';
 import logoImg from '../../assets/logo.png';
 import StepBar from '../../components/wizard/StepBar';
@@ -9,6 +9,7 @@ import MetadataStep from './steps/MetadataStep';
 import StructureStep from './steps/StructureStep';
 import ContentStep from './steps/ContentStep';
 import ScheduleStep from './steps/ScheduleStep';
+import { computeSchoolWeeks } from '../../utils/schoolWeeks';
 
 export default function CreateCurriculumPage() {
   const navigate = useNavigate();
@@ -30,6 +31,25 @@ export default function CreateCurriculumPage() {
     () => Number(localStorage.getItem('wizardAiWidth')) || 300
   );
   const [contentStats, setContentStats] = useState(null);
+  const [scheduleMap, setScheduleMap] = useState({});
+
+  useEffect(() => {
+    if (!versionId) return;
+    let ignore = false;
+    timeline.blocks(versionId).then((blocks) => {
+      if (ignore) return;
+      const map = {};
+      for (const b of blocks) {
+        if (b.kind !== 'ITEM_SCHEDULE' || !b.curriculumItemId || !b.plannedStartAt) continue;
+        const existing = map[b.curriculumItemId];
+        if (!existing || b.plannedStartAt < existing.plannedStartAt) {
+          map[b.curriculumItemId] = { plannedStartAt: b.plannedStartAt, plannedEndAt: b.plannedEndAt, status: b.status };
+        }
+      }
+      setScheduleMap(map);
+    }).catch(() => {});
+    return () => { ignore = true; };
+  }, [versionId, step]);
 
   useEffect(() => {
     graphCatalog.taxonomy().then((data) => {
@@ -67,8 +87,23 @@ export default function CreateCurriculumPage() {
         const versions = Array.isArray(cur.curriculumVersions) ? cur.curriculumVersions : [];
         const latestVersion = [...versions].sort((a, b) => (b.versionNumber ?? 0) - (a.versionNumber ?? 0))[0];
         if (latestVersion?.id) {
-          setVersionId(latestVersion.id);
-          const existingItems = await curriculumItem.list(latestVersion.id);
+          let workingVersionId = latestVersion.id;
+          // If latest version is not DRAFT, create a new draft copy
+          if (latestVersion.state !== 'DRAFT') {
+            const duplicated = await curriculumVersion.duplicate(latestVersion.id);
+            workingVersionId = duplicated.id;
+          }
+          setVersionId(workingVersionId);
+          // Fetch version details for school year data
+          try {
+            const ver = await curriculumVersion.get(workingVersionId);
+            if (!ignore && ver) {
+              if (ver.schoolYearStartDate) meta.schoolYearStartDate = ver.schoolYearStartDate;
+              if (ver.schoolBreaksJson) meta.schoolBreaks = ver.schoolBreaksJson;
+            }
+          } catch { /* version detail fetch failed, continue */ }
+          setMetadata(meta);
+          const existingItems = await curriculumItem.list(workingVersionId);
           if (!ignore) setItems(Array.isArray(existingItems) ? existingItems : []);
         }
 
@@ -116,6 +151,10 @@ export default function CreateCurriculumPage() {
       );
       setCatalogJson(catalog);
     } catch { /* graph unavailable */ }
+  }
+
+  function saveDraft() {
+    navigate('/');
   }
 
   const steps = [
@@ -194,7 +233,7 @@ export default function CreateCurriculumPage() {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col rounded-3xl border border-white/60 bg-white/55 shadow-sm backdrop-blur-md overflow-hidden">
-          <StepBar steps={steps} current={step} gate={versionId ? 4 : 1} onStepClick={setStep} />
+          <StepBar steps={steps} current={step} gate={versionId ? 4 : 1} onStepClick={setStep} onSaveDraft={versionId ? saveDraft : undefined} />
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="flex-1 overflow-y-auto">
               {editLoading && (
@@ -216,6 +255,7 @@ export default function CreateCurriculumPage() {
                   items={items}
                   onItemsChange={setItems}
                   verbs={verbs}
+                  scheduleMap={scheduleMap}
                 />
               )}
               {step === 3 && versionId && (
@@ -225,6 +265,7 @@ export default function CreateCurriculumPage() {
                   items={items}
                   onItemsChange={setItems}
                   onContentStatsReady={setContentStats}
+                  scheduleMap={scheduleMap}
                 />
               )}
               {step === 4 && versionId && (
@@ -233,6 +274,10 @@ export default function CreateCurriculumPage() {
                   curriculumId={curriculumId}
                   items={items}
                   onFinish={() => navigate(`/curriculum/${curriculumId}`)}
+                  schoolWeeks={(() => {
+                    if (!metadata.schoolYearStartDate) return [];
+                    return computeSchoolWeeks(metadata.schoolYearStartDate, metadata.schoolBreaks || []);
+                  })()}
                 />
               )}
             </div>

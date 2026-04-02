@@ -40,6 +40,8 @@ public interface CurriculumService {
      */
     Optional<ImportedCurriculumStructureDto> getImportedStructureForCurriculum(UUID curriculumId);
 
+    Optional<ImportedCurriculumStructureDto> getImportedStructureForCurriculum(UUID curriculumId, UUID versionId);
+
     Curriculum updateCurriculumForUser(UUID id, UUID userId, UpdateCurriculumRequest curriculum);
 
     void deleteCurriculumForUser(UUID id, UUID userId);

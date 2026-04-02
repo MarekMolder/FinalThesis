@@ -7,7 +7,7 @@ import ContentImportPanel from '../../../components/wizard/ContentImportPanel';
 const CONTENT_TYPES = ['TASK', 'TEST', 'LEARNING_MATERIAL', 'KNOBIT'];
 const IMPORTABLE_PARENT_TYPES = ['MODULE', 'TOPIC', 'LEARNING_OUTCOME'];
 
-export default function ContentStep({ versionId, metadata, items, onItemsChange, onContentStatsReady }) {
+export default function ContentStep({ versionId, metadata, items, onItemsChange, onContentStatsReady, scheduleMap }) {
   const [modal, setModal] = useState(null);
   const [error, setError] = useState('');
   const [contentImport, setContentImport] = useState(null);
@@ -228,11 +228,11 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
   }
 
   return (
-    <div className="p-6">
+    <div className="px-6 py-5">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Sisu lisamine</h2>
-          <p className="mt-1 text-sm text-slate-500">Lisa opivaljundite alla ulesanded, testid, materjalid ja knobitid.</p>
+          <h2 className="text-xl font-bold text-slate-900 leading-tight">Sisu lisamine</h2>
+          <p className="mt-1 text-[13px] text-slate-500">Lisa õpiväljundite alla ülesanded, testid, materjalid ja knobitid</p>
         </div>
         <div className="flex gap-2">
           {deleteMode ? (
@@ -240,13 +240,13 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
               <button
                 onClick={handleBulkDelete}
                 disabled={deleteSelected.size === 0 || deleting}
-                className="rounded-2xl bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-40"
+                className="rounded-xl bg-red-600 px-3.5 py-[7px] text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-40"
               >
                 {deleting ? 'Kustutan...' : `Kustuta valitud (${deleteSelected.size})`}
               </button>
               <button
                 onClick={() => { setDeleteMode(false); setDeleteSelected(new Set()); }}
-                className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white/90"
+                className="rounded-xl border border-slate-200/80 bg-white/70 px-3.5 py-[7px] text-xs font-semibold text-slate-500 hover:bg-white/90"
               >
                 Loobu
               </button>
@@ -254,7 +254,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
           ) : (
             <button
               onClick={() => setDeleteMode(true)}
-              className="rounded-2xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+              className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-[7px] text-xs font-semibold text-red-700 hover:bg-red-100"
             >
               Kustuta sisu
             </button>
@@ -267,6 +267,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
       <WizardTree
         items={items}
         mode="content"
+        scheduleMap={scheduleMap}
         onEdit={(item) => setModal({ item, type: item.type, parentItem: null })}
         onDelete={handleDelete}
         onAddChild={handleAddChild}
@@ -291,7 +292,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
                 <button
                   key="related"
                   onClick={(e) => { e.stopPropagation(); setContentImport({ element: item, mode: 'related' }); }}
-                  className="rounded-lg border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700 hover:bg-sky-100 transition-colors"
+                  className="rounded-[9px] border border-sky-200 bg-sky-50 px-2.5 py-0.5 text-[10px] font-semibold text-sky-700 hover:bg-sky-100 transition-colors"
                   title="Seotud sisu graafist"
                 >
                   &#128279; Seotud
@@ -302,7 +303,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
               <button
                 key="search"
                 onClick={(e) => { e.stopPropagation(); setContentImport({ element: item, mode: 'search' }); }}
-                className="rounded-lg border border-slate-200 bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                className="rounded-[9px] border border-slate-200/80 bg-white/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 hover:bg-white/90 transition-colors"
                 title="Otsi sisu graafist"
               >
                 &#128269; Otsi
@@ -321,7 +322,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
                 <span className="text-xs font-semibold text-slate-500 self-center">Tuup:</span>
                 {CONTENT_TYPES.map((t) => (
                   <button key={t} onClick={() => setModal((m) => ({ ...m, type: t }))}
-                    className={['rounded-xl px-3 py-1 text-xs font-semibold border', modal.type === t ? 'bg-sky-600 text-white border-sky-600' : 'bg-white/70 text-slate-700 border-slate-200'].join(' ')}>
+                    className={['rounded-xl px-3 py-1 text-xs font-semibold border transition-colors', modal.type === t ? 'bg-sky-600 text-white border-sky-600 shadow-[0_2px_6px_rgba(2,132,199,.25)]' : 'bg-white/70 text-slate-600 border-slate-200/80 hover:bg-white/90'].join(' ')}>
                     {{ TASK: 'Ulesanne', TEST: 'Test', LEARNING_MATERIAL: 'Materjal', KNOBIT: 'Knobit' }[t]}
                   </button>
                 ))}

@@ -43,6 +43,8 @@ function GraphLink({ url }) {
   );
 }
 
+const MODULE_TOPIC_TYPES = new Set(['MODULE', 'TOPIC']);
+
 export default function ContentImportPanel({
   mode,
   element,
@@ -52,6 +54,7 @@ export default function ContentImportPanel({
   onImport,
   onClose,
 }) {
+  const allowedTypes = MODULE_TOPIC_TYPES.has(element?.type) ? new Set(['TEST']) : null;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -100,20 +103,24 @@ export default function ContentImportPanel({
   const filtered = useMemo(() => {
     if (!data) return [];
     return data.filter((item) => {
+      if (allowedTypes && !allowedTypes.has(item.type)) return false;
       if (tab !== 'all' && item.type !== tab) return false;
       if (q && !(item.headline ?? item.pageTitle ?? '').toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [data, tab, q]);
+  }, [data, tab, q, allowedTypes]);
 
   const grouped = useMemo(() => {
     if (mode !== 'related') return null;
-    const groups = { TASK: [], TEST: [], LEARNING_MATERIAL: [], KNOBIT: [] };
+    const groups = {};
+    for (const t of ['TASK', 'TEST', 'LEARNING_MATERIAL', 'KNOBIT']) {
+      if (!allowedTypes || allowedTypes.has(t)) groups[t] = [];
+    }
     for (const item of filtered) {
       if (groups[item.type]) groups[item.type].push(item);
     }
     return groups;
-  }, [mode, filtered]);
+  }, [mode, filtered, allowedTypes]);
 
   function itemKey(item) {
     return item.fullUrl ?? item.pageTitle;
@@ -429,7 +436,9 @@ export default function ContentImportPanel({
                 </div>
 
                 <div className="flex gap-1 rounded-xl bg-slate-100/70 p-1">
-                  {TYPE_TABS.map((t) => (
+                  {TYPE_TABS
+                    .filter((t) => !allowedTypes || t.key === 'all' || allowedTypes.has(t.key))
+                    .map((t) => (
                     <button
                       key={t.key}
                       onClick={() => setTab(t.key)}

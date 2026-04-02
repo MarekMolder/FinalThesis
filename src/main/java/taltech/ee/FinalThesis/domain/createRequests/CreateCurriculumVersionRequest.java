@@ -8,6 +8,7 @@ import taltech.ee.FinalThesis.domain.entities.User;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionPublishStatusEnum;
 import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,8 @@ public class CreateCurriculumVersionRequest {
     private CurriculumVersionPublishStatusEnum status;
     private LocalDateTime publishedAt;
     private String publishedError;
+    private LocalDate schoolYearStartDate;
+    private String schoolBreaksJson;
     private Curriculum curriculum;
     private User user;
     private List<CreateCurriculumItemRequest> curriculumItems = new ArrayList<>();

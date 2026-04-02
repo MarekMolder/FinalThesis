@@ -81,6 +81,14 @@ public class CurriculumVersionController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{versionId}/duplicate")
+    public ResponseEntity<GetCurriculumVersionDetailsResponseDto> duplicateVersion(
+            @AuthenticationPrincipal CurriculumUserDetails userDetails,
+            @PathVariable UUID versionId) {
+        CurriculumVersion duplicated = curriculumVersionService.duplicateVersion(versionId, userDetails.getId());
+        return new ResponseEntity<>(curriculumVersionMapper.toGetDetailsResponseDto(duplicated), HttpStatus.CREATED);
+    }
+
     @PostMapping("/{versionId}/generate-content-json")
     public ResponseEntity<GetCurriculumVersionDetailsResponseDto> generateContentJson(
             @AuthenticationPrincipal CurriculumUserDetails userDetails,

@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,4 +26,10 @@ public interface CurriculumItemRepository extends JpaRepository<CurriculumItem, 
     List<CurriculumItem> findAllWithParentByCurriculumVersion_Id(@Param("vid") UUID curriculumVersionId);
 
     List<CurriculumItem> findAllByParentItem_Id(UUID parentItemId);
+
+    @Modifying
+    @Query("UPDATE CurriculumItem i SET i.parentItem = null WHERE i.curriculumVersion.id = :vid")
+    void nullifyParentsByCurriculumVersionId(@Param("vid") UUID curriculumVersionId);
+
+    void deleteByCurriculumVersion_Id(UUID curriculumVersionId);
 }
