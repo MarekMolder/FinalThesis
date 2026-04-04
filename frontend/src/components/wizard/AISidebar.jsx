@@ -31,7 +31,7 @@ function renderMarkdown(text, role) {
     if (headingMatch) {
       flushList();
       elements.push(
-        <div key={key++} className="font-bold text-slate-800 mt-1.5 mb-0.5">
+        <div key={key++} className="font-bold text-slate-800 dark:text-slate-200 mt-1.5 mb-0.5">
           {renderInline(headingMatch[2], boldClass)}
         </div>
       );
@@ -100,7 +100,7 @@ function ExpandSelect({ label, value, active, options, onChange, placeholder }) 
   return (
     <div className="flex flex-col gap-0.5" ref={wrapRef}>
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium text-slate-600">{label}</span>
+        <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">{label}</span>
         {active && (
           <span className={['text-[9px] rounded px-1.5 py-0.5 font-medium', isChanged ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'].join(' ')}>
             {isChanged ? 'muudetud' : 'aktiivne'}
@@ -113,7 +113,7 @@ function ExpandSelect({ label, value, active, options, onChange, placeholder }) 
           onChange={(e) => { onChange(e.target.value); setFilter(e.target.value); if (!open) setOpen(true); }}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className="w-full rounded-lg border border-slate-200 bg-white/80 px-2.5 py-1.5 pr-7 text-[11px] text-slate-800 outline-none focus:border-violet-300 focus:ring-1 focus:ring-violet-200"
+          className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white/80 dark:bg-slate-700 px-2.5 py-1.5 pr-7 text-[11px] text-slate-800 dark:text-slate-100 outline-none focus:border-violet-300 focus:ring-1 focus:ring-violet-200"
         />
         <button
           type="button"
@@ -123,14 +123,14 @@ function ExpandSelect({ label, value, active, options, onChange, placeholder }) 
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         {open && filtered.length > 0 && (
-          <div className="absolute left-0 right-0 top-full z-20 mt-0.5 max-h-32 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+          <div className="absolute left-0 right-0 top-full z-20 mt-0.5 max-h-32 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-lg">
             {filtered.map((opt) => (
               <button
                 key={opt}
                 onClick={() => { onChange(opt); setFilter(''); setOpen(false); }}
                 className={[
                   'block w-full px-2.5 py-1.5 text-left text-[11px] hover:bg-violet-50 transition-colors',
-                  opt === value ? 'bg-violet-50 font-semibold text-violet-700' : 'text-slate-700',
+                  opt === value ? 'bg-violet-50 dark:bg-violet-900/40 font-semibold text-violet-700 dark:text-violet-300' : 'text-slate-700 dark:text-slate-300',
                 ].join(' ')}
               >
                 {opt}
@@ -321,7 +321,7 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
 
   return (
     <div
-      className="relative flex flex-col rounded-3xl border border-white/60 bg-white/55 shadow-sm backdrop-blur-md overflow-hidden flex-shrink-0 min-h-0 h-[calc(100vh-120px)]"
+      className="relative flex flex-col rounded-3xl border border-white/60 dark:border-slate-700 bg-white/55 dark:bg-slate-800/80 shadow-sm backdrop-blur-md overflow-hidden flex-shrink-0 min-h-0 h-[calc(100vh-120px)]"
       style={{ width }}
     >
       <div
@@ -331,13 +331,13 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
         <div className="h-10 w-1 rounded-full bg-slate-200 group-hover:bg-sky-400 transition-colors" />
       </div>
 
-      <div className="flex items-center gap-2 border-b border-white/50 px-4 py-3 pl-5">
+      <div className="flex items-center gap-2 border-b border-white/50 dark:border-slate-700 px-4 py-3 pl-5">
         <span className={['h-2.5 w-2.5 rounded-full flex-shrink-0', sending ? 'bg-amber-500 animate-pulse' : 'bg-sky-500 shadow-[0_0_0_3px_rgba(14,165,233,.2)]'].join(' ')} />
-        <span className="flex-1 text-sm font-semibold text-slate-800">AI Assistent</span>
+        <span className="flex-1 text-sm font-semibold text-slate-800 dark:text-slate-200">AI Assistent</span>
         {sending && <span className="text-[10px] text-amber-600 animate-pulse">Mõtlen…</span>}
       </div>
 
-      <div className="mx-3 mt-2 rounded-xl border border-sky-100 bg-sky-50/70 px-3 py-1.5 text-[10px] text-sky-700 font-medium">
+      <div className="mx-3 mt-2 rounded-xl border border-sky-100 dark:border-sky-800 bg-sky-50/70 dark:bg-sky-900/40 px-3 py-1.5 text-[10px] text-sky-700 dark:text-sky-400 font-medium">
         Step {step} · {stepLabel} · {items.length} elementi
       </div>
 
@@ -347,7 +347,7 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
             <div className={[
               'rounded-2xl px-3 py-2 text-xs leading-relaxed',
               m.role === 'ai'
-                ? 'bg-white/80 border border-slate-100 text-slate-700'
+                ? 'bg-white/80 dark:bg-slate-700/80 border border-slate-100 dark:border-slate-600 text-slate-700 dark:text-slate-300'
                 : 'bg-sky-600 text-white',
             ].join(' ')}>
               {renderMarkdown(m.text, m.role)}
@@ -363,7 +363,7 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
                       'rounded-lg border px-2 py-1 text-[10px] font-semibold disabled:opacity-50 transition-colors',
                       c === 'Laienda graafiparingut'
                         ? 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100'
-                        : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100',
+                        : 'border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40',
                     ].join(' ')}
                   >
                     {c}
@@ -376,7 +376,7 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
 
         {expandForm && (
           <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50/80 to-indigo-50/80 p-3">
-            <div className="text-[11px] font-semibold text-violet-800 mb-2">Graafiparingu seaded</div>
+            <div className="text-[11px] font-semibold text-violet-800 dark:text-violet-300 mb-2">Graafiparingu seaded</div>
             <div className="space-y-2">
               <ExpandSelect
                 label="Õppeaine"
@@ -428,7 +428,7 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
               </button>
               <button
                 onClick={() => setExpandForm(null)}
-                className="rounded-lg border border-slate-200 bg-white/80 px-3 py-1.5 text-[10px] font-semibold text-slate-600 hover:bg-slate-50"
+                className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white/80 dark:bg-slate-700 px-3 py-1.5 text-[10px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 Tühista
               </button>
@@ -446,7 +446,7 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="flex gap-2 border-t border-white/50 p-2.5">
+      <div className="flex gap-2 border-t border-white/50 dark:border-slate-700 p-2.5">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -454,7 +454,7 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
           placeholder={sending ? 'Ootan vastust…' : 'Küsi midagi...'}
           disabled={sending}
           rows={1}
-          className="flex-1 resize-none rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/40 disabled:opacity-60"
+          className="flex-1 resize-none rounded-xl border border-slate-200/80 dark:border-slate-600 bg-white/70 dark:bg-slate-700 px-3 py-2 text-xs text-slate-800 dark:text-slate-100 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/40 disabled:opacity-60"
         />
         <button
           onClick={() => send()}

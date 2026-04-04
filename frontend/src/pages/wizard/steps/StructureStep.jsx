@@ -129,27 +129,27 @@ export default function StructureStep({ versionId, metadata, catalogJson, items,
     <div className="relative px-6 py-5">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 leading-tight">Õppekava struktuur</h2>
-          <p className="mt-1 text-[13px] text-slate-500">{metadata.subjectLabel ?? ''} · {metadata.grade ?? ''}</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">Õppekava struktuur</h2>
+          <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">{metadata.subjectLabel ?? ''} · {metadata.grade ?? ''}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => setImportParent({ id: null })} className="rounded-xl border border-indigo-200/25 bg-gradient-to-r from-violet-100 to-blue-100 px-3.5 py-[7px] text-xs font-semibold text-indigo-700 hover:brightness-105 transition">
+          <button onClick={() => setImportParent({ id: null })} className="rounded-xl border border-indigo-200/25 dark:border-indigo-800/40 bg-gradient-to-r from-violet-100 to-blue-100 dark:from-violet-900/40 dark:to-blue-900/40 px-3.5 py-[7px] text-xs font-semibold text-indigo-700 dark:text-indigo-400 hover:brightness-105 transition">
             ⬇ Impordi graafist
           </button>
           <button onClick={() => setModal({ item: null, type: 'MODULE', parentItem: null })} className="rounded-xl bg-sky-600 px-3.5 py-[7px] text-xs font-semibold text-white shadow-[0_2px_6px_rgba(2,132,199,.25)] hover:bg-sky-700">
             + Moodul
           </button>
-          <button onClick={() => setModal({ item: null, type: 'TOPIC', parentItem: null })} className="rounded-xl border border-sky-200/60 bg-sky-50/80 px-3.5 py-[7px] text-xs font-semibold text-sky-700 hover:bg-sky-100/80">
+          <button onClick={() => setModal({ item: null, type: 'TOPIC', parentItem: null })} className="rounded-xl border border-sky-200/60 dark:border-sky-800 bg-sky-50/80 dark:bg-sky-900/40 px-3.5 py-[7px] text-xs font-semibold text-sky-700 dark:text-sky-400 hover:bg-sky-100/80 dark:hover:bg-sky-900/40">
             + Teema
           </button>
-          <button onClick={() => setModal({ item: null, type: 'LEARNING_OUTCOME', parentItem: null })} className="rounded-xl border border-sky-200/60 bg-sky-50/80 px-3.5 py-[7px] text-xs font-semibold text-sky-700 hover:bg-sky-100/80">
+          <button onClick={() => setModal({ item: null, type: 'LEARNING_OUTCOME', parentItem: null })} className="rounded-xl border border-sky-200/60 dark:border-sky-800 bg-sky-50/80 dark:bg-sky-900/40 px-3.5 py-[7px] text-xs font-semibold text-sky-700 dark:text-sky-400 hover:bg-sky-100/80 dark:hover:bg-sky-900/40">
             + Õpiväljund
           </button>
         </div>
       </div>
 
-      {error && <div className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
-      {loading ? <div className="py-10 text-center text-sm text-slate-400">Laen…</div> : (
+      {error && <div className="mb-3 rounded-2xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/30 px-4 py-2 text-sm text-rose-700 dark:text-rose-300">{error}</div>}
+      {loading ? <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">Laen…</div> : (
         <WizardTree
           items={items.filter((i) => STRUCTURE_TYPES.includes(i.type))}
           mode="structure"

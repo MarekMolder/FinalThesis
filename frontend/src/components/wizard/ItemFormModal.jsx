@@ -30,50 +30,50 @@ export default function ItemFormModal({ item, type, parentItem, onSave, onClose,
       onSubmit={handleSubmit}
       onClick={(e) => e.stopPropagation()}
       className={noOverlay
-        ? 'w-full rounded-3xl border border-white/60 bg-white/90 shadow-2xl backdrop-blur-md p-6'
-        : 'w-full max-w-md rounded-3xl border border-white/60 bg-white/90 shadow-2xl backdrop-blur-md p-6'}
+        ? 'w-full rounded-3xl border border-white/60 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 shadow-2xl backdrop-blur-md p-6'
+        : 'w-full max-w-md rounded-3xl border border-white/60 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 shadow-2xl backdrop-blur-md p-6'}
     >
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-base font-bold text-slate-900">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
           {item ? 'Muuda' : 'Lisa'} — {TYPE_LABELS[resolvedType]}
         </h3>
-        <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-700 text-xl leading-none">✕</button>
+        <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 text-xl leading-none">✕</button>
       </div>
 
       {parentItem && (
-        <div className="mb-3 rounded-xl bg-slate-50 border border-slate-100 px-3 py-1.5 text-xs text-slate-500">
-          Vanem: <strong className="text-slate-700">{parentItem.title}</strong>
+        <div className="mb-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400">
+          Vanem: <strong className="text-slate-700 dark:text-slate-300">{parentItem.title}</strong>
         </div>
       )}
 
       <div className="space-y-3">
         <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-slate-600">Pealkiri *</span>
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Pealkiri *</span>
           <input
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2 text-sm text-slate-800 outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30"
+            className="rounded-xl border border-slate-200/80 dark:border-slate-600 bg-white/70 dark:bg-slate-700 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30"
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-slate-600">Kirjeldus</span>
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Kirjeldus</span>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="resize-none rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2 text-sm text-slate-800 outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30"
+            className="resize-none rounded-xl border border-slate-200/80 dark:border-slate-600 bg-white/70 dark:bg-slate-700 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30"
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-slate-600">Notatsioon</span>
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Notatsioon</span>
           <input
             value={notation}
             onChange={(e) => setNotation(e.target.value)}
             placeholder="nt LO-9-KEEMIA-01"
-            className="rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2 text-sm text-slate-800 outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30"
+            className="rounded-xl border border-slate-200/80 dark:border-slate-600 bg-white/70 dark:bg-slate-700 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30"
           />
         </label>
 
@@ -93,7 +93,7 @@ export default function ItemFormModal({ item, type, parentItem, onSave, onClose,
                 onChange={(e) => setIsMandatory(e.target.checked)}
                 className="accent-sky-600"
               />
-              <span className="text-xs font-medium text-slate-600">Kohustuslik</span>
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Kohustuslik</span>
             </label>
           </>
         )}
@@ -103,7 +103,7 @@ export default function ItemFormModal({ item, type, parentItem, onSave, onClose,
         <button
           type="button"
           onClick={onClose}
-          className="rounded-xl border border-slate-200 bg-white/70 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-white/90"
+          className="rounded-xl border border-slate-200 dark:border-slate-600 bg-white/70 dark:bg-slate-700 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-white/90 dark:hover:bg-slate-700/90"
         >
           Tühista
         </button>
@@ -167,7 +167,7 @@ function VerbComboField({ label, value, onChange, options, placeholder }) {
 
   return (
     <div className="flex flex-col gap-1" ref={wrapRef}>
-      <span className="text-xs font-medium text-slate-600">{label}</span>
+      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{label}</span>
       <div className="relative">
         <input
           ref={inputRef}
@@ -175,7 +175,7 @@ function VerbComboField({ label, value, onChange, options, placeholder }) {
           onChange={handleInputChange}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className={['w-full rounded-xl border border-slate-200/80 bg-white/70 px-3 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30', showGraphLink ? 'pr-14' : 'pr-8'].join(' ')}
+          className={['w-full rounded-xl border border-slate-200/80 dark:border-slate-600 bg-white/70 dark:bg-slate-700 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/30', showGraphLink ? 'pr-14' : 'pr-8'].join(' ')}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {showGraphLink && (
@@ -201,13 +201,13 @@ function VerbComboField({ label, value, onChange, options, placeholder }) {
           )}
         </div>
         {open && filtered.length > 0 && (
-          <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+          <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-lg">
             {filtered.map((opt) => (
               <div
                 key={opt}
                 className={[
-                  'flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-sky-50 transition-colors',
-                  opt === value ? 'bg-sky-50 text-sky-700 font-medium' : 'text-slate-700',
+                  'flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-sky-50 dark:hover:bg-sky-900/40 transition-colors',
+                  opt === value ? 'bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 font-medium' : 'text-slate-700 dark:text-slate-300',
                 ].join(' ')}
               >
                 <button

@@ -49,7 +49,7 @@ function WeekBadges({ startAt, endAt, schoolWeeks }) {
   return (
     <span className="inline-flex flex-wrap gap-1 ml-1">
       {weeks.map((w) => (
-        <span key={w.weekNumber} className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700" title={formatSchoolWeekLabel(w)}>
+        <span key={w.weekNumber} className="rounded-full bg-indigo-100 dark:bg-indigo-900/40 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700 dark:text-indigo-400" title={formatSchoolWeekLabel(w)}>
           {'\u00D5'}{w.weekNumber}
         </span>
       ))}
@@ -77,12 +77,12 @@ function SidebarItem({ to, icon, label, active }) {
       className={cn(
         'flex w-full items-center rounded-2xl text-sm font-medium transition',
         'justify-center px-2 py-2.5 group-hover:justify-start group-hover:gap-3 group-hover:px-3',
-        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 hover:bg-white/55'
+        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-white/55 dark:hover:bg-slate-700/50'
       )}
     >
       <span
         className={cn(
-          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700',
+          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700 dark:text-slate-300',
           active && 'text-white'
         )}
       >
@@ -175,10 +175,10 @@ export default function SampleCurriculumPage() {
         style={{ backgroundImage: `url(${bgImg})` }}
         aria-hidden="true"
       />
-      <div className="fixed inset-0 -z-10 bg-white/55" aria-hidden="true" />
+      <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-slate-900/90" aria-hidden="true" />
 
       {/* Header */}
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/35 dark:border-slate-700 bg-white/35 dark:bg-slate-900/80 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
           <div className="flex items-center gap-3">
             <Link
@@ -191,7 +191,7 @@ export default function SampleCurriculumPage() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 dark:border-slate-600 bg-white/55 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 shadow-sm"
               type="button"
               title="Kasutaja"
               onClick={() => {}}
@@ -199,12 +199,12 @@ export default function SampleCurriculumPage() {
               <span className="text-sm font-semibold">{(user?.email || 'U').slice(0, 1).toUpperCase()}</span>
             </button>
             <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-slate-900">{user?.label || '\u00D5petaja'}</div>
-              <div className="text-xs text-slate-600">{user?.email || '\u2014'}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.label || '\u00D5petaja'}</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">{user?.email || '\u2014'}</div>
             </div>
             <button
               onClick={logout}
-              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70"
+              className="rounded-xl border border-white/55 dark:border-slate-600 bg-white/55 dark:bg-slate-800/70 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 shadow-sm hover:bg-white/70 dark:hover:bg-slate-700/70"
             >
               Logi välja
             </button>
@@ -217,7 +217,7 @@ export default function SampleCurriculumPage() {
         {/* Sidebar */}
         <aside
           className={cn(
-            'group sticky z-30 -ml-8 w-[68px] self-start overflow-y-auto rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px]',
+            'group sticky z-30 -ml-8 w-[68px] self-start overflow-y-auto rounded-3xl border border-white/60 dark:border-slate-700 bg-white/55 dark:bg-slate-800/70 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px]',
             SIDEBAR_STICKY_TOP,
             SIDEBAR_MAX_H
           )}
@@ -272,32 +272,32 @@ export default function SampleCurriculumPage() {
         </aside>
 
         {/* Main content */}
-        <main className="min-w-0 max-w-full overflow-x-hidden rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md">
+        <main className="min-w-0 max-w-full overflow-x-hidden rounded-3xl border border-white/60 dark:border-slate-700 bg-white/55 dark:bg-slate-800/70 p-6 shadow-sm backdrop-blur-md">
 
           {/* Metadata section */}
           <section data-tutorial="metadata">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-wide text-sky-700">
+                <div className="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-400">
                   Näidisõppekava
                 </div>
-                <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+                <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                   {sampleCurriculum.title}
                 </h1>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                   {sampleCurriculum.description}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="inline-flex rounded-full border border-sky-200/80 bg-sky-50/90 px-2.5 py-0.5 text-[11px] font-semibold text-sky-800">
+                  <span className="inline-flex rounded-full border border-sky-200/80 dark:border-sky-700/60 bg-sky-50/90 dark:bg-sky-900/40 px-2.5 py-0.5 text-[11px] font-semibold text-sky-800 dark:text-sky-400">
                     {sampleCurriculum.subjectLabel}
                   </span>
-                  <span className="inline-flex rounded-full border border-emerald-200/80 bg-emerald-50/90 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
+                  <span className="inline-flex rounded-full border border-emerald-200/80 dark:border-emerald-700/60 bg-emerald-50/90 dark:bg-emerald-900/40 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-400">
                     {sampleCurriculum.grade}. klass
                   </span>
-                  <span className="inline-flex rounded-full border border-amber-200/80 bg-amber-50/90 px-2.5 py-0.5 text-[11px] font-semibold text-amber-900">
+                  <span className="inline-flex rounded-full border border-amber-200/80 dark:border-amber-700/60 bg-amber-50/90 dark:bg-amber-900/40 px-2.5 py-0.5 text-[11px] font-semibold text-amber-900 dark:text-amber-400">
                     {sampleCurriculum.volumeHours} tundi
                   </span>
-                  <span className="inline-flex rounded-full border border-slate-200/80 bg-slate-100/80 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700">
+                  <span className="inline-flex rounded-full border border-slate-200/80 dark:border-slate-600 bg-slate-100/80 dark:bg-slate-700/50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                     {sampleCurriculum.status}
                   </span>
                 </div>
@@ -330,7 +330,7 @@ export default function SampleCurriculumPage() {
                   'rounded-2xl px-4 py-2 text-sm font-semibold transition',
                   view === tab.key
                     ? 'bg-sky-600/90 text-white shadow-sm'
-                    : 'border border-white/55 bg-white/55 text-slate-700 hover:bg-white/70'
+                    : 'border border-white/55 dark:border-slate-600 bg-white/55 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 hover:bg-white/70 dark:hover:bg-slate-700/70'
                 )}
               >
                 {tab.label}
@@ -342,7 +342,7 @@ export default function SampleCurriculumPage() {
           {view === 'structure' && (
             <section className="mt-6 min-w-0 space-y-6">
               <header data-tutorial="structure" className="flex items-center gap-2">
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Struktuur</h2>
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">Struktuur</h2>
                 <InfoTooltip title={TUTORIAL_STEPS[2].title} content={TUTORIAL_STEPS[2].content} />
               </header>
 
@@ -356,7 +356,7 @@ export default function SampleCurriculumPage() {
                     <div
                       key={mod.id || idx}
                       id={`structure-mod-${idx}`}
-                      className="scroll-mt-24 overflow-hidden rounded-3xl border border-indigo-200/50 bg-white/90 shadow-md backdrop-blur-sm sm:scroll-mt-28"
+                      className="scroll-mt-24 overflow-hidden rounded-3xl border border-indigo-200/50 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 shadow-md backdrop-blur-sm sm:scroll-mt-28"
                     >
                       {/* Module gradient header */}
                       <div {...(idx === 0 ? { 'data-tutorial': 'topics' } : {})} className="flex min-h-[4.5rem] items-stretch bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-600">
@@ -398,11 +398,11 @@ export default function SampleCurriculumPage() {
 
                       {/* Module body */}
                       {expanded && (
-                        <div className="border-t border-indigo-100/60 bg-gradient-to-b from-slate-50/50 to-white/90 px-4 py-4 sm:px-6 sm:py-5">
-                          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200" />
+                        <div className="border-t border-indigo-100/60 dark:border-slate-700 bg-gradient-to-b from-slate-50/50 dark:from-slate-800/50 to-white/90 dark:to-slate-800/90 px-4 py-4 sm:px-6 sm:py-5">
+                          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-600" />
                             <span>Teemad ja {'\u00F5'}piv{'\u00E4'}ljundid</span>
-                            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200" />
+                            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-600" />
                           </div>
 
                           {(() => {
@@ -442,8 +442,8 @@ export default function SampleCurriculumPage() {
                                   if (entry.type === 'week-header') {
                                     return (
                                       <div key={`wh-${entry.week.weekNumber}`} className="flex items-center gap-2 pb-1 pt-3">
-                                        <span className="text-[11px] font-semibold text-indigo-600">{entry.label}</span>
-                                        <span className="h-px flex-1 bg-gradient-to-r from-indigo-200 to-transparent" />
+                                        <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">{entry.label}</span>
+                                        <span className="h-px flex-1 bg-gradient-to-r from-indigo-200 dark:from-indigo-700 to-transparent" />
                                       </div>
                                     );
                                   }
@@ -460,16 +460,16 @@ export default function SampleCurriculumPage() {
                                     <div key={lo.id || entryIdx} className="flex gap-3 sm:gap-4">
                                       {/* Tree connector */}
                                       <div className="flex w-8 shrink-0 flex-col items-center sm:w-9">
-                                        {currentIdx > 0 ? <div className="h-3 w-px border-l-2 border-dashed border-slate-300" aria-hidden /> : <div className="h-3" />}
+                                        {currentIdx > 0 ? <div className="h-3 w-px border-l-2 border-dashed border-slate-300 dark:border-slate-600" aria-hidden /> : <div className="h-3" />}
                                         <div
                                           className={cn(
-                                            'z-10 h-3.5 w-3.5 shrink-0 rounded-full ring-[5px] ring-white shadow-md sm:h-4 sm:w-4',
+                                            'z-10 h-3.5 w-3.5 shrink-0 rounded-full ring-[5px] ring-white dark:ring-slate-800 shadow-md sm:h-4 sm:w-4',
                                             isTest ? 'bg-rose-500 shadow-rose-200/50' : 'bg-emerald-500 shadow-emerald-200/50'
                                           )}
                                           aria-hidden
                                         />
                                         {currentIdx < totalItems - 1 ? (
-                                          <div className="min-h-[4.5rem] w-px flex-1 border-l-2 border-dashed border-slate-300 sm:min-h-[5rem]" aria-hidden />
+                                          <div className="min-h-[4.5rem] w-px flex-1 border-l-2 border-dashed border-slate-300 dark:border-slate-600 sm:min-h-[5rem]" aria-hidden />
                                         ) : (
                                           <div className="h-2" aria-hidden />
                                         )}
@@ -479,33 +479,33 @@ export default function SampleCurriculumPage() {
                                       <div className="min-w-0 flex-1 pb-5 sm:pb-6" {...(isFirstTest ? { 'data-tutorial': 'tests' } : {})}>
                                         <div
                                           className={cn(
-                                            'rounded-2xl border bg-white/95 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-5 sm:py-4',
-                                            isTest ? 'border-rose-100/90' : 'border-emerald-100/90'
+                                            'rounded-2xl border bg-white/95 dark:bg-slate-800 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-5 sm:py-4',
+                                            isTest ? 'border-rose-100/90 dark:border-rose-900/50' : 'border-emerald-100/90 dark:border-emerald-900/50'
                                           )}
                                         >
-                                          <div className={cn('text-[10px] font-bold uppercase tracking-wider', isTest ? 'text-rose-700' : 'text-emerald-700')}>
+                                          <div className={cn('text-[10px] font-bold uppercase tracking-wider', isTest ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400')}>
                                             {typeLabel}
                                             <WeekBadges startAt={lo.plannedStartAt} endAt={lo.plannedEndAt} schoolWeeks={schoolWeeks} />
                                           </div>
-                                          <p className="mt-1.5 text-sm font-semibold leading-snug text-slate-900 sm:text-[15px]">{lo.title}</p>
+                                          <p className="mt-1.5 text-sm font-semibold leading-snug text-slate-900 dark:text-slate-100 sm:text-[15px]">{lo.title}</p>
                                           {lo.description && (
-                                            <p className="mt-1 text-[11px] leading-relaxed text-slate-500 line-clamp-3">{lo.description}</p>
+                                            <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 line-clamp-3">{lo.description}</p>
                                           )}
 
                                           {/* EELDAB relations */}
                                           {eeldab.length > 0 && (
-                                            <div className="mt-3 rounded-xl border border-amber-200/90 bg-gradient-to-r from-amber-50/95 to-orange-50/40 px-3 py-2 shadow-sm">
-                                              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-amber-900">
-                                                <span className="grid h-5 w-5 place-items-center rounded-md bg-amber-200/80 text-amber-950" aria-hidden>
+                                            <div className="mt-3 rounded-xl border border-amber-200/90 dark:border-amber-700/50 bg-gradient-to-r from-amber-50/95 dark:from-amber-900/20 to-orange-50/40 dark:to-orange-900/10 px-3 py-2 shadow-sm">
+                                              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-400">
+                                                <span className="grid h-5 w-5 place-items-center rounded-md bg-amber-200/80 dark:bg-amber-800/60 text-amber-950 dark:text-amber-200" aria-hidden>
                                                   {'\u2192'}
                                                 </span>
-                                                Eeldab <span className="font-normal normal-case text-amber-800/80">(enne seda peaks valmis olema)</span>
+                                                Eeldab <span className="font-normal normal-case text-amber-800/80 dark:text-amber-400/80">(enne seda peaks valmis olema)</span>
                                               </div>
                                               <div className="mt-2 flex flex-wrap gap-1.5">
                                                 {eeldab.map((r) => (
                                                   <span
                                                     key={r.id || r.title}
-                                                    className="inline-flex max-w-full rounded-lg border border-amber-200/80 bg-amber-100/50 px-2 py-0.5 text-[11px] font-medium text-amber-900"
+                                                    className="inline-flex max-w-full rounded-lg border border-amber-200/80 dark:border-amber-700/50 bg-amber-100/50 dark:bg-amber-900/30 px-2 py-0.5 text-[11px] font-medium text-amber-900 dark:text-amber-400"
                                                     title={r.title}
                                                   >
                                                     <span className="truncate">{r.title}</span>
@@ -518,21 +518,21 @@ export default function SampleCurriculumPage() {
                                           {/* Children (learning outcomes under topic) */}
                                           {children.length > 0 && (
                                             <div className="mt-3 space-y-2">
-                                              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                                                <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200" />
+                                              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                                                <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-600" />
                                                 <span>Õpiväljundid ({children.length})</span>
-                                                <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200" />
+                                                <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-600" />
                                               </div>
                                               {children.map((child) => (
                                                 <div
                                                   key={child.id}
-                                                  className="rounded-xl border border-slate-200/80 bg-white/95 px-3 py-2.5 shadow-sm"
+                                                  className="rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/95 dark:bg-slate-700/50 px-3 py-2.5 shadow-sm"
                                                 >
-                                                  <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-700">
+                                                  <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                                                     Õpiväljund
                                                     <WeekBadges startAt={child.plannedStartAt} endAt={child.plannedEndAt} schoolWeeks={schoolWeeks} />
                                                   </div>
-                                                  <p className="text-sm font-medium leading-snug text-slate-900">{child.title}</p>
+                                                  <p className="text-sm font-medium leading-snug text-slate-900 dark:text-slate-100">{child.title}</p>
                                                 </div>
                                               ))}
                                             </div>
@@ -558,7 +558,7 @@ export default function SampleCurriculumPage() {
           {view === 'calendar' && (
             <section className="mt-6">
               <header data-tutorial="calendar" className="mb-4 flex items-center gap-2">
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Kalender</h2>
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">Kalender</h2>
                 <InfoTooltip title={TUTORIAL_STEPS[5].title} content={TUTORIAL_STEPS[5].content} />
               </header>
               <CurriculumCalendar
@@ -573,7 +573,7 @@ export default function SampleCurriculumPage() {
           {view === 'gantt' && (
             <section className="mt-6">
               <header data-tutorial="gantt" className="mb-4 flex items-center gap-2">
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Gantt</h2>
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">Gantt</h2>
                 <InfoTooltip title={TUTORIAL_STEPS[6].title} content={TUTORIAL_STEPS[6].content} />
               </header>
               <CurriculumGantt
@@ -589,11 +589,11 @@ export default function SampleCurriculumPage() {
           )}
 
           {/* CTA section */}
-          <section data-tutorial="cta" className="mt-10 flex flex-col items-center gap-4 rounded-3xl border border-white/60 bg-gradient-to-br from-white/80 via-sky-50/30 to-white/70 p-8 text-center shadow-sm backdrop-blur-sm">
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+          <section data-tutorial="cta" className="mt-10 flex flex-col items-center gap-4 rounded-3xl border border-white/60 dark:border-slate-700 bg-gradient-to-br from-white/80 dark:from-slate-800/80 via-sky-50/30 dark:via-sky-900/10 to-white/70 dark:to-slate-800/70 p-8 text-center shadow-sm backdrop-blur-sm">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">
               Valmis oma {'\u00F5'}ppekava looma?
             </h2>
-            <p className="max-w-md text-sm leading-relaxed text-slate-600">
+            <p className="max-w-md text-sm leading-relaxed text-slate-600 dark:text-slate-400">
               N{'\u00FC\u00FC'}d tead, kuidas s{'\u00FC'}steem t{'\u00F6\u00F6'}tab. Loo oma esimene {'\u00F5'}ppekava ja planeeri kogu {'\u00F5'}ppeaasta!
             </p>
             <button

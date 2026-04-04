@@ -5,7 +5,7 @@ export default function WizardTree({ items, mode, scheduleMap, onEdit, onDelete,
 
   if (roots.length === 0) {
     return (
-      <div className="mt-4 flex items-center justify-center rounded-2xl border border-dashed border-slate-200 py-12 text-sm text-slate-400">
+      <div className="mt-4 flex items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 py-12 text-sm text-slate-400 dark:text-slate-500">
         Õppekava on tühi. Lisa esimene element ülalt.
       </div>
     );

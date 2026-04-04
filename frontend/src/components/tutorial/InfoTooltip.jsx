@@ -30,7 +30,7 @@ export default function InfoTooltip({ title, content }) {
       <button
         type="button"
         onClick={handleToggle}
-        className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-sky-200 bg-white text-sky-500 shadow-sm transition hover:scale-110 hover:bg-sky-50 hover:text-sky-600"
+        className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-sky-200 dark:border-sky-800 bg-white dark:bg-slate-800 text-sky-500 dark:text-sky-400 shadow-sm transition hover:scale-110 hover:bg-sky-50 dark:hover:bg-sky-900/40 hover:text-sky-600 dark:hover:text-sky-400"
         title="Info"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -39,9 +39,9 @@ export default function InfoTooltip({ title, content }) {
         </svg>
       </button>
       {open && (
-        <div className={`absolute top-0 z-50 w-72 rounded-xl border border-white/70 bg-white/95 p-4 shadow-xl backdrop-blur-lg ${openLeft ? 'right-8' : 'left-8'}`}>
-          <h4 className="text-sm font-bold text-slate-900">{title}</h4>
-          <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{content}</p>
+        <div className={`absolute top-0 z-50 w-72 rounded-xl border border-white/70 dark:border-sky-800 bg-white/95 dark:bg-slate-800 p-4 shadow-xl backdrop-blur-lg ${openLeft ? 'right-8' : 'left-8'}`}>
+          <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h4>
+          <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{content}</p>
         </div>
       )}
     </div>

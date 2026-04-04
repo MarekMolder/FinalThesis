@@ -32,9 +32,9 @@ function iriToLabel(iri) {
 
 function StatusPill({ status }) {
   const map = {
-    ACTIVE: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    DRAFT: 'bg-amber-100 text-amber-800 border-amber-200',
-    ARCHIVED: 'bg-slate-100 text-slate-700 border-slate-200',
+    ACTIVE: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800',
+    DRAFT: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-400 dark:border-amber-800',
+    ARCHIVED: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600',
   };
   return (
     <span className={cn('inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium', map[status] || 'bg-slate-100 text-slate-700 border-slate-200')}>
@@ -45,8 +45,8 @@ function StatusPill({ status }) {
 
 function VisibilityPill({ visibility }) {
   const map = {
-    PUBLIC: 'bg-sky-100 text-sky-800 border-sky-200',
-    PRIVATE: 'bg-rose-100 text-rose-800 border-rose-200',
+    PUBLIC: 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/40 dark:text-sky-400 dark:border-sky-800',
+    PRIVATE: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-800',
   };
   return (
     <span className={cn('inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium', map[visibility] || 'bg-slate-100 text-slate-700 border-slate-200')}>
@@ -62,7 +62,7 @@ function SidebarItem({ to, icon, label, active }) {
       className={cn(
         'flex w-full items-center rounded-2xl text-sm font-medium transition',
         'justify-center px-2 py-2.5 group-hover:justify-start group-hover:gap-3 group-hover:px-3',
-        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 hover:bg-white/55'
+        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 hover:bg-white/55 dark:text-slate-300 dark:hover:bg-slate-700/50'
       )}
     >
       <span
@@ -207,10 +207,10 @@ export default function HomePage() {
         style={{ backgroundImage: `url(${bgImg})` }}
         aria-hidden="true"
       />
-      <div className="fixed inset-0 -z-10 bg-white/55" aria-hidden="true" />
+      <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-slate-900/90" aria-hidden="true" />
 
       {/* Top header */}
-      <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
           <div className="flex items-center gap-3">
             <Link
@@ -223,7 +223,7 @@ export default function HomePage() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
               type="button"
               title="Kasutaja"
               onClick={() => {}}
@@ -231,12 +231,12 @@ export default function HomePage() {
               <span className="text-sm font-semibold">{(user?.email || 'U').slice(0, 1).toUpperCase()}</span>
             </button>
             <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-slate-900">{user?.label || 'Õpetaja'}</div>
-              <div className="text-xs text-slate-600">{user?.email || '—'}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.label || 'Õpetaja'}</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">{user?.email || '—'}</div>
             </div>
             <button
               onClick={logout}
-              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70"
+              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               Logi välja
             </button>
@@ -249,7 +249,7 @@ export default function HomePage() {
         {/* Sidebar */}
         <aside
           className={cn(
-            'group relative -ml-8 h-[calc(100vh-120px)] w-[68px] rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px]'
+            'group relative -ml-8 h-[calc(100vh-120px)] w-[68px] rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px] dark:border-slate-700 dark:bg-slate-800/80'
           )}
         >
           <div className="flex flex-col gap-2">
@@ -302,46 +302,46 @@ export default function HomePage() {
         </aside>
 
         {/* Main list */}
-        <main className="rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md">
+        <main className="rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Minu töökavad</h1>
-              <div className="mt-1 text-sm text-slate-600">Halda ja ava oma õppekavasid</div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Minu töökavad</h1>
+              <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">Halda ja ava oma õppekavasid</div>
             </div>
             <div className="flex w-full max-w-[520px] items-center gap-3">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Otsi pealkirja, kirjeldust, providerit…"
-                className="h-11 w-full rounded-2xl border border-white/70 bg-white/70 px-4 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                className="h-11 w-full rounded-2xl border border-white/70 bg-white/70 px-4 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
               />
             </div>
           </div>
 
           {error && (
-            <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-400">
               {error}
             </div>
           )}
 
           {loading ? (
-            <div className="py-12 text-center text-sm text-slate-600">Laen…</div>
+            <div className="py-12 text-center text-sm text-slate-600 dark:text-slate-400">Laen…</div>
           ) : filtered.length === 0 ? (
-            <div className="py-12 text-center text-sm text-slate-600">Õppekavasid ei leitud.</div>
+            <div className="py-12 text-center text-sm text-slate-600 dark:text-slate-400">Õppekavasid ei leitud.</div>
           ) : (
             <div className="space-y-4">
               {filtered.map((c) => (
                 <div
                   key={c.id}
-                  className="flex items-center gap-4 rounded-3xl border border-white/70 bg-white/70 px-5 py-4 shadow-sm"
+                  className="flex items-center gap-4 rounded-3xl border border-white/70 bg-white/70 px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/70"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3">
-                      <div className="truncate text-lg font-semibold text-slate-900">{c.title}</div>
+                      <div className="truncate text-lg font-semibold text-slate-900 dark:text-slate-100">{c.title}</div>
                       <StatusPill status={c.status} />
                       <VisibilityPill visibility={c.visibility} />
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-600">
+                    <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                       <div>
                         <span className="text-slate-500">Loodud:</span> {formatDateTime(c.createdAt)}
                       </div>
@@ -389,7 +389,7 @@ export default function HomePage() {
         </main>
 
         {/* Right panel */}
-        <aside className="h-[calc(100vh-120px)] w-[320px] overflow-auto rounded-3xl border border-white/60 bg-white/55 p-5 shadow-sm backdrop-blur-md">
+        <aside className="h-[calc(100vh-120px)] w-[320px] overflow-auto rounded-3xl border border-white/60 bg-white/55 p-5 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
           <button
             className="flex w-full items-center justify-between rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
             onClick={() => navigate('/curriculum/new')}
@@ -402,15 +402,15 @@ export default function HomePage() {
             </span>
           </button>
 
-          <div className="mt-5 rounded-2xl border border-white/70 bg-white/70 p-4">
-            <div className="text-sm font-semibold text-slate-900">Filtreeri</div>
+          <div className="mt-5 rounded-2xl border border-white/70 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Filtreeri</div>
             <div className="mt-3 space-y-3">
               <div>
-                <label className="text-xs font-medium text-slate-600">Staatus</label>
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Staatus</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                  className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 >
                   <option value="">Kõik</option>
                   <option value="ACTIVE">Aktiivne</option>
@@ -419,11 +419,11 @@ export default function HomePage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-slate-600">Nähtavus</label>
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Nähtavus</label>
                 <select
                   value={visibility}
                   onChange={(e) => setVisibility(e.target.value)}
-                  className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                  className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 >
                   <option value="">Kõik</option>
                   <option value="PRIVATE">Privaatne</option>
@@ -431,11 +431,11 @@ export default function HomePage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-slate-600">Provider</label>
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Provider</label>
                 <select
                   value={provider}
                   onChange={(e) => setProvider(e.target.value)}
-                  className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                  className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 >
                   <option value="">Kõik</option>
                   {filterOptions.providers.map((p) => (
@@ -446,11 +446,11 @@ export default function HomePage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-slate-600">Klass</label>
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Klass</label>
                 <select
                   value={grade}
                   onChange={(e) => setGrade(e.target.value)}
-                  className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                  className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 >
                   <option value="">Kõik</option>
                   {filterOptions.grades.map((g) => (
@@ -463,20 +463,20 @@ export default function HomePage() {
 
               <button
                 type="button"
-                className="w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
+                className="w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                 onClick={() => setFiltersOpen((v) => !v)}
               >
                 {filtersOpen ? 'Peida lisafiltrid' : 'Rohkem filtreid'}
               </button>
 
               {filtersOpen && (
-                <div className="space-y-3 rounded-2xl border border-white/60 bg-white/50 p-3">
+                <div className="space-y-3 rounded-2xl border border-white/60 bg-white/50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Subject area</label>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Subject area</label>
                     <select
                       value={subjectAreaIri}
                       onChange={(e) => setSubjectAreaIri(e.target.value)}
-                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     >
                       <option value="">Kõik</option>
                       {filterOptions.subjectAreaIris.map((v) => (
@@ -487,11 +487,11 @@ export default function HomePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Subject</label>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Subject</label>
                     <select
                       value={subjectIri}
                       onChange={(e) => setSubjectIri(e.target.value)}
-                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     >
                       <option value="">Kõik</option>
                       {filterOptions.subjectIris.map((v) => (
@@ -502,11 +502,11 @@ export default function HomePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Educational level</label>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Educational level</label>
                     <select
                       value={educationalLevelIri}
                       onChange={(e) => setEducationalLevelIri(e.target.value)}
-                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     >
                       <option value="">Kõik</option>
                       {filterOptions.educationalLevelIris.map((v) => (
@@ -517,11 +517,11 @@ export default function HomePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600">School level</label>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">School level</label>
                     <select
                       value={schoolLevel}
                       onChange={(e) => setSchoolLevel(e.target.value)}
-                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     >
                       <option value="">Kõik</option>
                       {filterOptions.schoolLevels.map((v) => (
@@ -532,11 +532,11 @@ export default function HomePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Educational framework</label>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Educational framework</label>
                     <select
                       value={educationalFramework}
                       onChange={(e) => setEducationalFramework(e.target.value)}
-                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     >
                       <option value="">Kõik</option>
                       {filterOptions.educationalFrameworks.map((v) => (
@@ -547,11 +547,11 @@ export default function HomePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Keel</label>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Keel</label>
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
-                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                      className="mt-1 h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     >
                       <option value="">Kõik</option>
                       {filterOptions.languages.map((v) => (
@@ -562,21 +562,21 @@ export default function HomePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Maht (tundi)</label>
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Maht (tundi)</label>
                     <div className="mt-1 grid grid-cols-2 gap-2">
                       <input
                         value={volumeHoursMin}
                         onChange={(e) => setVolumeHoursMin(e.target.value)}
                         inputMode="numeric"
                         placeholder="Min"
-                        className="h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                        className="h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                       />
                       <input
                         value={volumeHoursMax}
                         onChange={(e) => setVolumeHoursMax(e.target.value)}
                         inputMode="numeric"
                         placeholder="Max"
-                        className="h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
+                        className="h-10 w-full rounded-xl border border-white/70 bg-white/70 px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                       />
                     </div>
                     {filterOptions.volumeHours.length > 0 && (
@@ -591,7 +591,7 @@ export default function HomePage() {
 
               <button
                 type="button"
-                className="w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
+                className="w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                 onClick={() => {
                   setStatus('');
                   setVisibility('');
@@ -613,9 +613,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-white/70 bg-white/70 p-4">
-            <div className="text-sm font-semibold text-slate-900">Juhised töökava loomiseks</div>
-            <ul className="mt-3 space-y-2 text-sm text-slate-700">
+          <div className="mt-5 rounded-2xl border border-white/70 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Juhised töökava loomiseks</div>
+            <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <li className="flex gap-2">
                 <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
                 Vali alusmall ja sisestage töökava põhiandmed
@@ -630,7 +630,7 @@ export default function HomePage() {
               </li>
             </ul>
             <button
-              className="mt-4 w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-white"
+              className="mt-4 w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-sky-400 dark:hover:bg-slate-600"
               onClick={() => navigate('/guide')}
             >
               Vaata juhendit

@@ -12,7 +12,7 @@ export default function Button({
   const variants = {
     primary:
       'bg-gradient-to-br from-[#3264e6] to-[#1e50c8] text-white shadow-[0_8px_24px_rgba(30,80,200,0.4)] hover:brightness-110 hover:scale-[1.01] focus:ring-blue-300/40',
-    ghost: 'bg-transparent text-sky-700 hover:underline focus:ring-sky-200/40',
+    ghost: 'bg-transparent text-sky-700 hover:underline focus:ring-sky-200/40 dark:text-sky-400',
   };
 
   return (

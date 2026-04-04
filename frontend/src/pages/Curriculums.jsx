@@ -27,12 +27,12 @@ function SidebarItem({ to, icon, label, active }) {
       className={cn(
         'flex w-full items-center rounded-2xl text-sm font-medium transition',
         'justify-center px-2 py-2.5 group-hover:justify-start group-hover:gap-3 group-hover:px-3',
-        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 hover:bg-white/55'
+        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 hover:bg-white/55 dark:text-slate-300 dark:hover:bg-slate-700/50'
       )}
     >
       <span
         className={cn(
-          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700',
+          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700 dark:text-slate-300',
           active && 'text-white'
         )}
       >
@@ -176,10 +176,10 @@ export default function Curriculums() {
         style={{ backgroundImage: `url(${bgImg})` }}
         aria-hidden="true"
       />
-      <div className="fixed inset-0 -z-10 bg-white/55" aria-hidden="true" />
+      <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-slate-900/90" aria-hidden="true" />
 
       {/* Header – sama mis HomePage */}
-      <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
           <div className="flex items-center gap-3">
             <Link
@@ -192,7 +192,7 @@ export default function Curriculums() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
               type="button"
               title="Kasutaja"
               onClick={() => {}}
@@ -200,12 +200,12 @@ export default function Curriculums() {
               <span className="text-sm font-semibold">{(user?.email || 'U').slice(0, 1).toUpperCase()}</span>
             </button>
             <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-slate-900">{user?.label || 'Õpetaja'}</div>
-              <div className="text-xs text-slate-600">{user?.email || '—'}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.label || 'Õpetaja'}</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">{user?.email || '—'}</div>
             </div>
             <button
               onClick={logout}
-              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70"
+              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               Logi välja
             </button>
@@ -218,7 +218,7 @@ export default function Curriculums() {
         {/* Vasak külgriba – sama mis HomePage, siin aktiivne on Õppekavad */}
         <aside
           className={cn(
-            'group relative -ml-8 h-[calc(100vh-120px)] w-[68px] rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px]'
+            'group relative -ml-8 h-[calc(100vh-120px)] w-[68px] rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px] dark:border-slate-700 dark:bg-slate-800/80'
           )}
         >
           <div className="flex flex-col gap-2">
@@ -271,14 +271,14 @@ export default function Curriculums() {
         </aside>
 
         {/* Põhisisu – väike erinevus: 3 kaarti + tabel */}
-        <main className="rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md">
+        <main className="rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
           <div className="mb-4">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Õppekavad</h1>
-            <div className="mt-1 text-sm text-slate-600">Halda oma õppekavasid ja vaata süsteemi ning graafi õppekavasid.</div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Õppekavad</h1>
+            <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">Halda oma õppekavasid ja vaata süsteemi ning graafi õppekavasid.</div>
           </div>
 
           {error && (
-            <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-400">
               {error}
             </div>
           )}
@@ -293,14 +293,14 @@ export default function Curriculums() {
                 className={cn(
                   'rounded-2xl border px-5 py-4 text-left shadow-sm transition',
                   activeTab === tab.id
-                    ? 'border-sky-300 bg-sky-50 ring-2 ring-sky-400/50'
-                    : 'border-white/70 bg-white/70 hover:border-slate-200 hover:bg-white'
+                    ? 'border-sky-300 bg-sky-50 ring-2 ring-sky-400/50 dark:border-sky-700 dark:bg-sky-900/30 dark:ring-sky-600/40'
+                    : 'border-white/70 bg-white/70 hover:border-slate-200 hover:bg-white dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-slate-600 dark:hover:bg-slate-700'
                 )}
               >
-                <div className={cn('font-semibold', activeTab === tab.id ? 'text-sky-800' : 'text-slate-800')}>
+                <div className={cn('font-semibold', activeTab === tab.id ? 'text-sky-800 dark:text-sky-400' : 'text-slate-800 dark:text-slate-200')}>
                   {tab.label}
                 </div>
-                <div className="mt-1 text-xs text-slate-500">{tab.description}</div>
+                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{tab.description}</div>
               </button>
             ))}
           </div>
@@ -325,36 +325,36 @@ export default function Curriculums() {
               >
                 {syncing ? 'Sünkroonin…' : 'Impordi graafist'}
               </button>
-              <span className="ml-3 text-sm text-slate-600">
+              <span className="ml-3 text-sm text-slate-600 dark:text-slate-400">
                 Impordib oppekava.edu.ee graafist puuduvad õppekavad andmebaasi (juba olemasolevaid ei dubleerita).
               </span>
             </div>
           )}
 
-          <div className="rounded-2xl border border-white/70 bg-white/70 shadow-sm">
+          <div className="rounded-2xl border border-white/70 bg-white/70 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
             {loading ? (
-              <div className="px-5 py-12 text-center text-sm text-slate-600">Laen…</div>
+              <div className="px-5 py-12 text-center text-sm text-slate-600 dark:text-slate-400">Laen…</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
         <thead>
-                    <tr className="border-b border-white/70 bg-white/50">
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600">Pealkiri</th>
+                    <tr className="border-b border-white/70 bg-white/50 dark:border-slate-700 dark:bg-slate-800/50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-400">Pealkiri</th>
                       {!isGraphTab && (
                         <>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600">Tüüp</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600">Staatus</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600">Nähtavus</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-400">Tüüp</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-400">Staatus</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-400">Nähtavus</th>
                         </>
                       )}
                       {isGraphTab && (
                         <>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600">Identifikaator</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600">Provider</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-400">Identifikaator</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-400">Provider</th>
                         </>
                       )}
                       {(showActions || isGraphTab) && (
-                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-600">
+                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-400">
                           {isGraphTab ? 'Link' : 'Tegevused'}
                         </th>
                       )}
@@ -363,15 +363,15 @@ export default function Curriculums() {
         <tbody>
                     {isGraphTab
                       ? currentList.map((row) => (
-                          <tr key={row.id} className="border-b border-white/50 hover:bg-white/50">
-                            <td className="px-4 py-3 font-medium text-slate-900">{row.title}</td>
-                            <td className="px-4 py-3 text-sm text-slate-600">{row.identifier ?? '—'}</td>
-                            <td className="px-4 py-3 text-sm text-slate-600">{row.provider ?? '—'}</td>
+                          <tr key={row.id} className="border-b border-white/50 hover:bg-white/50 dark:border-slate-700 dark:hover:bg-slate-700/50">
+                            <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{row.title}</td>
+                            <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{row.identifier ?? '—'}</td>
+                            <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{row.provider ?? '—'}</td>
                             <td className="px-4 py-3 text-right">
                               <div className="flex flex-wrap items-center justify-end gap-2">
                                 <Link
                                   to={`/curriculum/${row.id}`}
-                                  className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 shadow-sm hover:bg-sky-100"
+                                  className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 shadow-sm hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-900/30 dark:text-sky-400 dark:hover:bg-sky-900/50"
                                 >
                                   Ava detailne vaade
                                 </Link>
@@ -380,7 +380,7 @@ export default function Curriculums() {
                                     href={row.externalPageIri}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-white"
+                                    className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                                   >
                                     Vaata graafis
                                   </a>
@@ -390,24 +390,24 @@ export default function Curriculums() {
             </tr>
                         ))
                       : currentList.map((row) => (
-                          <tr key={row.id} className="border-b border-white/50 hover:bg-white/50">
-                            <td className="px-4 py-3 font-medium text-slate-900">{row.title}</td>
-                            <td className="px-4 py-3 text-sm text-slate-600">{row.curriculumType}</td>
-                            <td className="px-4 py-3 text-sm text-slate-600">{row.status}</td>
-                            <td className="px-4 py-3 text-sm text-slate-600">{row.visibility}</td>
+                          <tr key={row.id} className="border-b border-white/50 hover:bg-white/50 dark:border-slate-700 dark:hover:bg-slate-700/50">
+                            <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{row.title}</td>
+                            <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{row.curriculumType}</td>
+                            <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{row.status}</td>
+                            <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{row.visibility}</td>
                             {showActions && (
                               <td className="px-4 py-3 text-right">
                                 <button
                                   type="button"
                                   onClick={() => navigate(`/curriculum/${row.id}`)}
-                                  className="mr-2 rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-white"
+                                  className="mr-2 rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                                 >
                                   Vaata
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleDelete(row.id)}
-                                  className="rounded-xl border border-rose-200 bg-white/70 px-3 py-1.5 text-sm font-medium text-rose-700 shadow-sm hover:bg-rose-50"
+                                  className="rounded-xl border border-rose-200 bg-white/70 px-3 py-1.5 text-sm font-medium text-rose-700 shadow-sm hover:bg-rose-50 dark:border-rose-800 dark:bg-slate-700 dark:text-rose-400 dark:hover:bg-rose-900/30"
                                 >
                                   Kustuta
                                 </button>
@@ -419,7 +419,7 @@ export default function Curriculums() {
                       <tr>
                         <td
                           colSpan={isGraphTab ? 4 : showActions ? 5 : 4}
-                          className="px-4 py-8 text-center text-sm text-slate-500"
+                          className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
                         >
                           {activeTab === 'mine' && 'Sul pole veel õppekavasid. Loo uus ülaloleva nupuga.'}
                           {activeTab === 'system' && 'Süsteemi avalikke õppekavasid ei leitud.'}
@@ -437,41 +437,41 @@ export default function Curriculums() {
           {form && (
             <form
               onSubmit={handleSubmit}
-              className="mt-8 rounded-2xl border border-white/70 bg-white/70 p-6 shadow-sm"
+              className="mt-8 rounded-2xl border border-white/70 bg-white/70 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800/70"
             >
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">{form.id ? 'Muuda õppekavat' : 'Uus õppekava'}</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">{form.id ? 'Muuda õppekavat' : 'Uus õppekava'}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Pealkiri</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Pealkiri</label>
                 <input
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   required
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Kirjeldus</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Kirjeldus</label>
                 <input
                   value={form.description || ''}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Tüüp</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Tüüp</label>
                 <input
                   value={form.curriculumType || ''}
                   onChange={(e) => setForm({ ...form, curriculumType: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Staatus</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Staatus</label>
                 <select
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 >
                   {ENUMS.status.map((s) => (
                     <option key={s} value={s}>{s}</option>
@@ -479,11 +479,11 @@ export default function Curriculums() {
             </select>
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Nähtavus</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Nähtavus</label>
                 <select
                   value={form.visibility}
                   onChange={(e) => setForm({ ...form, visibility: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 >
                   {ENUMS.visibility.map((v) => (
                     <option key={v} value={v}>{v}</option>
@@ -491,67 +491,67 @@ export default function Curriculums() {
             </select>
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Provider</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Provider</label>
                 <input
                   value={form.provider || ''}
                   onChange={(e) => setForm({ ...form, provider: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Sihtgrupp</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Sihtgrupp</label>
                 <input
                   value={form.audience || ''}
                   onChange={(e) => setForm({ ...form, audience: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Ainevaldkond IRI</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Ainevaldkond IRI</label>
                 <input
                   value={form.subjectAreaIri || ''}
                   onChange={(e) => setForm({ ...form, subjectAreaIri: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Aine IRI</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Aine IRI</label>
                 <input
                   value={form.subjectIri || ''}
                   onChange={(e) => setForm({ ...form, subjectIri: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Haridusaste IRI</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Haridusaste IRI</label>
                 <input
                   value={form.educationalLevelIri || ''}
                   onChange={(e) => setForm({ ...form, educationalLevelIri: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Kooliaste</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Kooliaste</label>
                 <input
                   value={form.schoolLevel || ''}
                   onChange={(e) => setForm({ ...form, schoolLevel: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Klass</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Klass</label>
                 <input
                   value={form.grade || ''}
                   onChange={(e) => setForm({ ...form, grade: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Õppekava raamistik</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Õppekava raamistik</label>
                 <select
                   value={form.educationalFramework ?? ''}
                   onChange={(e) => setForm({ ...form, educationalFramework: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 >
                   {ENUMS.educationalFramework.map((f) => (
                     <option key={f} value={f}>{f}</option>
@@ -559,37 +559,37 @@ export default function Curriculums() {
             </select>
           </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Keel</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Keel</label>
                 <input
                   value={form.language || ''}
                   onChange={(e) => setForm({ ...form, language: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Tunnid</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Tunnid</label>
                 <input
                   type="number"
                   value={form.volumeHours ?? ''}
                   onChange={(e) => setForm({ ...form, volumeHours: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Väline allikas</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Väline allikas</label>
                 <input
                   value={form.externalSource || ''}
                   onChange={(e) => setForm({ ...form, externalSource: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Välise lehe IRI</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Välise lehe IRI</label>
                 <input
                   value={form.externalPageIri ?? ''}
                   onChange={(e) => setForm({ ...form, externalPageIri: e.target.value })}
                   placeholder="võib tühi"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
             </div>
@@ -604,7 +604,7 @@ export default function Curriculums() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
               >
                 Tühista
               </button>
@@ -614,7 +614,7 @@ export default function Curriculums() {
         </main>
 
         {/* Parem paneel – sama mis HomePage */}
-        <aside className="h-[calc(100vh-120px)] w-[320px] overflow-auto rounded-3xl border border-white/60 bg-white/55 p-5 shadow-sm backdrop-blur-md">
+        <aside className="h-[calc(100vh-120px)] w-[320px] overflow-auto rounded-3xl border border-white/60 bg-white/55 p-5 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
           <button
             type="button"
             className="flex w-full items-center justify-between rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
@@ -628,16 +628,16 @@ export default function Curriculums() {
             </span>
           </button>
 
-          <div className="mt-5 rounded-2xl border border-white/70 bg-white/70 p-4">
-            <div className="text-sm font-semibold text-slate-900">Vaated</div>
-            <p className="mt-2 text-xs text-slate-600">
+          <div className="mt-5 rounded-2xl border border-white/70 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Vaated</div>
+            <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">
               Vali ülal üks kolmest kaardist: minu õppekavad, süsteemi avalikud või graafilt imporditud.
             </p>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-white/70 bg-white/70 p-4">
-            <div className="text-sm font-semibold text-slate-900">Juhised töökava loomiseks</div>
-            <ul className="mt-3 space-y-2 text-sm text-slate-700">
+          <div className="mt-5 rounded-2xl border border-white/70 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Juhised töökava loomiseks</div>
+            <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <li className="flex gap-2">
                 <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
                 Vali alusmall ja sisestage töökava põhiandmed
@@ -653,7 +653,7 @@ export default function Curriculums() {
             </ul>
             <button
               type="button"
-              className="mt-4 w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-white"
+              className="mt-4 w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-sky-400 dark:hover:bg-slate-600"
               onClick={() => navigate('/guide')}
             >
               Vaata juhendit

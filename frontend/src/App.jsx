@@ -13,6 +13,14 @@ import SampleCurriculumPage from './pages/SampleCurriculumPage';
 import CurriculumDetailPage from './pages/CurriculumDetailPage';
 import CreateCurriculumPage from './pages/wizard/CreateCurriculumPage';
 
+// Apply saved theme immediately to avoid flash
+if (typeof window !== 'undefined') {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') {
+    document.documentElement.classList.add('dark');
+  }
+}
+
 function Layout({ children }) {
   function logout() {
     apiLogout();

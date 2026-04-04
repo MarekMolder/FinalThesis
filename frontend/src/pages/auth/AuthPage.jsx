@@ -127,7 +127,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="relative min-h-svh w-full overflow-hidden bg-slate-100">
+    <div className="relative min-h-svh w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
       <img
         className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover opacity-60"
         src={backgroundImg}
@@ -260,7 +260,7 @@ export default function AuthPage() {
 
             {/* ── Sliding panel 2: White form (scroll + vertical center) ── */}
             <div
-              className="absolute top-0 bottom-0 bg-white"
+              className="absolute top-0 bottom-0 bg-white dark:bg-slate-800"
               style={{
                 left:       formLeft,
                 width:      '50%',
@@ -274,12 +274,12 @@ export default function AuthPage() {
               <div className="h-full min-h-0 overflow-y-auto">
                 <div className="flex min-h-full flex-col justify-center px-9 py-8 sm:px-10 sm:py-10">
                   <div className="mx-auto w-full max-w-[340px]">
-                    <h1 className="mb-0.5 text-[24px] font-bold tracking-tight text-slate-900 sm:text-[25px]">
+                    <h1 className="mb-0.5 text-[24px] font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-[25px]">
                       {formShowsLogin ? 'Logi sisse' : 'Loo konto'}
                     </h1>
                     <p
                       className={[
-                        'text-[12.5px] leading-relaxed text-slate-500 sm:text-[13px]',
+                        'text-[12.5px] leading-relaxed text-slate-500 dark:text-slate-400 sm:text-[13px]',
                         formShowsLogin ? 'mb-4' : 'mb-3',
                       ].join(' ')}
                     >
@@ -292,7 +292,7 @@ export default function AuthPage() {
                       {error && (
                         <div
                           key={shakeKey}
-                          className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-left text-sm text-red-700 animate-[shake_0.45s_ease-out]"
+                          className="mb-3 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-3 py-2 text-left text-sm text-red-700 dark:text-red-300 animate-[shake_0.45s_ease-out]"
                         >
                           {error}
                         </div>
@@ -366,7 +366,7 @@ export default function AuthPage() {
                       </Button>
                     </form>
 
-                    <div className="mt-3 text-center text-[13px] text-slate-500">
+                    <div className="mt-3 text-center text-[13px] text-slate-500 dark:text-slate-400">
                       {formShowsLogin ? (
                         <>Pole kontot?{' '}<Link className="font-semibold text-sky-600 hover:underline" to="/register">Loo konto</Link></>
                       ) : (

@@ -24,7 +24,7 @@ export default function TreeNode({ item, children, allItems, mode, scheduleInfo,
     const contentCount = allDesc.filter((i) => CONTENT_TYPES.includes(i.type)).length;
 
     return (
-      <div className="mb-3 overflow-hidden rounded-[20px] border border-indigo-200/20 bg-white/90 shadow-[0_2px_12px_rgba(15,23,42,.07)] backdrop-blur-sm">
+      <div className="mb-3 overflow-hidden rounded-[20px] border border-indigo-200/20 bg-white/90 dark:bg-slate-800/90 shadow-[0_2px_12px_rgba(15,23,42,.07)] backdrop-blur-sm">
         <div className="flex min-h-[60px] items-stretch" style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #6d28d9 50%, #0284c7 100%)' }}>
           <button
             type="button"
@@ -89,13 +89,13 @@ export default function TreeNode({ item, children, allItems, mode, scheduleInfo,
   /* ───── TOPIC ───── */
   if (item.type === 'TOPIC') {
     return (
-      <div className={['mb-1.5 overflow-hidden rounded-[14px] border border-violet-200/20 bg-violet-50/80', depth > 0 ? 'ml-2' : ''].join(' ')}>
-        <div className="flex items-center gap-2 bg-violet-100/60 px-3 py-2.5 border-b border-violet-200/10">
+      <div className={['mb-1.5 overflow-hidden rounded-[14px] border border-violet-200/20 bg-violet-50/80 dark:bg-violet-900/30', depth > 0 ? 'ml-2' : ''].join(' ')}>
+        <div className="flex items-center gap-2 bg-violet-100/60 dark:bg-violet-900/40 px-3 py-2.5 border-b border-violet-200/10 dark:border-violet-800/20">
           <button onClick={() => setExpanded((v) => !v)} className="text-violet-500 flex-shrink-0">
             <svg className={['h-3 w-3 transition-transform', expanded ? 'rotate-0' : '-rotate-90'].join(' ')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
           </button>
           <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[9px] bg-gradient-to-br from-violet-600 to-indigo-600 text-[11px] font-bold text-white">T</div>
-          <span className="flex-1 truncate text-[13px] font-semibold text-violet-950">{item.title}</span>
+          <span className="flex-1 truncate text-[13px] font-semibold text-violet-950 dark:text-violet-100">{item.title}</span>
           <ScheduleBadge scheduleInfo={scheduleInfo} small />
           <SourceBadge external={isExternal} externalIri={item.externalIri} />
           {mode === 'structure' && (
@@ -116,12 +116,12 @@ export default function TreeNode({ item, children, allItems, mode, scheduleInfo,
   /* ───── LEARNING OUTCOME ───── */
   if (item.type === 'LEARNING_OUTCOME') {
     return (
-      <div className={['mb-1.5 overflow-hidden rounded-[14px] border bg-white/90 shadow-[0_1px_4px_rgba(15,23,42,.05)]', isExternal ? 'border-sky-200/25' : 'border-emerald-200/20', depth > 0 ? 'ml-3' : ''].join(' ')}>
+      <div className={['mb-1.5 overflow-hidden rounded-[14px] border bg-white/90 dark:bg-slate-800/90 shadow-[0_1px_4px_rgba(15,23,42,.05)]', isExternal ? 'border-sky-200/25' : 'border-emerald-200/20', depth > 0 ? 'ml-3' : ''].join(' ')}>
         <div className="flex items-center gap-2.5 px-3 py-2.5">
           <div className={['flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-lg text-[10px] font-bold text-white', isExternal ? 'bg-gradient-to-br from-sky-500 to-sky-700' : 'bg-gradient-to-br from-emerald-500 to-emerald-700'].join(' ')}>OÕ</div>
           <div className="min-w-0 flex-1">
-            <div className="text-[9px] font-bold uppercase tracking-[.06em] text-slate-400">Õpiväljund{item.parentItemId ? '' : ' · iseseisev'}{isExternal ? ' · väline' : ''}</div>
-            <div className="text-xs font-semibold text-slate-800 leading-snug line-clamp-2">{item.title}</div>
+            <div className="text-[9px] font-bold uppercase tracking-[.06em] text-slate-400 dark:text-slate-500">Õpiväljund{item.parentItemId ? '' : ' · iseseisev'}{isExternal ? ' · väline' : ''}</div>
+            <div className="text-xs font-semibold text-slate-800 dark:text-slate-100 leading-snug line-clamp-2">{item.title}</div>
           </div>
           <ScheduleBadge scheduleInfo={scheduleInfo} small />
           <SourceBadge external={isExternal} externalIri={item.externalIri} />
@@ -134,7 +134,7 @@ export default function TreeNode({ item, children, allItems, mode, scheduleInfo,
               <NodeBtn sm onClick={() => onEdit(item)}>✎</NodeBtn>
             )}
             {mode === 'structure' && isExternal && (
-              <span className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-400">🔒 Lukus</span>
+              <span className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 px-2 py-0.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500">🔒 Lukus</span>
             )}
             {mode === 'structure' && (
               <NodeBtn sm onClick={() => onDelete(item)} danger>✕</NodeBtn>
@@ -150,19 +150,19 @@ export default function TreeNode({ item, children, allItems, mode, scheduleInfo,
 
   /* ───── CONTENT ITEMS (TASK / TEST / LEARNING_MATERIAL / KNOBIT) ───── */
   const subConfig = {
-    TASK:              { bg: 'bg-amber-50/80',  border: 'border-amber-200/50',  iconBg: 'from-amber-500 to-amber-600',   text: 'text-amber-900',  icon: '✏️' },
-    TEST:              { bg: 'bg-red-50/80',    border: 'border-red-200/50',    iconBg: 'from-red-500 to-red-600',       text: 'text-red-900',    icon: '🧪' },
-    LEARNING_MATERIAL: { bg: 'bg-fuchsia-50/80', border: 'border-purple-200/50', iconBg: 'from-violet-500 to-purple-600', text: 'text-purple-900', icon: '📄' },
-    KNOBIT:            { bg: 'bg-blue-50/80',   border: 'border-blue-200/50',   iconBg: 'from-blue-600 to-blue-700',     text: 'text-blue-900',   icon: '⚡' },
+    TASK:              { bg: 'bg-amber-50/80 dark:bg-amber-900/30',    border: 'border-amber-200/50',  iconBg: 'from-amber-500 to-amber-600',   text: 'text-amber-900 dark:text-amber-100',  icon: '✏️' },
+    TEST:              { bg: 'bg-red-50/80 dark:bg-red-900/30',        border: 'border-red-200/50',    iconBg: 'from-red-500 to-red-600',       text: 'text-red-900 dark:text-red-100',      icon: '🧪' },
+    LEARNING_MATERIAL: { bg: 'bg-fuchsia-50/80 dark:bg-fuchsia-900/30', border: 'border-purple-200/50', iconBg: 'from-violet-500 to-purple-600', text: 'text-purple-900 dark:text-purple-100', icon: '📄' },
+    KNOBIT:            { bg: 'bg-blue-50/80 dark:bg-blue-900/30',      border: 'border-blue-200/50',   iconBg: 'from-blue-600 to-blue-700',     text: 'text-blue-900 dark:text-blue-100',    icon: '⚡' },
   };
-  const cfg = subConfig[item.type] ?? { bg: 'bg-white/60', border: 'border-slate-200', iconBg: 'from-slate-400 to-slate-500', text: 'text-slate-800', icon: '·' };
+  const cfg = subConfig[item.type] ?? { bg: 'bg-white/60 dark:bg-slate-800/50', border: 'border-slate-200 dark:border-slate-700', iconBg: 'from-slate-400 to-slate-500', text: 'text-slate-800 dark:text-slate-100', icon: '·' };
   const hasChildren = !!children;
 
   return (
     <div className={['mb-1 overflow-hidden rounded-[10px] border', cfg.border, cfg.bg].join(' ')}>
       <div className="flex items-center gap-2 px-2.5 py-1.5">
         {hasChildren && (
-          <button onClick={() => setExpanded((v) => !v)} className="flex-shrink-0 text-slate-400 hover:text-slate-600">
+          <button onClick={() => setExpanded((v) => !v)} className="flex-shrink-0 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
             <svg className={['h-3 w-3 transition-transform', expanded ? 'rotate-90' : ''].join(' ')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         )}
@@ -175,7 +175,7 @@ export default function TreeNode({ item, children, allItems, mode, scheduleInfo,
         {renderExtraButtons?.(item)}
         <div className="flex gap-1">
           {!isExternal && <NodeBtn xs onClick={() => onEdit(item)}>✎</NodeBtn>}
-          {isExternal && <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-semibold text-slate-400">🔒</span>}
+          {isExternal && <span className="rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 px-1.5 py-0.5 text-[9px] font-semibold text-slate-400 dark:text-slate-500">🔒</span>}
           <NodeBtn xs onClick={() => onDelete(item)} danger>✕</NodeBtn>
         </div>
       </div>
@@ -212,8 +212,8 @@ function NodeBtn({ onClick, children, sm, xs, danger }) {
         'rounded-[9px] border font-semibold transition-colors',
         xs ? 'px-2 py-0.5 text-[10px]' : sm ? 'px-2.5 py-0.5 text-[10px]' : 'px-2.5 py-1 text-[11px]',
         danger
-          ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
-          : 'border-slate-200/80 bg-white/70 text-slate-600 hover:bg-white/90',
+          ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-800/60 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
+          : 'border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-700/90',
       ].join(' ')}
     >
       {children}
@@ -236,12 +236,12 @@ function ScheduleBadge({ scheduleInfo, small }) {
   const isCancelled = status === 'CANCELLED';
 
   const colorClass = isCompleted
-    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+    ? 'border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
     : isCancelled
-    ? 'border-slate-200 bg-slate-50 text-slate-500 line-through'
+    ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 line-through'
     : isInProgress
-    ? 'border-blue-200 bg-blue-50 text-blue-700'
-    : 'border-amber-200 bg-amber-50 text-amber-700';
+    ? 'border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+    : 'border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400';
 
   const statusLabel = isCompleted ? 'Tehtud' : isInProgress ? 'Pooleli' : isCancelled ? 'Tühistatud' : null;
 
@@ -272,7 +272,7 @@ function SourceBadge({ external, externalIri, small }) {
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
           title="Ava oppekava.edu.ee lehel"
-          className={['inline-flex items-center gap-1 rounded-[7px] border border-sky-200 bg-sky-50 font-semibold text-sky-700 hover:bg-sky-100 transition-colors', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}
+          className={['inline-flex items-center gap-1 rounded-[7px] border border-sky-200 dark:border-sky-800/60 bg-sky-50 dark:bg-sky-900/30 font-semibold text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}
         >
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           Graaf
@@ -280,13 +280,13 @@ function SourceBadge({ external, externalIri, small }) {
       );
     }
     return (
-      <span className={['rounded-[7px] border border-sky-200 bg-sky-50 font-semibold text-sky-700', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}>
+      <span className={['rounded-[7px] border border-sky-200 dark:border-sky-800/60 bg-sky-50 dark:bg-sky-900/30 font-semibold text-sky-700 dark:text-sky-400', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}>
         🔗 Väline
       </span>
     );
   }
   return (
-    <span className={['rounded-[7px] border border-emerald-200 bg-emerald-50 font-semibold text-emerald-700', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}>
+    <span className={['rounded-[7px] border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-900/30 font-semibold text-emerald-700 dark:text-emerald-400', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}>
       Lokaalne
     </span>
   );

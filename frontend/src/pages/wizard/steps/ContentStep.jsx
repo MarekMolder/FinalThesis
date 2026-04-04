@@ -231,8 +231,8 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
     <div className="px-6 py-5">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 leading-tight">Sisu lisamine</h2>
-          <p className="mt-1 text-[13px] text-slate-500">Lisa õpiväljundite alla ülesanded, testid, materjalid ja knobitid</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">Sisu lisamine</h2>
+          <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">Lisa õpiväljundite alla ülesanded, testid, materjalid ja knobitid</p>
         </div>
         <div className="flex gap-2">
           {deleteMode ? (
@@ -246,7 +246,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
               </button>
               <button
                 onClick={() => { setDeleteMode(false); setDeleteSelected(new Set()); }}
-                className="rounded-xl border border-slate-200/80 bg-white/70 px-3.5 py-[7px] text-xs font-semibold text-slate-500 hover:bg-white/90"
+                className="rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-3.5 py-[7px] text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/90 dark:hover:bg-slate-700/90"
               >
                 Loobu
               </button>
@@ -254,7 +254,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
           ) : (
             <button
               onClick={() => setDeleteMode(true)}
-              className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-[7px] text-xs font-semibold text-red-700 hover:bg-red-100"
+              className="rounded-xl border border-red-200 dark:border-rose-800 bg-red-50 dark:bg-rose-900/30 px-3.5 py-[7px] text-xs font-semibold text-red-700 dark:text-rose-300 hover:bg-red-100 dark:hover:bg-red-900/40"
             >
               Kustuta sisu
             </button>
@@ -262,7 +262,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
         </div>
       </div>
 
-      {error && <div className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
+      {error && <div className="mb-3 rounded-2xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/30 px-4 py-2 text-sm text-rose-700 dark:text-rose-300">{error}</div>}
 
       <WizardTree
         items={items}
@@ -292,7 +292,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
                 <button
                   key="related"
                   onClick={(e) => { e.stopPropagation(); setContentImport({ element: item, mode: 'related' }); }}
-                  className="rounded-[9px] border border-sky-200 bg-sky-50 px-2.5 py-0.5 text-[10px] font-semibold text-sky-700 hover:bg-sky-100 transition-colors"
+                  className="rounded-[9px] border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-900/40 px-2.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-colors"
                   title="Seotud sisu graafist"
                 >
                   &#128279; Seotud
@@ -303,7 +303,7 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
               <button
                 key="search"
                 onClick={(e) => { e.stopPropagation(); setContentImport({ element: item, mode: 'search' }); }}
-                className="rounded-[9px] border border-slate-200/80 bg-white/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 hover:bg-white/90 transition-colors"
+                className="rounded-[9px] border border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-white/90 dark:hover:bg-slate-700/90 transition-colors"
                 title="Otsi sisu graafist"
               >
                 &#128269; Otsi
@@ -318,11 +318,11 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={() => setModal(null)}>
           <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md p-1">
             {!modal.item && (
-              <div className="mb-3 flex gap-2 flex-wrap rounded-2xl bg-white/90 border border-white/60 px-4 py-3 shadow">
-                <span className="text-xs font-semibold text-slate-500 self-center">Tuup:</span>
+              <div className="mb-3 flex gap-2 flex-wrap rounded-2xl bg-white/90 dark:bg-slate-800/90 border border-white/60 dark:border-slate-700/60 px-4 py-3 shadow">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 self-center">Tuup:</span>
                 {CONTENT_TYPES.map((t) => (
                   <button key={t} onClick={() => setModal((m) => ({ ...m, type: t }))}
-                    className={['rounded-xl px-3 py-1 text-xs font-semibold border transition-colors', modal.type === t ? 'bg-sky-600 text-white border-sky-600 shadow-[0_2px_6px_rgba(2,132,199,.25)]' : 'bg-white/70 text-slate-600 border-slate-200/80 hover:bg-white/90'].join(' ')}>
+                    className={['rounded-xl px-3 py-1 text-xs font-semibold border transition-colors', modal.type === t ? 'bg-sky-600 text-white border-sky-600 shadow-[0_2px_6px_rgba(2,132,199,.25)]' : 'bg-white/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-slate-700 hover:bg-white/90 dark:hover:bg-slate-700/90'].join(' ')}>
                     {{ TASK: 'Ulesanne', TEST: 'Test', LEARNING_MATERIAL: 'Materjal', KNOBIT: 'Knobit' }[t]}
                   </button>
                 ))}

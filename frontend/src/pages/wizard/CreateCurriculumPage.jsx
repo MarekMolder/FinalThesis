@@ -171,9 +171,9 @@ export default function CreateCurriculumPage() {
   return (
     <div className="min-h-screen">
       <div className="fixed inset-0 -z-10 bg-cover bg-center" style={{ backgroundImage: `url(${bgImg})` }} aria-hidden />
-      <div className="fixed inset-0 -z-10 bg-white/55" aria-hidden />
+      <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-slate-900/90" aria-hidden />
 
-      <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:bg-slate-900/80 dark:border-slate-700">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
           <Link
             to="/"
@@ -184,18 +184,18 @@ export default function CreateCurriculumPage() {
           </Link>
           <div className="ml-auto flex items-center gap-3">
             <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-slate-900">{user?.label ?? 'Õpetaja'}</div>
-              <div className="text-xs text-slate-600">{user?.email ?? '—'}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.label ?? 'Õpetaja'}</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">{user?.email ?? '—'}</div>
             </div>
             <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
               type="button"
             >
               <span className="text-sm font-semibold">{(user?.email ?? 'U').slice(0, 1).toUpperCase()}</span>
             </button>
             <button
               onClick={logout}
-              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70"
+              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
             >
               Logi välja
             </button>
@@ -204,7 +204,7 @@ export default function CreateCurriculumPage() {
       </header>
 
       <div className="mx-auto flex max-w-[1400px] gap-3 px-2 py-5">
-        <aside className="group relative -ml-2 h-[calc(100vh-120px)] w-[68px] flex-shrink-0 rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[220px]">
+        <aside className="group relative -ml-2 h-[calc(100vh-120px)] w-[68px] flex-shrink-0 rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[220px] dark:bg-slate-800/80 dark:border-slate-700">
           <div className="flex flex-col gap-2">
             <SidebarIcon active label="Minu õppekavad" onClick={() => navigate('/')}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -232,12 +232,12 @@ export default function CreateCurriculumPage() {
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col rounded-3xl border border-white/60 bg-white/55 shadow-sm backdrop-blur-md overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col rounded-3xl border border-white/60 bg-white/55 shadow-sm backdrop-blur-md overflow-hidden dark:bg-slate-800/80 dark:border-slate-700">
           <StepBar steps={steps} current={step} gate={versionId ? 4 : 1} onStepClick={setStep} onSaveDraft={versionId ? saveDraft : undefined} />
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="flex-1 overflow-y-auto">
               {editLoading && (
-                <div className="flex items-center justify-center py-20 text-sm text-slate-500 animate-pulse">Laen õppekava andmeid…</div>
+                <div className="flex items-center justify-center py-20 text-sm text-slate-500 dark:text-slate-400 animate-pulse">Laen õppekava andmeid…</div>
               )}
               {step === 1 && !editLoading && (
                 <MetadataStep
@@ -310,10 +310,10 @@ function SidebarIcon({ children, active, label, onClick }) {
       className={[
         'flex w-full items-center rounded-2xl transition',
         'justify-center px-2 py-2.5 group-hover:justify-start group-hover:gap-3 group-hover:px-3',
-        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 hover:bg-white/55',
+        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-white/55 dark:hover:bg-slate-700/55',
       ].join(' ')}
     >
-      <span className={['grid h-12 w-12 place-items-center rounded-2xl', active ? 'text-white' : 'text-slate-700'].join(' ')}>
+      <span className={['grid h-12 w-12 place-items-center rounded-2xl', active ? 'text-white' : 'text-slate-700 dark:text-slate-300'].join(' ')}>
         {children}
       </span>
       <span className="truncate w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 transition-all duration-200 text-sm font-medium">

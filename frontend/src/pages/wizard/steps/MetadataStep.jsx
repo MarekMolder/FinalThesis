@@ -172,18 +172,18 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
   return (
     <form onSubmit={handleSubmit} className="p-6 max-w-3xl">
       <div className="mb-5">
-        <h2 className="text-xl font-bold text-slate-900 leading-tight">Uus õppekava — Metaandmed</h2>
-        <p className="mt-1 text-[13px] text-slate-500">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">Uus õppekava — Metaandmed</h2>
+        <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
           Sisesta põhiandmed. Nende põhjal tehakse automaatne päring oppekava.edu.ee graafi.
         </p>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{error}</div>
+        <div className="mb-4 rounded-2xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/30 px-4 py-3 text-sm text-rose-800 dark:text-rose-300">{error}</div>
       )}
 
       {taxonomyLoading && (
-        <div className="mb-4 flex items-center gap-2 text-sm text-slate-500 animate-pulse">
+        <div className="mb-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 animate-pulse">
           <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4 31.4" strokeLinecap="round"/></svg>
           Laen oppekava.edu.ee taksonoomiat…
         </div>
@@ -313,7 +313,7 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
 
         {form.schoolYearStartDate && (
           <div className="mt-3 space-y-2">
-            <div className="text-[11px] font-semibold text-slate-500">Koolivaheajad</div>
+            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Koolivaheajad</div>
             {form.schoolBreaks.map((b, i) => (
               <div key={i} className="flex items-center gap-2">
                 <input
@@ -324,9 +324,9 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
                     updated[i] = { ...updated[i], startDate: e.target.value };
                     set('schoolBreaks', updated);
                   }}
-                  className="w-full rounded-xl border border-slate-200/90 bg-white/75 px-3 py-2 text-[13px] text-slate-800 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]"
+                  className="w-full rounded-xl border border-slate-200/90 dark:border-slate-600 bg-white/75 dark:bg-slate-700 px-3 py-2 text-[13px] text-slate-800 dark:text-slate-100 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]"
                 />
-                <span className="text-slate-400">{'\u2013'}</span>
+                <span className="text-slate-400 dark:text-slate-500">{'\u2013'}</span>
                 <input
                   type="date"
                   value={b.endDate}
@@ -335,7 +335,7 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
                     updated[i] = { ...updated[i], endDate: e.target.value };
                     set('schoolBreaks', updated);
                   }}
-                  className="w-full rounded-xl border border-slate-200/90 bg-white/75 px-3 py-2 text-[13px] text-slate-800 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]"
+                  className="w-full rounded-xl border border-slate-200/90 dark:border-slate-600 bg-white/75 dark:bg-slate-700 px-3 py-2 text-[13px] text-slate-800 dark:text-slate-100 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]"
                 />
                 <button
                   type="button"
@@ -343,7 +343,7 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
                     const updated = form.schoolBreaks.filter((_, j) => j !== i);
                     set('schoolBreaks', updated);
                   }}
-                  className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1.5 text-xs text-rose-600 hover:bg-rose-100"
+                  className="shrink-0 rounded-lg border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/30 px-2 py-1.5 text-xs text-rose-600 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-red-900/40"
                 >
                   Eemalda
                 </button>
@@ -354,7 +354,7 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
               onClick={() => {
                 set('schoolBreaks', [...form.schoolBreaks, { startDate: '', endDate: '' }]);
               }}
-              className="rounded-xl border border-dashed border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-500 hover:border-sky-400 hover:text-sky-600"
+              className="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:border-sky-400 hover:text-sky-600"
             >
               + Lisa vaheaeg
             </button>
@@ -365,7 +365,7 @@ export default function MetadataStep({ onDone, initialMetadata, existingCurricul
       <div className="mt-6 flex justify-end gap-2.5">
         <button
           type="button"
-          className="rounded-xl border border-slate-200/80 bg-white/70 px-4 py-[7px] text-xs font-semibold text-slate-500 hover:bg-white/90"
+          className="rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-4 py-[7px] text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/90 dark:hover:bg-slate-700/90"
         >
           Tühista
         </button>
@@ -422,7 +422,7 @@ function ComboField({ label, value, onChange, options, placeholder, required, gr
 
   return (
     <div className="flex flex-col gap-1" ref={wrapRef}>
-      <span className="text-[11px] font-semibold text-slate-500 tracking-[.03em]">{label}</span>
+      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 tracking-[.03em]">{label}</span>
       <div className="relative">
         <input
           ref={inputRef}
@@ -431,7 +431,7 @@ function ComboField({ label, value, onChange, options, placeholder, required, gr
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           required={required}
-          className={['w-full rounded-xl border border-slate-200/90 bg-white/75 px-3 py-2 text-[13px] text-slate-800 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] placeholder:text-slate-400 focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]', showGraphLink ? 'pr-14' : 'pr-8'].join(' ')}
+          className={['w-full rounded-xl border border-slate-200/90 dark:border-slate-600 bg-white/75 dark:bg-slate-700 px-3 py-2 text-[13px] text-slate-800 dark:text-slate-100 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]', showGraphLink ? 'pr-14' : 'pr-8'].join(' ')}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {showGraphLink && (
@@ -440,7 +440,7 @@ function ComboField({ label, value, onChange, options, placeholder, required, gr
               target="_blank"
               rel="noopener noreferrer"
               title="Ava oppekava.edu.ee lehel"
-              className="rounded p-0.5 text-sky-500 hover:bg-sky-50 hover:text-sky-700"
+              className="rounded p-0.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/40 hover:text-sky-700"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </a>
@@ -450,20 +450,20 @@ function ComboField({ label, value, onChange, options, placeholder, required, gr
               type="button"
               tabIndex={-1}
               onClick={() => { setOpen(!open); inputRef.current?.focus(); }}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
             </button>
           )}
         </div>
         {open && filtered.length > 0 && (
-          <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+          <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
             {filtered.map((opt) => (
               <div
                 key={opt}
                 className={[
-                  'flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-sky-50 transition-colors',
-                  opt === value ? 'bg-sky-50 text-sky-700 font-medium' : 'text-slate-700',
+                  'flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-sky-50 dark:hover:bg-sky-900/40 transition-colors',
+                  opt === value ? 'bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 font-medium' : 'text-slate-700 dark:text-slate-300',
                 ].join(' ')}
               >
                 <button
@@ -497,7 +497,7 @@ function ComboField({ label, value, onChange, options, placeholder, required, gr
 function FieldGroup({ label, children }) {
   return (
     <div className="mb-4">
-      <div className="mb-3 text-[11px] font-bold uppercase tracking-[.07em] text-slate-400">{label}</div>
+      <div className="mb-3 text-[11px] font-bold uppercase tracking-[.07em] text-slate-400 dark:text-slate-500">{label}</div>
       {children}
     </div>
   );
@@ -506,10 +506,10 @@ function FieldGroup({ label, children }) {
 function Field({ label, children }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-semibold text-slate-500 tracking-[.03em]">{label}</span>
+      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 tracking-[.03em]">{label}</span>
       {React.Children.map(children, (child) =>
         React.cloneElement(child, {
-          className: 'w-full rounded-xl border border-slate-200/90 bg-white/75 px-3 py-2 text-[13px] text-slate-800 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] placeholder:text-slate-400 focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]',
+          className: 'w-full rounded-xl border border-slate-200/90 dark:border-slate-600 bg-white/75 dark:bg-slate-700 px-3 py-2 text-[13px] text-slate-800 dark:text-slate-100 outline-none shadow-[inset_0_1px_2px_rgba(15,23,42,.04)] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,.15)]',
         })
       )}
     </label>
@@ -517,5 +517,5 @@ function Field({ label, children }) {
 }
 
 function Divider() {
-  return <div className="my-4 h-px bg-slate-200/50" />;
+  return <div className="my-4 h-px bg-slate-200/50 dark:bg-slate-700/50" />;
 }

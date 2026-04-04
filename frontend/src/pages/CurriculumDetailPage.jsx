@@ -88,7 +88,7 @@ function GraphExternalLink({ href, className, variant = 'default' }) {
   if (!href) return null;
   const variants = {
     default:
-      'inline-flex shrink-0 items-center gap-1 rounded-lg border border-sky-200/80 bg-sky-50/90 px-2 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-100',
+      'inline-flex shrink-0 items-center gap-1 rounded-lg border border-sky-200/80 bg-sky-50/90 px-2 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-100 dark:border-sky-700/60 dark:bg-sky-900/40 dark:text-sky-400 dark:hover:bg-sky-900/60',
     /** Mooduli gradient-päisel: klaas, ilma hover-efektita. */
     glassOnGradient:
       'inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/30 bg-white/15 px-2.5 py-1.5 text-[11px] font-medium text-white shadow-none backdrop-blur-md',
@@ -124,7 +124,7 @@ function LoSemanticRelations({ lo }) {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex max-w-full items-center rounded-lg border border-white/80 bg-white/90 px-2 py-0.5 text-[11px] font-medium text-amber-900 shadow-sm hover:bg-white"
+          className="inline-flex max-w-full items-center rounded-lg border border-white/80 bg-white/90 px-2 py-0.5 text-[11px] font-medium text-amber-900 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-amber-400 dark:hover:bg-slate-600"
           title={label}
         >
           <span className="truncate">{label}</span>
@@ -133,7 +133,7 @@ function LoSemanticRelations({ lo }) {
     }
     return (
       <span
-        className="inline-flex max-w-full rounded-lg border border-amber-200/80 bg-amber-100/50 px-2 py-0.5 text-[11px] font-medium text-amber-900"
+        className="inline-flex max-w-full rounded-lg border border-amber-200/80 bg-amber-100/50 px-2 py-0.5 text-[11px] font-medium text-amber-900 dark:border-amber-700/60 dark:bg-amber-900/30 dark:text-amber-400"
         title={label}
       >
         <span className="truncate">{label}</span>
@@ -144,12 +144,12 @@ function LoSemanticRelations({ lo }) {
   return (
     <div className="mt-3 space-y-2">
       {eeldab.length > 0 && (
-        <div className="rounded-xl border border-amber-200/90 bg-gradient-to-r from-amber-50/95 to-orange-50/40 px-3 py-2 shadow-sm">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-amber-900">
-            <span className="grid h-5 w-5 place-items-center rounded-md bg-amber-200/80 text-amber-950" aria-hidden>
+        <div className="rounded-xl border border-amber-200/90 bg-gradient-to-r from-amber-50/95 to-orange-50/40 px-3 py-2 shadow-sm dark:border-amber-700/60 dark:from-amber-900/30 dark:to-orange-900/20">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-400">
+            <span className="grid h-5 w-5 place-items-center rounded-md bg-amber-200/80 text-amber-950 dark:bg-amber-800/60 dark:text-amber-200" aria-hidden>
               →
             </span>
-            Eeldab <span className="font-normal normal-case text-amber-800/80">(enne seda peaks valmis olema)</span>
+            Eeldab <span className="font-normal normal-case text-amber-800/80 dark:text-amber-400/80">(enne seda peaks valmis olema)</span>
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {eeldab.map((r) => (
@@ -159,12 +159,12 @@ function LoSemanticRelations({ lo }) {
         </div>
       )}
       {koosneb.length > 0 && (
-        <div className="rounded-xl border border-violet-200/90 bg-gradient-to-r from-violet-50/95 to-indigo-50/40 px-3 py-2 shadow-sm">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-violet-900">
-            <span className="grid h-5 w-5 place-items-center rounded-md bg-violet-200/80 text-violet-950" aria-hidden>
+        <div className="rounded-xl border border-violet-200/90 bg-gradient-to-r from-violet-50/95 to-indigo-50/40 px-3 py-2 shadow-sm dark:border-violet-700/60 dark:from-violet-900/30 dark:to-indigo-900/20">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-violet-900 dark:text-violet-300">
+            <span className="grid h-5 w-5 place-items-center rounded-md bg-violet-200/80 text-violet-950 dark:bg-violet-800/60 dark:text-violet-200" aria-hidden>
               ⧉
             </span>
-            Koosneb <span className="font-normal normal-case text-violet-800/80">(osaüksused)</span>
+            Koosneb <span className="font-normal normal-case text-violet-800/80 dark:text-violet-400/80">(osaüksused)</span>
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {koosneb.map((r) => {
@@ -176,7 +176,7 @@ function LoSemanticRelations({ lo }) {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex max-w-full items-center rounded-lg border border-white/80 bg-white/90 px-2 py-0.5 text-[11px] font-medium text-violet-900 shadow-sm hover:bg-white"
+                  className="inline-flex max-w-full items-center rounded-lg border border-white/80 bg-white/90 px-2 py-0.5 text-[11px] font-medium text-violet-900 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-violet-300 dark:hover:bg-slate-600"
                   title={label}
                 >
                   <span className="truncate">{label}</span>
@@ -184,7 +184,7 @@ function LoSemanticRelations({ lo }) {
               ) : (
                 <span
                   key={r.id || r.title}
-                  className="inline-flex max-w-full rounded-lg border border-violet-200/80 bg-violet-100/40 px-2 py-0.5 text-[11px] font-medium text-violet-900"
+                  className="inline-flex max-w-full rounded-lg border border-violet-200/80 bg-violet-100/40 px-2 py-0.5 text-[11px] font-medium text-violet-900 dark:border-violet-700/60 dark:bg-violet-900/30 dark:text-violet-300"
                   title={label}
                 >
                   <span className="truncate">{label}</span>
@@ -209,12 +209,12 @@ const CHILD_TYPE_LABELS = {
 };
 
 const CHILD_TYPE_COLORS = {
-  TASK: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200/80' },
-  TEST: { bg: 'bg-rose-100', text: 'text-rose-800', border: 'border-rose-200/80' },
-  LEARNING_MATERIAL: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200/80' },
-  KNOBIT: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200/80' },
+  TASK: { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-800 dark:text-amber-400', border: 'border-amber-200/80 dark:border-amber-700/60' },
+  TEST: { bg: 'bg-rose-100 dark:bg-rose-900/40', text: 'text-rose-800 dark:text-rose-400', border: 'border-rose-200/80 dark:border-rose-700/60' },
+  LEARNING_MATERIAL: { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-800 dark:text-blue-300', border: 'border-blue-200/80 dark:border-blue-700/60' },
+  KNOBIT: { bg: 'bg-purple-100 dark:bg-purple-900/40', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-200/80 dark:border-purple-700/60' },
 };
-const DEFAULT_CHILD_COLOR = { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200/80' };
+const DEFAULT_CHILD_COLOR = { bg: 'bg-slate-100 dark:bg-slate-700/50', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200/80 dark:border-slate-700' };
 
 function ChildItemCard({ item, depth = 0, schoolWeeks }) {
   const [open, setOpen] = useState(false);
@@ -224,11 +224,11 @@ function ChildItemCard({ item, depth = 0, schoolWeeks }) {
   const typeLabel = CHILD_TYPE_LABELS[item.type] || item.type;
 
   return (
-    <div className={cn('rounded-xl border bg-white/95 shadow-sm', colors.border, depth > 0 && 'ml-4')}>
+    <div className={cn('rounded-xl border bg-white/95 shadow-sm dark:bg-slate-800/90', colors.border, depth > 0 && 'ml-4')}>
       <div
         className={cn(
           'flex items-start gap-2.5 px-3 py-2.5',
-          hasChildren && 'cursor-pointer hover:bg-slate-50/80'
+          hasChildren && 'cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-700/50'
         )}
         onClick={hasChildren ? () => setOpen(!open) : undefined}
       >
@@ -244,17 +244,17 @@ function ChildItemCard({ item, depth = 0, schoolWeeks }) {
             {typeLabel}
             <WeekBadges startAt={item.plannedStartAt} endAt={item.plannedEndAt} schoolWeeks={schoolWeeks} />
           </div>
-          <p className={"text-sm font-medium leading-snug text-slate-900"}>{item.title}</p>
+          <p className={"text-sm font-medium leading-snug text-slate-900 dark:text-slate-100"}>{item.title}</p>
           {item.description && (
-            <p className={"mt-0.5 text-[11px] leading-relaxed text-slate-500 line-clamp-2"}>{item.description}</p>
+            <p className={"mt-0.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 line-clamp-2"}>{item.description}</p>
           )}
         </div>
         {hasChildren && (
-          <ChevronDownIcon open={open} className="mt-1 h-4 w-4 text-slate-400" />
+          <ChevronDownIcon open={open} className="mt-1 h-4 w-4 text-slate-400 dark:text-slate-500" />
         )}
       </div>
       {open && hasChildren && (
-        <div className="border-t border-slate-100 px-3 py-2 space-y-2">
+        <div className="border-t border-slate-100 dark:border-slate-700 px-3 py-2 space-y-2">
           {children.map((child) => (
             <ChildItemCard key={child.id} item={child} depth={depth + 1} schoolWeeks={schoolWeeks} />
           ))}
@@ -287,7 +287,7 @@ function WeekBadges({ startAt, endAt, schoolWeeks }) {
   return (
     <span className="inline-flex flex-wrap gap-1 ml-1">
       {weeks.map((w) => (
-        <span key={w.weekNumber} className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700" title={formatSchoolWeekLabel(w)}>
+        <span key={w.weekNumber} className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400" title={formatSchoolWeekLabel(w)}>
           Õ{w.weekNumber}
         </span>
       ))}
@@ -304,10 +304,10 @@ function ChildrenList({ children, schoolWeeks }) {
   });
   return (
     <div className="mt-3 space-y-2">
-      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200" />
+      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-700" />
         <span>Alamelemendid ({children.length})</span>
-        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200" />
+        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
       </div>
       {sorted.map((child) => (
         <ChildItemCard key={child.id} item={child} schoolWeeks={schoolWeeks} />
@@ -321,35 +321,35 @@ function LearningOutcomeTree({ items, accent = 'emerald', schoolWeeks }) {
   const list = Array.isArray(items) ? items : [];
   const n = list.length;
   if (n === 0) {
-    return <p className="py-2 text-sm text-slate-500">Siia ei ole graafist veel õpiväljundeid seotud.</p>;
+    return <p className="py-2 text-sm text-slate-500 dark:text-slate-400">Siia ei ole graafist veel õpiväljundeid seotud.</p>;
   }
   const dot =
     accent === 'sky'
       ? 'bg-sky-500 shadow-sky-200/50'
       : 'bg-emerald-500 shadow-emerald-200/50';
-  const labelColor = accent === 'sky' ? 'text-sky-700' : 'text-emerald-700';
-  const cardBorder = accent === 'sky' ? 'border-sky-100/90' : 'border-emerald-100/90';
+  const labelColor = accent === 'sky' ? 'text-sky-700 dark:text-sky-400' : 'text-emerald-700 dark:text-emerald-400';
+  const cardBorder = accent === 'sky' ? 'border-sky-100/90 dark:border-sky-800/40' : 'border-emerald-100/90 dark:border-emerald-800/40';
 
   return (
     <div className="space-y-0">
       {list.map((lo, i) => {
         const isTest = lo.type === 'TEST';
         const itemDot = isTest ? 'bg-rose-500 shadow-rose-200/50' : dot;
-        const itemLabelColor = isTest ? 'text-rose-700' : labelColor;
-        const itemCardBorder = isTest ? 'border-rose-100/90' : cardBorder;
+        const itemLabelColor = isTest ? 'text-rose-700 dark:text-rose-400' : labelColor;
+        const itemCardBorder = isTest ? 'border-rose-100/90 dark:border-rose-800/40' : cardBorder;
         return (
         <div key={lo.id || i} className="flex gap-3 sm:gap-4">
           <div className="flex w-8 shrink-0 flex-col items-center sm:w-9">
-            {i > 0 ? <div className="h-3 w-px border-l-2 border-dashed border-slate-300" aria-hidden /> : <div className="h-3" />}
+            {i > 0 ? <div className="h-3 w-px border-l-2 border-dashed border-slate-300 dark:border-slate-600" aria-hidden /> : <div className="h-3" />}
             <div
               className={cn(
-                'z-10 h-3.5 w-3.5 shrink-0 rounded-full ring-[5px] ring-white shadow-md sm:h-4 sm:w-4',
+                'z-10 h-3.5 w-3.5 shrink-0 rounded-full ring-[5px] ring-white dark:ring-slate-800 shadow-md sm:h-4 sm:w-4',
                 itemDot
               )}
               aria-hidden
             />
             {i < n - 1 ? (
-              <div className="min-h-[4.5rem] w-px flex-1 border-l-2 border-dashed border-slate-300 sm:min-h-[5rem]" aria-hidden />
+              <div className="min-h-[4.5rem] w-px flex-1 border-l-2 border-dashed border-slate-300 dark:border-slate-600 sm:min-h-[5rem]" aria-hidden />
             ) : (
               <div className="h-2" aria-hidden />
             )}
@@ -357,7 +357,7 @@ function LearningOutcomeTree({ items, accent = 'emerald', schoolWeeks }) {
           <div className="min-w-0 flex-1 pb-5 sm:pb-6">
             <div
               className={cn(
-                'rounded-2xl border bg-white/95 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-5 sm:py-4',
+                'rounded-2xl border bg-white/95 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-5 sm:py-4 dark:bg-slate-800/90',
                 itemCardBorder
               )}
             >
@@ -367,7 +367,7 @@ function LearningOutcomeTree({ items, accent = 'emerald', schoolWeeks }) {
                     {lo.type === 'TEST' ? 'Test' : lo.type === 'TOPIC' ? 'Teema' : 'Õpiväljund'}
                     <WeekBadges startAt={lo.plannedStartAt} endAt={lo.plannedEndAt} schoolWeeks={schoolWeeks} />
                   </div>
-                  <p className="mt-1.5 text-sm font-semibold leading-snug text-slate-900 sm:text-[15px]">{lo.title}</p>
+                  <p className="mt-1.5 text-sm font-semibold leading-snug text-slate-900 dark:text-slate-100 sm:text-[15px]">{lo.title}</p>
                 </div>
                 <GraphExternalLink href={lo.fullUrl} />
               </div>
@@ -408,7 +408,7 @@ function ModuleAccordionItem({ mod, index, expanded, onToggle, schoolWeeks }) {
   return (
     <div
       id={`structure-mod-${index}`}
-      className="scroll-mt-24 overflow-hidden rounded-3xl border border-indigo-200/50 bg-white/90 shadow-md backdrop-blur-sm sm:scroll-mt-28"
+      className="scroll-mt-24 overflow-hidden rounded-3xl border border-indigo-200/50 bg-white/90 shadow-md backdrop-blur-sm sm:scroll-mt-28 dark:border-indigo-800/40 dark:bg-slate-800/90"
     >
       <div className={cn(
         'flex min-h-[4.5rem] items-stretch',
@@ -466,11 +466,11 @@ function ModuleAccordionItem({ mod, index, expanded, onToggle, schoolWeeks }) {
       </div>
 
       {expanded && (
-        <div className="border-t border-indigo-100/60 bg-gradient-to-b from-slate-50/50 to-white/90 px-4 py-4 sm:px-6 sm:py-5">
-          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200" />
+        <div className="border-t border-indigo-100/60 bg-gradient-to-b from-slate-50/50 to-white/90 px-4 py-4 sm:px-6 sm:py-5 dark:border-indigo-900/40 dark:from-slate-800/50 dark:to-slate-800/90">
+          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-700" />
             <span>2. tase — elemendid</span>
-            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200" />
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
           </div>
           {(() => {
             // TEST items always at the bottom
@@ -526,8 +526,8 @@ function ModuleAccordionItem({ mod, index, expanded, onToggle, schoolWeeks }) {
                   if (entry.type === 'week-header') {
                     return (
                       <div key={`wh-${entry.week.weekNumber}`} className="flex items-center gap-2 pt-1">
-                        <span className="text-[11px] font-semibold text-indigo-600">{entry.label}</span>
-                        <span className="h-px flex-1 bg-gradient-to-r from-indigo-200 to-transparent" />
+                        <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">{entry.label}</span>
+                        <span className="h-px flex-1 bg-gradient-to-r from-indigo-200 dark:from-indigo-800 to-transparent" />
                       </div>
                     );
                   }
@@ -536,8 +536,8 @@ function ModuleAccordionItem({ mod, index, expanded, onToggle, schoolWeeks }) {
                 {noWeekLos.length > 0 && (
                   <>
                     <div className="flex items-center gap-2 pt-1">
-                      <span className="text-[11px] font-semibold text-slate-400">Ajastamata</span>
-                      <span className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent" />
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">Ajastamata</span>
+                      <span className="h-px flex-1 bg-gradient-to-r from-slate-200 dark:from-slate-700 to-transparent" />
                     </div>
                     <LearningOutcomeTree items={noWeekLos} accent="emerald" schoolWeeks={schoolWeeks} />
                   </>
@@ -559,7 +559,7 @@ function CurriculumLevelAccordion({ items, expanded, onToggle, schoolWeeks }) {
   return (
     <section
       id="structure-curriculum-los"
-      className="scroll-mt-24 overflow-hidden rounded-3xl border border-sky-200/60 bg-white/90 shadow-sm backdrop-blur-sm sm:scroll-mt-28"
+      className="scroll-mt-24 overflow-hidden rounded-3xl border border-sky-200/60 bg-white/90 shadow-sm backdrop-blur-sm sm:scroll-mt-28 dark:border-sky-800/40 dark:bg-slate-800/90"
     >
       <div className="flex items-stretch bg-gradient-to-r from-sky-500 to-cyan-600">
         <button
@@ -576,9 +576,9 @@ function CurriculumLevelAccordion({ items, expanded, onToggle, schoolWeeks }) {
         </button>
       </div>
       {expanded && (
-        <div className="border-t border-sky-100/80 px-4 py-4 sm:px-6 sm:py-5">
-          <p className="mb-4 text-xs leading-relaxed text-slate-600 sm:text-sm">
-            Graafis on need seotud <strong className="text-slate-800">õppekavaga</strong>, mitte konkreetse mooduliga.
+        <div className="border-t border-sky-100/80 dark:border-sky-900/40 px-4 py-4 sm:px-6 sm:py-5">
+          <p className="mb-4 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">
+            Graafis on need seotud <strong className="text-slate-800 dark:text-slate-200">õppekavaga</strong>, mitte konkreetse mooduliga.
           </p>
           <LearningOutcomeTree items={list} accent="sky" schoolWeeks={schoolWeeks} />
         </div>
@@ -599,7 +599,7 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
 
   if (!hasModules && !hasCurriculumLos) {
     return (
-      <div className="mt-10 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center text-sm text-slate-600">
+      <div className="mt-10 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-700/50 dark:text-slate-400">
         Struktuuri ei leitud (moodulid ja õppekava-taseme õpiväljundid puuduvad).
       </div>
     );
@@ -655,16 +655,16 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
   return (
     <div className="mt-10 min-w-0 space-y-6">
       <header>
-        <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{title}</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
+        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">{title}</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           Elemendid on vaikimisi kokku klapitud — ava üks korraga või vali{' '}
-          <strong className="text-slate-800">hüppemenüüst</strong>.
+          <strong className="text-slate-800 dark:text-slate-200">hüppemenüüst</strong>.
         </p>
       </header>
 
       <div
         className={cn(
-          'min-w-0 rounded-2xl border border-white/45 bg-white/25 p-2 backdrop-blur-lg sm:p-2.5',
+          'min-w-0 rounded-2xl border border-white/45 bg-white/25 p-2 backdrop-blur-lg sm:p-2.5 dark:border-slate-700 dark:bg-slate-800/50',
           'shadow-[0_4px_14px_rgba(15,23,42,0.08),0_1px_3px_rgba(15,23,42,0.06)]'
         )}
       >
@@ -678,8 +678,8 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
               value=""
               onChange={(e) => onStructureJumpSelect(e.target.value)}
               className={cn(
-                'w-full min-w-0 cursor-pointer appearance-none rounded-2xl border border-white/55',
-                'bg-white/20 py-2.5 pl-3.5 pr-10 text-sm font-medium text-slate-800',
+                'w-full min-w-0 cursor-pointer appearance-none rounded-2xl border border-white/55 dark:border-slate-600',
+                'bg-white/20 py-2.5 pl-3.5 pr-10 text-sm font-medium text-slate-800 dark:bg-slate-700 dark:text-slate-100',
                 'shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_4px_rgba(15,23,42,0.07)] backdrop-blur-md',
                 'outline-none transition-[border-color,box-shadow]',
                 'focus:border-sky-400/50 focus:ring-2 focus:ring-sky-300/30 focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_8px_rgba(14,165,233,0.12)]'
@@ -699,7 +699,7 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
               )}
             </select>
             <span
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-600/80"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-600/80 dark:text-slate-400"
               aria-hidden
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -711,7 +711,7 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
             type="button"
             onClick={expandAllModules}
             className={cn(
-              'shrink-0 whitespace-nowrap rounded-2xl border border-white/55 bg-white/20 px-3 py-2.5',
+              'shrink-0 whitespace-nowrap rounded-2xl border border-white/55 bg-white/20 px-3 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200',
               'text-xs font-semibold text-slate-700 backdrop-blur-md',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_3px_rgba(15,23,42,0.06)]',
               'sm:px-4'
@@ -723,7 +723,7 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
             type="button"
             onClick={collapseAll}
             className={cn(
-              'shrink-0 whitespace-nowrap rounded-2xl border border-white/55 bg-white/20 px-3 py-2.5',
+              'shrink-0 whitespace-nowrap rounded-2xl border border-white/55 bg-white/20 px-3 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300',
               'text-xs font-semibold text-slate-600 backdrop-blur-md',
               'shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_3px_rgba(15,23,42,0.06)]',
               'sm:px-4'
@@ -765,9 +765,9 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
             {monthGroups.map((mg) => (
               <div key={mg.key} className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold uppercase tracking-wider text-sky-700">{mg.label}</span>
-                  <span className="h-px flex-1 bg-gradient-to-r from-sky-200 to-transparent" />
-                  <span className="text-xs text-slate-500">{mg.items.length} tk</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">{mg.label}</span>
+                  <span className="h-px flex-1 bg-gradient-to-r from-sky-200 dark:from-sky-800 to-transparent" />
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{mg.items.length} tk</span>
                 </div>
                 <div className="space-y-3">
                   {mg.items.map((mod) => {
@@ -790,9 +790,9 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
             {unscheduled.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Ajastamata</span>
-                  <span className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent" />
-                  <span className="text-xs text-slate-500">{unscheduled.length} tk</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ajastamata</span>
+                  <span className="h-px flex-1 bg-gradient-to-r from-slate-200 dark:from-slate-700 to-transparent" />
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{unscheduled.length} tk</span>
                 </div>
                 <div className="space-y-3">
                   {unscheduled.map((mod) => {
@@ -831,10 +831,10 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
 
 function PanelStatPill({ children, tone = 'slate' }) {
   const tones = {
-    slate: 'border-slate-200/80 bg-slate-100/80 text-slate-700',
-    sky: 'border-sky-200/80 bg-sky-50/90 text-sky-800',
-    emerald: 'border-emerald-200/80 bg-emerald-50/90 text-emerald-800',
-    amber: 'border-amber-200/80 bg-amber-50/90 text-amber-900',
+    slate: 'border-slate-200/80 bg-slate-100/80 text-slate-700 dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-300',
+    sky: 'border-sky-200/80 bg-sky-50/90 text-sky-800 dark:border-sky-700/60 dark:bg-sky-900/40 dark:text-sky-400',
+    emerald: 'border-emerald-200/80 bg-emerald-50/90 text-emerald-800 dark:border-emerald-700/60 dark:bg-emerald-900/40 dark:text-emerald-400',
+    amber: 'border-amber-200/80 bg-amber-50/90 text-amber-900 dark:border-amber-700/60 dark:bg-amber-900/40 dark:text-amber-400',
   };
   return (
     <span className={cn('inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold', tones[tone] || tones.slate)}>
@@ -848,11 +848,11 @@ function PanelField({ label, value, href, mono }) {
   const display = value != null && String(value).trim() !== '' ? String(value) : null;
   const empty = <span className="text-slate-400">—</span>;
   return (
-    <div className="border-b border-white/50 py-2.5 last:border-0 last:pb-0">
-      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
-      <div className={cn('mt-0.5 break-words text-sm font-medium text-slate-900', mono && 'font-mono text-xs')}>
+    <div className="border-b border-white/50 dark:border-slate-700/50 py-2.5 last:border-0 last:pb-0">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</div>
+      <div className={cn('mt-0.5 break-words text-sm font-medium text-slate-900 dark:text-slate-100', mono && 'font-mono text-xs')}>
         {href && display ? (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="text-sky-700 hover:underline" title={display}>
+          <a href={href} target="_blank" rel="noopener noreferrer" className="text-sky-700 dark:text-sky-400 hover:underline" title={display}>
             {display}
           </a>
         ) : display ? (
@@ -872,21 +872,21 @@ function PanelIriField({ label, iri }) {
   const short = iriToLabel(iri);
   const isUrl = /^https?:\/\//i.test(iri);
   return (
-    <div className="border-b border-white/50 py-2.5 last:border-0 last:pb-0">
-      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
+    <div className="border-b border-white/50 dark:border-slate-700/50 py-2.5 last:border-0 last:pb-0">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</div>
       <div className="mt-0.5">
         {isUrl ? (
           <a
             href={iri}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-sky-700 hover:underline"
+            className="text-sm font-medium text-sky-700 dark:text-sky-400 hover:underline"
             title={iri}
           >
             {short || iri}
           </a>
         ) : (
-          <span className="text-sm font-medium text-slate-900" title={iri}>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100" title={iri}>
             {short || iri}
           </span>
         )}
@@ -902,14 +902,14 @@ function CurriculumMetaRightPanel({ data, loading }) {
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
-        <div className="h-24 rounded-2xl bg-white/40" />
-        <div className="h-40 rounded-2xl bg-white/40" />
-        <div className="h-32 rounded-2xl bg-white/40" />
+        <div className="h-24 rounded-2xl bg-white/40 dark:bg-slate-700/40" />
+        <div className="h-40 rounded-2xl bg-white/40 dark:bg-slate-700/40" />
+        <div className="h-32 rounded-2xl bg-white/40 dark:bg-slate-700/40" />
       </div>
     );
   }
   if (!data) {
-    return <p className="text-center text-sm text-slate-500">Andmed puuduvad.</p>;
+    return <p className="text-center text-sm text-slate-500 dark:text-slate-400">Andmed puuduvad.</p>;
   }
 
   const fw = data.educationalFramework != null ? String(data.educationalFramework).replace(/_/g, ' ') : null;
@@ -917,13 +917,13 @@ function CurriculumMetaRightPanel({ data, loading }) {
   return (
     <div className="space-y-4">
       {/* Pealkiri + kiirülevaade */}
-      <div className="overflow-hidden rounded-2xl border border-white/70 bg-gradient-to-br from-white/90 via-sky-50/40 to-white/80 shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-white/70 bg-gradient-to-br from-white/90 via-sky-50/40 to-white/80 shadow-sm dark:border-slate-700 dark:from-slate-800/90 dark:via-sky-900/20 dark:to-slate-800/80">
         <div className="h-1 bg-gradient-to-r from-sky-500 via-sky-400 to-emerald-400" />
         <div className="p-4">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-sky-700/90">Õppekava</div>
-          <h2 className="mt-1 line-clamp-3 text-base font-bold leading-snug text-slate-900">{data.title || '—'}</h2>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-sky-700/90 dark:text-sky-400">Õppekava</div>
+          <h2 className="mt-1 line-clamp-3 text-base font-bold leading-snug text-slate-900 dark:text-slate-100">{data.title || '—'}</h2>
           {data.description ? (
-            <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-600">{data.description}</p>
+            <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{data.description}</p>
           ) : null}
           <div className="mt-3 flex flex-wrap gap-1.5">
             {data.status && <PanelStatPill tone="sky">{data.status}</PanelStatPill>}
@@ -935,14 +935,14 @@ function CurriculumMetaRightPanel({ data, loading }) {
       </div>
 
       {/* Üldandmed — kompaktne blokk */}
-      <div className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm">
+      <div className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
         <div className="mb-1 flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-sky-100/80 text-sky-700">
+          <span className="grid h-8 w-8 place-items-center rounded-xl bg-sky-100/80 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M4 6h16M4 12h10M4 18h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </span>
-          <span className="text-sm font-bold text-slate-900">Üldandmed</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">Üldandmed</span>
         </div>
         <div className="mt-2 divide-y divide-white/0">
           <PanelField label="Provider" value={data.provider} />
@@ -958,15 +958,15 @@ function CurriculumMetaRightPanel({ data, loading }) {
       </div>
 
       {/* Semantilised IRI-d */}
-      <div className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm">
+      <div className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
         <div className="mb-1 flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-indigo-100/80 text-indigo-700">
+          <span className="grid h-8 w-8 place-items-center rounded-xl bg-indigo-100/80 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
               <path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </span>
-          <span className="text-sm font-bold text-slate-900">Ontoloogia / IRI</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">Ontoloogia / IRI</span>
         </div>
         <div className="mt-2">
           <PanelIriField label="Ainevaldkond" iri={data.subjectAreaIri} />
@@ -976,33 +976,33 @@ function CurriculumMetaRightPanel({ data, loading }) {
       </div>
 
       {/* Väline allikas */}
-      <div className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm">
+      <div className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
         <div className="mb-1 flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-100/80 text-emerald-700">
+          <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M10 13a5 5 0 0 1 7 0M14 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" strokeWidth="1.6" />
               <path d="M4 19v-1a4 4 0 0 1 4-4h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
           </span>
-          <span className="text-sm font-bold text-slate-900">Allikas</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">Allikas</span>
         </div>
         <div className="mt-2">
           <PanelField label="Välise süsteemi nimi" value={data.externalSource} />
           {data.externalPageIri ? (
-            <div className="border-b border-white/50 py-2.5 last:border-0">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Väline leht (IRI)</div>
+            <div className="border-b border-white/50 dark:border-slate-700/50 py-2.5 last:border-0">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Väline leht (IRI)</div>
               <a
                 href={data.externalPageIri}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 hover:underline"
+                className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400 hover:underline"
               >
                 Ava välislingil
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="opacity-70">
                   <path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </a>
-              <div className="mt-1 break-all font-mono text-[10px] leading-snug text-slate-500">{data.externalPageIri}</div>
+              <div className="mt-1 break-all font-mono text-[10px] leading-snug text-slate-500 dark:text-slate-400">{data.externalPageIri}</div>
             </div>
           ) : (
             <PanelField label="Väline leht (IRI)" value={null} />
@@ -1011,16 +1011,16 @@ function CurriculumMetaRightPanel({ data, loading }) {
       </div>
 
       {/* Ajatemplid */}
-      <div className="rounded-2xl border border-dashed border-white/80 bg-white/50 p-4">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Ajatemplid</div>
+      <div className="rounded-2xl border border-dashed border-white/80 bg-white/50 p-4 dark:border-slate-600 dark:bg-slate-800/50">
+        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ajatemplid</div>
         <div className="mt-2 grid gap-2 text-xs">
           <div className="flex justify-between gap-2">
-            <span className="text-slate-500">Loodud</span>
-            <span className="font-medium text-slate-800">{formatDateTime(data.createdAt)}</span>
+            <span className="text-slate-500 dark:text-slate-400">Loodud</span>
+            <span className="font-medium text-slate-800 dark:text-slate-200">{formatDateTime(data.createdAt)}</span>
           </div>
           <div className="flex justify-between gap-2">
-            <span className="text-slate-500">Muudetud</span>
-            <span className="font-medium text-slate-800">{formatDateTime(data.updatedAt)}</span>
+            <span className="text-slate-500 dark:text-slate-400">Muudetud</span>
+            <span className="font-medium text-slate-800 dark:text-slate-200">{formatDateTime(data.updatedAt)}</span>
           </div>
         </div>
       </div>
@@ -1035,12 +1035,12 @@ function SidebarItem({ to, icon, label, active }) {
       className={cn(
         'flex w-full items-center rounded-2xl text-sm font-medium transition',
         'justify-center px-2 py-2.5 group-hover:justify-start group-hover:gap-3 group-hover:px-3',
-        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 hover:bg-white/55'
+        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-white/55 dark:hover:bg-slate-700/70'
       )}
     >
       <span
         className={cn(
-          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700',
+          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700 dark:text-slate-300',
           active && 'text-white'
         )}
       >
@@ -1199,9 +1199,9 @@ export default function CurriculumDetailPage() {
         style={{ backgroundImage: `url(${bgImg})` }}
         aria-hidden="true"
       />
-      <div className="fixed inset-0 -z-10 bg-white/55" aria-hidden="true" />
+      <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-slate-900/90" aria-hidden="true" />
 
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
           <div className="flex items-center gap-3">
             <Link
@@ -1214,7 +1214,7 @@ export default function CurriculumDetailPage() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
               type="button"
               title="Kasutaja"
               onClick={() => {}}
@@ -1222,12 +1222,12 @@ export default function CurriculumDetailPage() {
               <span className="text-sm font-semibold">{(user?.email || 'U').slice(0, 1).toUpperCase()}</span>
             </button>
             <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-slate-900">{user?.label || 'Õpetaja'}</div>
-              <div className="text-xs text-slate-600">{user?.email || '—'}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.label || 'Õpetaja'}</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">{user?.email || '—'}</div>
             </div>
             <button
               onClick={logout}
-              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70"
+              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
             >
               Logi välja
             </button>
@@ -1244,7 +1244,7 @@ export default function CurriculumDetailPage() {
       >
         <aside
           className={cn(
-            'group sticky z-30 -ml-8 w-[68px] self-start overflow-y-auto rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px]',
+            'group sticky z-30 -ml-8 w-[68px] self-start overflow-y-auto rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px] dark:border-slate-700 dark:bg-slate-900/80',
             SIDEBAR_STICKY_TOP,
             SIDEBAR_MAX_H
           )}
@@ -1298,19 +1298,19 @@ export default function CurriculumDetailPage() {
           </div>
         </aside>
 
-        <main className="min-w-0 max-w-full overflow-x-hidden rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md">
+        <main className="min-w-0 max-w-full overflow-x-hidden rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/80">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-sky-700">
+              <div className="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-400">
                 Detailvaade
               </div>
-              <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{data?.title || 'Õppekava'}</h1>
-              <div className="mt-2 text-sm text-slate-600">{data?.description || ''}</div>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{data?.title || 'Õppekava'}</h1>
+              <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">{data?.description || ''}</div>
             </div>
             <div className="flex flex-wrap justify-end gap-3">
               <Link
                 to="/curriculums"
-                className="rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white"
+                className="rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
               >
                 Tagasi
               </Link>
@@ -1319,7 +1319,7 @@ export default function CurriculumDetailPage() {
                   href={data.externalPageIri}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-2xl border border-sky-200 bg-sky-50/90 px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm hover:bg-sky-100"
+                  className="rounded-2xl border border-sky-200 bg-sky-50/90 px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm hover:bg-sky-100 dark:border-sky-700/60 dark:bg-sky-900/40 dark:text-sky-400 dark:hover:bg-sky-900/60"
                 >
                   Vaata graafis
                 </a>
@@ -1340,7 +1340,7 @@ export default function CurriculumDetailPage() {
                       }
                       setVersionsOpen(!versionsOpen);
                     }}
-                    className="rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white"
+                    className="rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
                   >
                     Versioonid
                   </button>
@@ -1353,7 +1353,7 @@ export default function CurriculumDetailPage() {
                           .then(() => navigate('/'))
                           .catch((e) => alert(e.message || 'Kustutamine ebaõnnestus'));
                       }}
-                      className="rounded-2xl border border-rose-200 bg-rose-50/90 px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-100"
+                      className="rounded-2xl border border-rose-200 bg-rose-50/90 px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50"
                     >
                       Kustuta
                     </button>
@@ -1364,19 +1364,19 @@ export default function CurriculumDetailPage() {
           </div>
 
           {versionParam && (
-            <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-2 text-sm text-amber-800">
+            <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-2 text-sm text-amber-800 dark:border-amber-700/60 dark:bg-amber-900/30 dark:text-amber-400">
               Vaatad versiooni <strong>{versions.find((v) => v.id === versionParam)?.versionNumber ?? '...'}</strong>.{' '}
-              <Link to={`/curriculum/${id}`} className="font-semibold text-amber-900 underline hover:no-underline">
+              <Link to={`/curriculum/${id}`} className="font-semibold text-amber-900 dark:text-amber-200 underline hover:no-underline">
                 Tagasi viimase versiooni juurde
               </Link>
             </div>
           )}
 
           {versionsOpen && (
-            <div className="mt-4 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur-md">
-              <h3 className="mb-3 text-sm font-bold text-slate-900">Versioonid</h3>
+            <div className="mt-4 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
+              <h3 className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Versioonid</h3>
               {versions.length === 0 ? (
-                <p className="text-sm text-slate-500">Laen…</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Laen…</p>
               ) : (
                 <div className="space-y-2">
                   {[...versions]
@@ -1389,19 +1389,19 @@ export default function CurriculumDetailPage() {
                           className={cn(
                             'flex items-center justify-between rounded-xl border px-3 py-2 text-sm',
                             isActive
-                              ? 'border-sky-300 bg-sky-50/90 text-sky-900'
-                              : 'border-slate-200/80 bg-white/90 text-slate-700'
+                              ? 'border-sky-300 bg-sky-50/90 text-sky-900 dark:border-sky-700 dark:bg-sky-900/30 dark:text-sky-200'
+                              : 'border-slate-200/80 bg-white/90 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
                           )}
                         >
                           <div>
                             <span className="font-semibold">Versioon {v.versionNumber}</span>
                             <span className={cn(
                               'ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase',
-                              v.state === 'FINAL' && 'bg-emerald-100 text-emerald-800',
-                              v.state === 'DRAFT' && 'bg-amber-100 text-amber-800',
-                              v.state === 'REVIEW' && 'bg-blue-100 text-blue-800',
-                              v.state === 'ARCHIVED' && 'bg-slate-100 text-slate-600',
-                              v.state === 'CLOSED' && 'bg-rose-100 text-rose-700',
+                              v.state === 'FINAL' && 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400',
+                              v.state === 'DRAFT' && 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-400',
+                              v.state === 'REVIEW' && 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+                              v.state === 'ARCHIVED' && 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-400',
+                              v.state === 'CLOSED' && 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400',
                             )}>
                               {v.state}
                             </span>
@@ -1436,7 +1436,7 @@ export default function CurriculumDetailPage() {
                                     alert(err.message || 'Kustutamine eba\u00f5nnestus');
                                   }
                                 }}
-                                className="rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-100"
+                                className="rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50"
                               >
                                 Kustuta
                               </button>
@@ -1452,7 +1452,7 @@ export default function CurriculumDetailPage() {
 
           {!loading && data && (
             <div
-              className="mt-5 inline-flex rounded-2xl border border-white/55 bg-white/35 p-1 shadow-[0_2px_10px_rgba(15,23,42,0.06)] backdrop-blur-md"
+              className="mt-5 inline-flex rounded-2xl border border-white/55 bg-white/35 p-1 shadow-[0_2px_10px_rgba(15,23,42,0.06)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80"
               role="tablist"
               aria-label="Õppekava vaade"
             >
@@ -1471,7 +1471,7 @@ export default function CurriculumDetailPage() {
                     'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
                     activeView === tab.key
                       ? 'bg-sky-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   )}
                 >
                   {tab.label}
@@ -1481,24 +1481,24 @@ export default function CurriculumDetailPage() {
           )}
 
           {error && (
-            <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-400">
               {error}
             </div>
           )}
 
           {loading ? (
-            <div className="mt-10 text-center text-sm text-slate-600">Laen…</div>
+            <div className="mt-10 text-center text-sm text-slate-600 dark:text-slate-400">Laen…</div>
           ) : data ? (
             <>
               {activeView === 'structure' && (
                 <>
-                  <p className="mt-6 rounded-2xl border border-sky-100/80 bg-sky-50/40 px-4 py-3 text-sm text-slate-600">
-                    <span className="font-semibold text-sky-800">Üldandmed</span> on koondatud paremale paneelile — keri seal alla,
+                  <p className="mt-6 rounded-2xl border border-sky-100/80 bg-sky-50/40 px-4 py-3 text-sm text-slate-600 dark:border-sky-900/60 dark:bg-sky-900/20 dark:text-slate-400">
+                    <span className="font-semibold text-sky-800 dark:text-sky-400">Üldandmed</span> on koondatud paremale paneelile — keri seal alla,
                     et näha providerit, IRI-sid, allikat ja ajatemplid.
                   </p>
 
                   {structureLoading && (
-                    <div className="mt-8 text-center text-sm text-slate-600">Laen struktuuri…</div>
+                    <div className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">Laen struktuuri…</div>
                   )}
 
                   {!structureLoading && structure && (
@@ -1506,7 +1506,7 @@ export default function CurriculumDetailPage() {
                   )}
 
                   {!structureLoading && !structure && !loading && (
-                    <div className="mt-8 text-center text-sm text-slate-500">
+                    <div className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
                       Struktuuri ei leitud. {!data.externalGraph && 'Kasuta "Edasi muutma" nuppu elementide lisamiseks.'}
                     </div>
                   )}
@@ -1518,9 +1518,9 @@ export default function CurriculumDetailPage() {
                   {selectedTimelineVersionId ? (
                     <CurriculumCalendar curriculumVersionId={selectedTimelineVersionId} schoolWeeks={schoolWeeks} />
                   ) : (
-                    <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center">
-                      <p className="text-lg font-semibold text-slate-700">Kalendri andmed puuduvad</p>
-                      <p className="mt-2 max-w-md text-sm text-slate-500">
+                    <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-700/50">
+                      <p className="text-lg font-semibold text-slate-700 dark:text-slate-300">Kalendri andmed puuduvad</p>
+                      <p className="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
                         Selle õppekava jaoks ei leitud ühtegi versiooni, mille põhjal kalendrit kuvada.
                       </p>
                     </div>
@@ -1531,7 +1531,7 @@ export default function CurriculumDetailPage() {
               {activeView === 'gantt' && (
                 <div className="mt-8">
                   {ganttLoading ? (
-                    <div className="text-center text-sm text-slate-600">Laen Gantt-vaadet…</div>
+                    <div className="text-center text-sm text-slate-600 dark:text-slate-400">Laen Gantt-vaadet…</div>
                   ) : selectedTimelineVersionId && ganttData.blocks.length > 0 ? (
                     <CurriculumGantt
                       blocks={ganttData.blocks}
@@ -1552,9 +1552,9 @@ export default function CurriculumDetailPage() {
                       schoolWeeks={schoolWeeks}
                     />
                   ) : (
-                    <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center">
-                      <p className="text-lg font-semibold text-slate-700">Gantt andmed puuduvad</p>
-                      <p className="mt-2 max-w-md text-sm text-slate-500">
+                    <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-700/50">
+                      <p className="text-lg font-semibold text-slate-700 dark:text-slate-300">Gantt andmed puuduvad</p>
+                      <p className="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
                         Selle õppekava jaoks ei leitud ajakava andmeid, mille põhjal Gantt-diagrammi kuvada.
                       </p>
                     </div>
@@ -1563,14 +1563,14 @@ export default function CurriculumDetailPage() {
               )}
             </>
           ) : (
-            <div className="mt-10 text-center text-sm text-slate-600">Ei leitud.</div>
+            <div className="mt-10 text-center text-sm text-slate-600 dark:text-slate-400">Ei leitud.</div>
           )}
         </main>
 
         {!showTimeline && (
         <aside
           className={cn(
-            'sticky z-30 w-[340px] shrink-0 self-start overflow-y-auto rounded-3xl border border-white/60 bg-white/55 p-4 shadow-sm backdrop-blur-md sm:p-5',
+            'sticky z-30 w-[340px] shrink-0 self-start overflow-y-auto rounded-3xl border border-white/60 bg-white/55 p-4 shadow-sm backdrop-blur-md sm:p-5 dark:border-slate-700 dark:bg-slate-900/80',
             SIDEBAR_STICKY_TOP,
             SIDEBAR_MAX_H
           )}
@@ -1589,11 +1589,11 @@ export default function CurriculumDetailPage() {
 
           <CurriculumMetaRightPanel data={data} loading={loading} />
 
-          <div className="mt-4 space-y-3 border-t border-white/60 pt-4">
+          <div className="mt-4 space-y-3 border-t border-white/60 dark:border-slate-700 pt-4">
             <div className="flex flex-wrap gap-2">
               <Link
                 to="/"
-                className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white"
+                className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-sky-400 dark:hover:bg-slate-600"
               >
                 Töökavad
               </Link>
@@ -1607,21 +1607,21 @@ export default function CurriculumDetailPage() {
                     setVersionsOpen(!versionsOpen);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white"
+                  className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-sky-400 dark:hover:bg-slate-600"
                 >
                   Versioonid
                 </button>
               )}
               <button
                 type="button"
-                className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-white"
+                className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                 onClick={() => navigate('/guide')}
               >
                 Juhend
               </button>
             </div>
             {data?.externalGraph ? (
-              <p className="text-[11px] leading-relaxed text-slate-500">
+              <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
                 Graafist imporditud õppekava: täielik struktuur on vasakul põhivaates (moodulid, õpiväljundid) ning
                 versioonide / elementide lehtedel.
               </p>

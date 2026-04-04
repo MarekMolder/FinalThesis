@@ -390,3 +390,140 @@
   background: rgba(241, 243, 244, 0.45);
   pointer-events: none;
 }
+
+/* Dark mode */
+
+/* Container */
+.dark .cgantt { background: transparent; }
+
+/* Toolbar */
+.dark .cgantt-toolbar {
+  background: #1e293b;
+  border-color: #334155;
+}
+.dark .cgantt-toolbar-label { color: #64748b; }
+
+/* Buttons */
+.dark .cgantt-zoom-btn,
+.dark .cgantt-mini-btn {
+  background: #0f172a;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+.dark .cgantt-zoom-btn:hover,
+.dark .cgantt-mini-btn:hover {
+  background: #334155;
+}
+.dark .cgantt-zoom-btn.active {
+  background: #1e3a5f;
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+/* Filter & legend */
+.dark .cgantt-filter-chk { color: #cbd5e1; }
+.dark .cgantt-legend { color: #64748b; }
+
+/* Body wrapper */
+.dark .cgantt-body {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+/* Labels column */
+.dark .cgantt-labels {
+  background: #1e293b;
+  border-right-color: #334155;
+}
+.dark .cgantt-label-cell {
+  color: #cbd5e1;
+  border-bottom-color: #1e293b;
+}
+.dark .cgantt-label-cell--buffer {
+  background: rgba(127, 29, 29, 0.15);
+  color: #f87171;
+}
+.dark .cgantt-label-cell--muted { color: #64748b; }
+.dark .cgantt-header-spacer {
+  border-bottom-color: #334155;
+}
+
+/* Time header */
+.dark .cgantt-time-header {
+  background: #0f172a;
+  border-bottom-color: #334155;
+}
+.dark .cgantt-time-tick {
+  border-left-color: #1e293b;
+  color: #64748b;
+}
+.dark .cgantt-time-tick--major {
+  border-left-color: #334155;
+  color: #94a3b8;
+}
+
+/* Grid background lines */
+.dark .cgantt-grid-line { background: #1e293b; }
+.dark .cgantt-grid-line--week { background: #334155; }
+
+/* Today line */
+.dark .cgantt-today-line {
+  background: #ef4444;
+  opacity: 0.55;
+}
+
+/* Rows */
+.dark .cgantt-row { border-bottom-color: #1e293b; }
+.dark .cgantt-row--buffer {
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.06) 0%, transparent 100%);
+}
+
+/* Bars */
+.dark .cgantt-bar {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.dark .cgantt-bar:hover {
+  filter: brightness(1.15);
+}
+.dark .cgantt-bar-label { color: #e2e8f0; }
+.dark .cgantt-bar-meta { color: #94a3b8; }
+.dark .cgantt-bar-meta-strong { color: #cbd5e1; }
+.dark .cgantt-bar-end-marker { color: #93c5fd; }
+
+/* Empty & hint */
+.dark .cgantt-empty { color: #64748b; }
+.dark .cgantt-hint { color: #64748b; }
+
+/* School week header cells */
+.dark .cgantt-week-cell {
+  background: #1e3a5f;
+  color: #93c5fd;
+  border-right-color: #334155;
+  border-bottom-color: #334155;
+}
+.dark .cgantt-week-cell--holiday {
+  background: repeating-linear-gradient(
+    45deg,
+    #1e293b,
+    #1e293b 4px,
+    #334155 4px,
+    #334155 8px
+  );
+  color: #64748b;
+}
+
+/* Week separator lines */
+.dark .cgantt-week-line {
+  background: #475569;
+  opacity: 0.35;
+}
+.dark .cgantt-week-line--holiday {
+  background: #f87171;
+  opacity: 0.2;
+}
+
+/* Holiday background zones */
+.dark .cgantt-holiday-bg {
+  background: rgba(30, 41, 59, 0.4);
+}

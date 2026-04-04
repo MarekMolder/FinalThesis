@@ -21,7 +21,9 @@ export async function api(path, options = {}) {
     throw new Error(err.message || err.error || res.statusText);
   }
   if (res.status === 204) return null;
-  return res.json();
+  const text = await res.text();
+  if (!text) return null;
+  return JSON.parse(text);
 }
 
 export async function login(email, password) {
@@ -192,4 +194,11 @@ export const graphCatalog = {
 
 export const ai = {
   chat: (messages) => api('/ai/chat', { method: 'POST', body: JSON.stringify({ messages }) }),
+};
+
+export const user = {
+  getProfile: () => api('/users/me'),
+  updateName: (name) => api('/users/me', { method: 'PUT', body: JSON.stringify({ name }) }),
+  changePassword: (currentPassword, newPassword, confirmPassword) =>
+    api('/users/me/password', { method: 'PUT', body: JSON.stringify({ currentPassword, newPassword, confirmPassword }) }),
 };

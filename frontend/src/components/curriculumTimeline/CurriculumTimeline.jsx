@@ -126,13 +126,13 @@ function typeToPaletteTone(type) {
 
 function toneClasses(tone) {
   const tones = {
-    red: 'border-red-200/90 bg-red-50/60 text-red-900',
-    violet: 'border-violet-200/90 bg-violet-50/60 text-violet-900',
-    emerald: 'border-emerald-200/90 bg-emerald-50/60 text-emerald-900',
-    sky: 'border-sky-200/90 bg-sky-50/60 text-sky-900',
-    amber: 'border-amber-200/90 bg-amber-50/60 text-amber-900',
-    teal: 'border-teal-200/90 bg-teal-50/60 text-teal-900',
-    slate: 'border-slate-200/90 bg-slate-50/60 text-slate-900',
+    red: 'border-red-200/90 bg-red-50/60 text-red-900 dark:border-red-800/60 dark:bg-red-900/30 dark:text-red-200',
+    violet: 'border-violet-200/90 bg-violet-50/60 text-violet-900 dark:border-violet-800/60 dark:bg-violet-900/30 dark:text-violet-200',
+    emerald: 'border-emerald-200/90 bg-emerald-50/60 text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-200',
+    sky: 'border-sky-200/90 bg-sky-50/60 text-sky-900 dark:border-sky-800/60 dark:bg-sky-900/30 dark:text-sky-200',
+    amber: 'border-amber-200/90 bg-amber-50/60 text-amber-900 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-200',
+    teal: 'border-teal-200/90 bg-teal-50/60 text-teal-900 dark:border-teal-800/60 dark:bg-teal-900/30 dark:text-teal-200',
+    slate: 'border-slate-200/90 bg-slate-50/60 text-slate-900 dark:border-slate-700/60 dark:bg-slate-700/30 dark:text-slate-200',
   };
   return tones[tone] || tones.slate;
 }
@@ -160,27 +160,27 @@ function BlockEditorPopover({ block, onClose, onDelete }) {
   if (!block) return null;
 
   return (
-    <div className="absolute right-4 top-4 z-50 w-[320px] rounded-2xl border border-white/70 bg-white/90 p-4 shadow-lg backdrop-blur-md">
+    <div className="absolute right-4 top-4 z-50 w-[320px] rounded-2xl border border-white/70 bg-white/90 p-4 shadow-lg backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/95">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-xs font-bold uppercase tracking-wide text-slate-500">{block.kind === 'ITEM_SCHEDULE' ? 'Ajastatud õpiobjekt' : 'Puhver'}</div>
-          <div className="mt-1 line-clamp-2 text-sm font-bold text-slate-900">{block.label}</div>
-          <div className="mt-1 text-xs text-slate-600">
+          <div className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{block.kind === 'ITEM_SCHEDULE' ? 'Ajastatud õpiobjekt' : 'Puhver'}</div>
+          <div className="mt-1 line-clamp-2 text-sm font-bold text-slate-900 dark:text-slate-100">{block.label}</div>
+          <div className="mt-1 text-xs text-slate-600 dark:text-slate-400">
             {formatTimeShort(block.plannedStartAt)} - {formatTimeShort(block.plannedEndAt)}
           </div>
         </div>
-        <button type="button" onClick={onClose} className="rounded-xl border border-white/70 bg-white/70 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-white">
+        <button type="button" onClick={onClose} className="rounded-xl border border-white/70 bg-white/70 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">
           Sulge
         </button>
       </div>
 
       <div className="mt-3 grid grid-cols-1 gap-3">
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Staatus</div>
+          <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Staatus</div>
           <select
             value={local.status}
             onChange={(e) => setLocal((p) => ({ ...p, status: e.target.value }))}
-            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800"
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
           >
             {STATUS.map((s) => (
               <option key={s} value={s}>
@@ -191,11 +191,11 @@ function BlockEditorPopover({ block, onClose, onDelete }) {
         </div>
 
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Märkmed</div>
+          <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Märkmed</div>
           <textarea
             value={local.notes}
             onChange={(e) => setLocal((p) => ({ ...p, notes: e.target.value }))}
-            className="mt-1 h-24 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800"
+            className="mt-1 h-24 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
           />
         </div>
       </div>
@@ -205,7 +205,7 @@ function BlockEditorPopover({ block, onClose, onDelete }) {
           <button
             type="button"
             onClick={() => onDelete?.(block)}
-            className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+            className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 dark:border-rose-800/60 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50"
           >
             Kustuta
           </button>
@@ -1338,16 +1338,16 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
 
   if (loading) {
     return (
-      <div className="mt-10 flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center">
-        <p className="text-lg font-semibold text-slate-700">Laen ajatelje…</p>
-        <p className="mt-2 max-w-md text-sm text-slate-500">Sündmused ja ajaplaani plokid koonduvad siia.</p>
+      <div className="mt-10 flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center dark:border-slate-700/90 dark:bg-slate-800/40">
+        <p className="text-lg font-semibold text-slate-700 dark:text-slate-300">Laen ajatelje…</p>
+        <p className="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">Sündmused ja ajaplaani plokid koonduvad siia.</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mt-10 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+      <div className="mt-10 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-800/60 dark:bg-rose-900/30 dark:text-rose-300">
         {error}
       </div>
     );
@@ -1358,17 +1358,17 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="text-xs font-bold uppercase tracking-wider text-sky-700">Ajatelg</div>
-          <div className="mt-1 text-sm text-slate-600">Klõpsa ajateljel ja lisa moodul koos sisuga.</div>
+          <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">Klõpsa ajateljel ja lisa moodul koos sisuga.</div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-700">
+          <span className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
             {canEdit ? 'Redigeerimine on sisse lülitatud' : 'Vaade (read-only)'}
           </span>
         </div>
       </div>
 
       <div className="mt-4">
-        <div className="rounded-3xl border border-white/60 bg-white/55 p-4 shadow-sm backdrop-blur-md">
+        <div className="rounded-3xl border border-white/60 bg-white/55 p-4 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/95">
           <div className="relative">
             <div className="mb-3 space-y-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -1385,7 +1385,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                       onClick={() => setTimelineMode(m.id)}
                       className={cn(
                         'rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-sm transition',
-                        timelineMode === m.id ? 'bg-sky-600 border-sky-700 text-white' : 'bg-white/70 border-white/70 text-slate-700 hover:bg-white'
+                        timelineMode === m.id ? 'bg-sky-600 border-sky-700 text-white' : 'bg-white/70 border-white/70 text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600'
                       )}
                     >
                       {m.label}
@@ -1403,14 +1403,14 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                       canEdit
                         ? bufferMode
                           ? 'bg-sky-600 border-sky-700 text-white'
-                          : 'bg-white/70 border-white/70 text-slate-700 hover:bg-white'
+                          : 'bg-white/70 border-white/70 text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600'
                         : 'cursor-not-allowed opacity-60'
                     )}
                   >
                     {bufferMode ? 'Lisa: ON' : 'Ajapuhver'}
                   </button>
 
-                  <div className="flex items-center gap-2 rounded-xl border border-white/70 bg-white/70 px-3 py-2">
+                  <div className="flex items-center gap-2 rounded-xl border border-white/70 bg-white/70 px-3 py-2 dark:border-slate-600 dark:bg-slate-700">
                     <input
                       type="range"
                       min="0"
@@ -1421,7 +1421,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                       disabled={!canCreate}
                       className="w-32 cursor-pointer"
                     />
-                    <span className="text-[11px] font-bold text-slate-700">{autoBufferMinutes}m</span>
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{autoBufferMinutes}m</span>
                   </div>
                 </div>
 
@@ -1429,7 +1429,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                   <button
                     type="button"
                     onClick={() => shiftAnchor(-1)}
-                    className="rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-white"
+                    className="rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
                     aria-label="Eelmine"
                   >
                     ←
@@ -1438,12 +1438,12 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                     type="date"
                     value={toDateInputValue(anchorDate)}
                     onChange={(e) => onAnchorDateInputChange(e.target.value)}
-                    className="rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm"
+                    className="rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   />
                   <button
                     type="button"
                     onClick={() => shiftAnchor(1)}
-                    className="rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-white"
+                    className="rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
                     aria-label="Järgmine"
                   >
                     →
@@ -1452,11 +1452,11 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
               </div>
 
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
                   <span className="grid h-2 w-2 place-items-center rounded-full bg-slate-400" aria-hidden />
                   {canEdit ? `Snap: ${gridMinutes} min` : 'Kuu/Aasta vaates redigeerimine on välja lülitatud'}
                 </div>
-                <div className="text-xs font-semibold text-slate-600">
+                <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">
                   Nähtav: {formatDayLabel(range.start)} - {formatDayLabel(new Date(range.end.getTime() - 1 * 60000))}
                 </div>
               </div>
@@ -1470,7 +1470,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
               onDrop={onTimelineDrop}
               onDragOver={onTimelineDragOver}
               onClick={onTimelineClick}
-              className="relative overflow-x-auto overflow-y-auto rounded-3xl border border-white/60 bg-white/40"
+              className="relative overflow-x-auto overflow-y-auto rounded-3xl border border-white/60 bg-white/40 dark:border-slate-700 dark:bg-slate-900/40"
               style={{ height: 'min(88vh, 1200px)' }}
             >
               <div
@@ -1484,19 +1484,19 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                   <div
                     data-module-add-popover="true"
                     onClick={(ev) => ev.stopPropagation()}
-                    className="absolute left-4 top-4 z-50 w-[340px] rounded-2xl border border-white/70 bg-white/95 p-4 shadow-lg backdrop-blur-md"
+                    className="absolute left-4 top-4 z-50 w-[340px] rounded-2xl border border-white/70 bg-white/95 p-4 shadow-lg backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/95"
                   >
                     <div className="text-xs font-bold uppercase tracking-wider text-sky-700">Lisa moodul</div>
-                    <div className="mt-1 text-sm font-semibold text-slate-900">
+                    <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {moduleAddStartAt ? moduleAddStartAt.toLocaleDateString('et-EE') : '—'}
                     </div>
 
                     <div className="mt-3">
-                      <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Vali moodul</div>
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Vali moodul</div>
                       <select
                         value={selectedModuleId ?? ''}
                         onChange={(e) => setSelectedModuleId(e.target.value || null)}
-                        className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800"
+                        className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                       >
                         {modulesForAdd.map((m) => (
                           <option key={m.id} value={m.id}>
@@ -1510,7 +1510,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                       <button
                         type="button"
                         onClick={() => setModuleAddOpen(false)}
-                        className="rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
+                        className="rounded-xl border border-white/70 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
                       >
                         Katkesta
                       </button>
@@ -1556,7 +1556,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                       const left = mins * pxPerMinute;
                       return (
                         <div key={`${t.label}-${i}`} className="absolute top-2 z-10" style={{ left }}>
-                          <div className="w-fit rounded-xl border border-white/70 bg-white/70 px-2 py-1 text-[11px] font-bold text-slate-700">
+                          <div className="w-fit rounded-xl border border-white/70 bg-white/70 px-2 py-1 text-[11px] font-bold text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
                             {t.label}
                           </div>
                         </div>
@@ -1570,7 +1570,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                         style={{ left: todayLeftPx, pointerEvents: 'none' }}
                       >
                         <div className="h-[28px] w-[2px] bg-rose-500 shadow-sm" />
-                        <div className="mt-1 rounded-xl border border-rose-200/90 bg-white/80 px-2 py-0.5 text-[11px] font-bold text-rose-700">
+                        <div className="mt-1 rounded-xl border border-rose-200/90 bg-white/80 px-2 py-0.5 text-[11px] font-bold text-rose-700 dark:border-rose-800/60 dark:bg-slate-800/80 dark:text-rose-400">
                           Täna
                         </div>
                       </div>
@@ -1679,7 +1679,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                             </div>
                           </div>
                           {b.status && (
-                            <div className="shrink-0 rounded-xl border border-white/70 bg-white/70 px-2 py-1 text-[11px] font-bold text-slate-700">
+                            <div className="shrink-0 rounded-xl border border-white/70 bg-white/70 px-2 py-1 text-[11px] font-bold text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
                               {b.status}
                             </div>
                           )}
@@ -1695,7 +1695,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                               e.stopPropagation();
                               deleteBlock(b);
                             }}
-                            className="absolute right-2 top-2 rounded-xl border border-rose-200 bg-white/90 px-2 py-1 text-[11px] font-bold text-rose-700 hover:bg-white"
+                            className="absolute right-2 top-2 rounded-xl border border-rose-200 bg-white/90 px-2 py-1 text-[11px] font-bold text-rose-700 hover:bg-white dark:border-rose-800/60 dark:bg-slate-800/90 dark:text-rose-400 dark:hover:bg-slate-700"
                             title="Kustuta plokk"
                           >
                             ×
@@ -1800,7 +1800,7 @@ export default function CurriculumTimeline({ curriculumVersionId, editable = fal
                   {/* Today marker */}
                   {monthViewData.todayInRange && (
                     <div
-                      className="absolute z-10 rounded-full border-2 border-rose-500 bg-white/80"
+                      className="absolute z-10 rounded-full border-2 border-rose-500 bg-white/80 dark:bg-slate-800/80"
                       style={{ left: monthViewData.todayLeft - 2, top: monthViewData.todayTop - 2, width: 18, height: 18 }}
                     />
                   )}
