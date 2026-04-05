@@ -12,6 +12,7 @@ import SettingsPage from './pages/SettingsPage';
 import SampleCurriculumPage from './pages/SampleCurriculumPage';
 import CurriculumDetailPage from './pages/CurriculumDetailPage';
 import CreateCurriculumPage from './pages/wizard/CreateCurriculumPage';
+import CurriculumPdfPreviewPage from './pages/CurriculumPdfPreviewPage';
 
 // Apply saved theme immediately to avoid flash
 if (typeof window !== 'undefined') {
@@ -58,6 +59,7 @@ export default function App() {
       <Route path="/sample" element={<Protected><SampleCurriculumPage /></Protected>} />
       <Route path="/curriculum/new" element={<Protected><CreateCurriculumPage /></Protected>} />
       <Route path="/curriculum/:id" element={<Protected><CurriculumDetailPage /></Protected>} />
+      <Route path="/curriculum/:id/pdf-preview" element={<Protected><CurriculumPdfPreviewPage /></Protected>} />
 
       {/* Legacy CRUD pages */}
       <Route path="/curriculums" element={<Protected><Curriculums /></Protected>} />

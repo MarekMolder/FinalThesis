@@ -17,3 +17,35 @@ body {
   background-color: #0f172a;
   color: #f1f5f9;
 }
+
+/* ── PDF Print styles ─────────────────────────────────────────────────────── */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .pdf-page {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 15mm !important;
+    box-shadow: none !important;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}

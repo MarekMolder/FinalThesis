@@ -102,6 +102,7 @@ export default function TreeNode({ item, children, allItems, mode, scheduleInfo,
             <div className="flex gap-1">
               <NodeBtn sm onClick={() => onAddChild(item, 'LEARNING_OUTCOME')}>+ OÕ</NodeBtn>
               <NodeBtn sm onClick={() => onAddChild(item, 'TEST')}>+ Test</NodeBtn>
+              <NodeBtn sm onClick={() => onImport(item)}>⬇</NodeBtn>
               {!isExternal && <NodeBtn sm onClick={() => onEdit(item)}>✎</NodeBtn>}
               <NodeBtn sm onClick={() => onDelete(item)} danger>✕</NodeBtn>
             </div>

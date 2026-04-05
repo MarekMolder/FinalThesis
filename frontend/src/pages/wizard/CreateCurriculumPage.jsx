@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { getCurrentUser, logout as apiLogout, curriculum, curriculumVersion, curriculumItem, graphCatalog, timeline } from '../../api';
+import { getCurrentUser, logout as apiLogout, curriculum, curriculumVersion, curriculumItem, graphCatalog, timeline, schedule } from '../../api';
 import bgImg from '../../assets/background.png';
 import logoImg from '../../assets/logo.png';
 import StepBar from '../../components/wizard/StepBar';
@@ -153,6 +153,62 @@ export default function CreateCurriculumPage() {
     } catch { /* graph unavailable */ }
   }
 
+  async function handleAiAction(action) {
+    if (!versionId) throw new Error('Oppekava versioon puudub');
+
+    if (action.type === 'ADD_ITEM' || action.type === 'IMPORT_GRAPH_ITEM') {
+      let parentItemId = null;
+      if (action.parentTitle) {
+        const matchingParents = items.filter((i) => i.title === action.parentTitle);
+        if (matchingParents.length === 1) {
+          parentItemId = matchingParents[0].id;
+        } else if (matchingParents.length > 1) {
+          const byType = matchingParents.filter((i) => !i.parentItemId);
+          parentItemId = (byType[0] || matchingParents[0]).id;
+        }
+      }
+
+      const created = await curriculumItem.create({
+        curriculumVersionId: versionId,
+        title: action.label,
+        description: action.description || '',
+        type: action.itemType,
+        sourceType: action.type === 'IMPORT_GRAPH_ITEM' ? 'OPPEKAVAWEB' : 'TEACHER_CREATED',
+        externalIri: action.externalIri || '',
+        parentItemId,
+        orderIndex: items.filter((i) => i.parentItemId === parentItemId).length,
+        educationLevelIri: metadata.educationalLevelIri ?? '',
+        schoolLevel: metadata.schoolLevel ?? '',
+        grade: metadata.grade ?? '',
+        educationalFramework: metadata.educationalFramework ?? 'ESTONIAN_NATIONAL_CURRICULUM',
+        notation: '',
+        verbIri: '',
+        isMandatory: false,
+      });
+      setItems((prev) => [...prev, created]);
+      return created;
+    }
+
+    if (action.type === 'ADD_SCHEDULE') {
+      const targetItem = items.find((i) => i.title === action.targetTitle);
+      if (!targetItem) throw new Error(`Elementi "${action.targetTitle}" ei leitud`);
+
+      const now = new Date();
+      const plannedMinutes = (action.hours || 1) * 45;
+      const created = await schedule.create({
+        curriculumItemId: targetItem.id,
+        plannedStartAt: now.toISOString(),
+        plannedEndAt: new Date(now.getTime() + plannedMinutes * 60000).toISOString(),
+        plannedMinutes,
+        status: 'PLANNED',
+        scheduleNotes: action.description || '',
+      });
+      return created;
+    }
+
+    throw new Error('Tundmatu tegevuse tuup: ' + action.type);
+  }
+
   function saveDraft() {
     navigate('/');
   }
@@ -297,6 +353,8 @@ export default function CreateCurriculumPage() {
           onRefreshCatalog={handleRefreshCatalog}
           taxonomyOptions={taxonomyOptions}
           contentStats={contentStats}
+          versionId={versionId}
+          onAiAction={handleAiAction}
         />
       </div>
     </div>

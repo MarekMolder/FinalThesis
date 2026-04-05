@@ -1314,6 +1314,12 @@ export default function CurriculumDetailPage() {
               >
                 Tagasi
               </Link>
+              <Link
+                to={`/curriculum/${id}/pdf-preview`}
+                className="rounded-2xl border border-emerald-200 bg-emerald-50/90 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm hover:bg-emerald-100 dark:border-emerald-700/60 dark:bg-emerald-900/40 dark:text-emerald-400 dark:hover:bg-emerald-900/60"
+              >
+                PDF eelvaade
+              </Link>
               {data?.externalPageIri && (
                 <a
                   href={data.externalPageIri}

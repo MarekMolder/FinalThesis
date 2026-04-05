@@ -144,13 +144,15 @@ function ExpandSelect({ label, value, active, options, onChange, placeholder }) 
   );
 }
 
-export default function AISidebar({ width, onWidthChange, step, metadata, catalogJson, items, onRefreshCatalog, taxonomyOptions, contentStats }) {
+export default function AISidebar({ width, onWidthChange, step, metadata, catalogJson, items, onRefreshCatalog, taxonomyOptions, contentStats, versionId, onAiAction }) {
   const [messages, setMessages] = useState([
     { role: 'ai', text: 'Tere! Olen valmis aitama õppekava loomisel. Küsi julgelt!' },
   ]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [expandForm, setExpandForm] = useState(null);
+  const [appliedActions, setAppliedActions] = useState(new Set());
+  const [applyingAction, setApplyingAction] = useState(null);
   const isResizing = useRef(false);
   const startX = useRef(0);
   const startW = useRef(width);
@@ -229,27 +231,6 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
     };
   }, [onWidthChange]);
 
-  function buildContext() {
-    const stepLabel = ['', 'Metaandmed', 'Struktuur', 'Sisu', 'Ajakava'][step] ?? '';
-    const parts = [`Praegune samm: ${step} (${stepLabel})`];
-    if (metadata?.subjectLabel) parts.push(`Aine: ${metadata.subjectLabel}`);
-    if (metadata?.subjectAreaIri) parts.push(`Ainevaldkond: ${metadata.subjectAreaIri}`);
-    if (metadata?.grade) parts.push(`Klass: ${metadata.grade}`);
-    if (metadata?.schoolLevel) parts.push(`Kooliaste: ${metadata.schoolLevel}`);
-    if (metadata?.educationalLevelIri) parts.push(`Haridusaste: ${metadata.educationalLevelIri}`);
-    parts.push(`Elemente kokku: ${items.length}`);
-    if (catalogJson) {
-      const themeCount = catalogJson.themes?.length ?? 0;
-      const loCount = catalogJson.learningOutcomes?.length ?? 0;
-      const moduleCount = catalogJson.modules?.length ?? 0;
-      parts.push(`Graafist leitud ${themeCount} teemat, ${loCount} õpiväljundit ja ${moduleCount} moodulit`);
-    }
-    if (contentStats) {
-      parts.push(`Graafist leitud sisu: ${contentStats.tasks ?? 0} ülesannet, ${contentStats.tests ?? 0} testi, ${contentStats.learningMaterials ?? 0} õppematerjali, ${contentStats.knobits ?? 0} knobitit`);
-    }
-    return parts.join('. ') + '.';
-  }
-
   async function send(overrideText) {
     const text = overrideText || input.trim();
     if (!text || sending) return;
@@ -260,7 +241,6 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
     setSending(true);
 
     const apiMessages = [];
-    apiMessages.push({ role: 'system', content: `Kontekst: ${buildContext()}` });
 
     const allMsgs = [...messages, userMsg];
     for (const m of allMsgs) {
@@ -272,10 +252,12 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
     }
 
     try {
-      const response = await ai.chat(apiMessages);
-      setMessages((prev) => [...prev, { role: 'ai', text: response.reply || 'Vabandust, vastust ei saadud.' }]);
+      const response = await ai.chat(apiMessages, versionId || null, step);
+      const reply = response.reply || 'Vabandust, vastust ei saadud.';
+      const actions = response.actions || [];
+      setMessages((prev) => [...prev, { role: 'ai', text: reply, actions }]);
     } catch (err) {
-      setMessages((prev) => [...prev, { role: 'ai', text: `Viga: ${err.message || 'AI teenus pole kättesaadav.'}` }]);
+      setMessages((prev) => [...prev, { role: 'ai', text: `Viga: ${err.message || 'AI teenus pole kattesaadav.'}` }]);
     } finally {
       setSending(false);
     }
@@ -315,6 +297,75 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
       text: `Graafiparingut uuendatud:\n${parts.map((p) => `- ${p}`).join('\n')}\n\nLaen uusi andmeid...`,
     }]);
     setExpandForm(null);
+  }
+
+  async function handleActionClick(action, messageIndex, actionIndex) {
+    if (!onAiAction) return;
+    const key = `${messageIndex}-${actionIndex}`;
+    if (appliedActions.has(key)) return;
+
+    setApplyingAction(key);
+    try {
+      await onAiAction(action);
+      setAppliedActions((prev) => new Set([...prev, key]));
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: 'ai', text: `Viga tegevuse rakendamisel: ${err.message}` }]);
+    } finally {
+      setApplyingAction(null);
+    }
+  }
+
+  const ACTION_ICONS = {
+    MODULE: '\u{1F4D8}',
+    TOPIC: '\u{1F4D7}',
+    LEARNING_OUTCOME: '\u{1F3AF}',
+    TASK: '\u{1F4DD}',
+    TEST: '\u{1F4CB}',
+    LEARNING_MATERIAL: '\u{1F4DA}',
+    KNOBIT: '\u{1F4A1}',
+    ADD_SCHEDULE: '\u{1F4C5}',
+  };
+
+  function renderActionCard(action, messageIndex, actionIndex) {
+    const key = `${messageIndex}-${actionIndex}`;
+    const isApplied = appliedActions.has(key);
+    const isApplying = applyingAction === key;
+    const icon = action.type === 'ADD_SCHEDULE'
+      ? ACTION_ICONS.ADD_SCHEDULE
+      : ACTION_ICONS[action.itemType] || '\u{2795}';
+
+    return (
+      <div
+        key={key}
+        className={[
+          'rounded-xl border px-3 py-2 flex items-start gap-2.5 transition-all',
+          isApplied
+            ? 'border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/50 opacity-60'
+            : 'border-violet-200 dark:border-violet-800 bg-gradient-to-r from-violet-50/80 to-indigo-50/80 dark:from-violet-900/30 dark:to-indigo-900/30',
+        ].join(' ')}
+      >
+        <span className="text-base mt-0.5 flex-shrink-0">{icon}</span>
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 leading-tight">{action.label}</div>
+          {action.description && (
+            <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{action.description}</div>
+          )}
+        </div>
+        {isApplied ? (
+          <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex-shrink-0 self-center whitespace-nowrap">
+            Lisatud &#10003;
+          </span>
+        ) : (
+          <button
+            onClick={() => handleActionClick(action, messageIndex, actionIndex)}
+            disabled={isApplying}
+            className="flex-shrink-0 self-center rounded-lg bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 whitespace-nowrap"
+          >
+            {isApplying ? 'Lisan...' : 'Lisa'}
+          </button>
+        )}
+      </div>
+    );
   }
 
   const stepLabel = ['', 'Metaandmed', 'Struktuur', 'Sisu', 'Ajakava'][step] ?? '';
@@ -369,6 +420,11 @@ export default function AISidebar({ width, onWidthChange, step, metadata, catalo
                     {c}
                   </button>
                 ))}
+              </div>
+            )}
+            {m.actions && m.actions.length > 0 && (
+              <div className="mt-2 flex flex-col gap-1.5">
+                {m.actions.map((action, ai) => renderActionCard(action, i, ai))}
               </div>
             )}
           </div>

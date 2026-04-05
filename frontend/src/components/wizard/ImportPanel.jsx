@@ -27,6 +27,7 @@ export default function ImportPanel({ catalogJson, existingExternalIris, onImpor
   const [selected, setSelected] = useState(new Set());
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all');
+  const [expandedThemes, setExpandedThemes] = useState(new Set());
 
   if (!catalogJson) {
     return (
@@ -208,12 +209,26 @@ export default function ImportPanel({ catalogJson, existingExternalIris, onImpor
         const isThemeSel = selected.has(themeKey);
         const isAlreadyImported = alreadyImported.has(themeKey) || alreadyImported.has(theme.title);
         const hasLos = (theme.learningOutcomes ?? []).length > 0;
+        const isExpanded = expandedThemes.has(themeKey);
         const visibleLos = !q
           ? (theme.learningOutcomes ?? [])
           : (theme.learningOutcomes ?? []).filter((lo) => (lo.title ?? '').toLowerCase().includes(q));
         return (
           <div key={themeKey} className="mb-2.5 overflow-hidden rounded-2xl border border-violet-100/60 bg-white shadow-sm">
-            <div className={['flex items-center gap-2.5 bg-gradient-to-r from-violet-50/80 to-indigo-50/80 px-3.5 py-2.5 border-b border-violet-100/40', isAlreadyImported ? 'opacity-40' : ''].join(' ')}>
+            <div className={['flex items-center gap-2.5 bg-gradient-to-r from-violet-50/80 to-indigo-50/80 px-3.5 py-2.5', isAlreadyImported ? 'opacity-40' : ''].join(' ')}>
+              {hasLos && (
+                <button
+                  type="button"
+                  onClick={() => setExpandedThemes((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(themeKey)) next.delete(themeKey); else next.add(themeKey);
+                    return next;
+                  })}
+                  className="text-violet-400 hover:text-violet-600 flex-shrink-0 transition-colors"
+                >
+                  <svg className={['h-3.5 w-3.5 transition-transform', isExpanded ? 'rotate-0' : '-rotate-90'].join(' ')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+              )}
               <label className="flex flex-1 items-center gap-2.5 cursor-pointer min-w-0">
                 <input type="checkbox" checked={isThemeSel} disabled={isAlreadyImported} onChange={() => toggleTheme(theme)} className="h-3.5 w-3.5 accent-violet-600 flex-shrink-0 rounded" />
                 <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-violet-600 to-indigo-600 text-[8px] font-bold text-white shadow-sm">T</span>
@@ -225,12 +240,12 @@ export default function ImportPanel({ catalogJson, existingExternalIris, onImpor
               )}
               <GraphLink url={theme.fullUrl} />
             </div>
-            {visibleLos.map((lo) => {
+            {isExpanded && visibleLos.map((lo) => {
               const loKey = lo.fullUrl ?? lo.title;
               const isLoSel = selected.has(loKey);
               const loImported = alreadyImported.has(loKey) || alreadyImported.has(lo.title);
               return (
-                <div key={loKey} className={['flex items-center gap-2 px-4 py-2 border-b border-slate-50 last:border-0', loImported ? 'opacity-40' : 'hover:bg-violet-50/30 transition-colors'].join(' ')}>
+                <div key={loKey} className={['flex items-center gap-2 px-4 py-2 border-t border-slate-50', loImported ? 'opacity-40' : 'hover:bg-violet-50/30 transition-colors'].join(' ')}>
                   <label className="flex flex-1 items-center gap-2 cursor-pointer min-w-0">
                     <input type="checkbox" checked={isLoSel} disabled={loImported} onChange={() => toggle(loKey)} className="h-3.5 w-3.5 accent-emerald-600 flex-shrink-0 rounded" />
                     <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-emerald-500 text-[7px] font-bold text-white">OÕ</span>

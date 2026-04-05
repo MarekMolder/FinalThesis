@@ -193,7 +193,8 @@ export const graphCatalog = {
 };
 
 export const ai = {
-  chat: (messages) => api('/ai/chat', { method: 'POST', body: JSON.stringify({ messages }) }),
+  chat: (messages, versionId, step) =>
+    api('/ai/chat', { method: 'POST', body: JSON.stringify({ messages, versionId, step }) }),
 };
 
 export const user = {

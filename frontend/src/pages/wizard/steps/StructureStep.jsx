@@ -6,6 +6,17 @@ import ItemFormModal from '../../../components/wizard/ItemFormModal';
 
 const STRUCTURE_TYPES = ['MODULE', 'TOPIC', 'LEARNING_OUTCOME', 'TEST'];
 
+function buildTopicCatalog(catalogJson, topicItem) {
+  if (!catalogJson) return null;
+  const themes = catalogJson.themes ?? [];
+  const match = themes.find((t) =>
+    (topicItem.externalIri && t.fullUrl && topicItem.externalIri === t.fullUrl) ||
+    (topicItem.title && t.title && topicItem.title === t.title)
+  );
+  const los = match ? (match.learningOutcomes ?? []) : [];
+  return { themes: [], learningOutcomes: los, modules: [] };
+}
+
 export default function StructureStep({ versionId, metadata, catalogJson, items, onItemsChange, verbs, scheduleMap }) {
   const [loading, setLoading] = useState(items.length === 0);
   const [importParent, setImportParent] = useState(null);
@@ -163,7 +174,7 @@ export default function StructureStep({ versionId, metadata, catalogJson, items,
 
       {importParent && (
         <ImportPanel
-          catalogJson={catalogJson}
+          catalogJson={importParent.type === 'TOPIC' ? buildTopicCatalog(catalogJson, importParent) : catalogJson}
           existingExternalIris={existingIris}
           onImport={handleImport}
           onClose={() => setImportParent(null)}
