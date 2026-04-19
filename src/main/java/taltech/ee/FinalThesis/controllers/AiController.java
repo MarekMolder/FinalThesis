@@ -3,10 +3,9 @@ package taltech.ee.FinalThesis.controllers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import taltech.ee.FinalThesis.domain.dto.AiChatRequest;
+import taltech.ee.FinalThesis.domain.dto.AiChatResponse;
 import taltech.ee.FinalThesis.services.AiChatService;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/ai")
@@ -16,13 +15,17 @@ public class AiController {
     private final AiChatService aiChatService;
 
     @PostMapping("/chat")
-    public ResponseEntity<Map<String, String>> chat(@RequestBody Map<String, Object> request) {
-        @SuppressWarnings("unchecked")
-        List<Map<String, String>> messages = (List<Map<String, String>>) request.get("messages");
-        if (messages == null || messages.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("reply", "Sõnumid on tühjad."));
+    public ResponseEntity<AiChatResponse> chat(@RequestBody AiChatRequest request) {
+        if (request.getMessages() == null || request.getMessages().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                AiChatResponse.builder().reply("Sonumid on tuhjad.").build()
+            );
         }
-        String reply = aiChatService.chat(messages);
-        return ResponseEntity.ok(Map.of("reply", reply));
+        AiChatResponse response = aiChatService.chatWithContext(
+            request.getMessages(),
+            request.getVersionId(),
+            request.getStep()
+        );
+        return ResponseEntity.ok(response);
     }
 }

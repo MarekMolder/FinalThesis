@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -772,11 +773,14 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
     @Override
     public Map<String, Object> findItemsByMetadata(String subject, String schoolLevel,
                                                    String subjectArea, String grade, String educationLevel) {
-        // 1) Query learning outcomes (Category:Haridus:Opivaljund)
-        List<Map<String, Object>> allLos = queryLearningOutcomes(subject, schoolLevel, subjectArea, grade, educationLevel);
+        // 1) Query themes first (Category:Haridus:Teema) — keyed by pageTitle
+        Map<String, String> themeDisplayNames = new LinkedHashMap<>();
+        Map<String, String> themeUrls = queryThemes(subject, subjectArea, educationLevel,
+                schoolLevel, grade, themeDisplayNames);
 
-        // 2) Query themes (Category:Haridus:Teema)
-        Map<String, String> themeUrls = queryThemes(subject, subjectArea, educationLevel);
+        // 2) Query learning outcomes, filtered by valid themes + kooliaste/klass
+        List<Map<String, Object>> allLos = queryLearningOutcomes(subject, themeUrls.keySet(),
+                schoolLevel, grade);
 
         // 3) Modules: OppekavaMoodul items don't carry seotudOppeaine, so they
         //    cannot be matched to general-education metadata. Return empty list.
@@ -793,10 +797,11 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
 
         List<Map<String, Object>> themes = new ArrayList<>();
         for (var entry : byTheme.entrySet()) {
-            String themeName = entry.getKey();
+            String themePageTitle = entry.getKey();
+            String displayName = themeDisplayNames.getOrDefault(themePageTitle, themePageTitle);
             Map<String, Object> t = new LinkedHashMap<>();
-            t.put("title", themeName);
-            t.put("fullUrl", themeUrls.get(themeName));
+            t.put("title", displayName);
+            t.put("fullUrl", themeUrls.get(themePageTitle));
             t.put("learningOutcomes", entry.getValue().stream()
                     .map(lo -> {
                         Map<String, Object> m = new LinkedHashMap<>();
@@ -809,8 +814,9 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
         }
         for (var entry : themeUrls.entrySet()) {
             if (!byTheme.containsKey(entry.getKey())) {
+                String displayName = themeDisplayNames.getOrDefault(entry.getKey(), entry.getKey());
                 Map<String, Object> t = new LinkedHashMap<>();
-                t.put("title", entry.getKey());
+                t.put("title", displayName);
                 t.put("fullUrl", entry.getValue());
                 t.put("learningOutcomes", List.of());
                 themes.add(t);
@@ -930,35 +936,48 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
         }
     }
 
-    private List<Map<String, Object>> queryLearningOutcomes(String subject, String schoolLevel,
-                                                              String subjectArea, String grade, String educationLevel) {
+    private List<Map<String, Object>> queryLearningOutcomes(String subject, Set<String> validThemePageTitles,
+                                                              String schoolLevel, String grade) {
         String q = "[[Category:Haridus:Opivaljund]][[Haridus:seotudOppeaine::" + subject + "]]"
-                + "|?Schema:name|?Haridus:seotudTeema|?Haridus:kooliaste|?Haridus:klass"
-                + "|?Haridus:seotudAinevaldkond|?Haridus:seotudHaridusaste|limit=500";
+                + "|?Schema:name|?Haridus:seotudTeema|?Haridus:kooliaste|?Haridus:klass|limit=500";
 
         List<Map<String, Object>> results = new ArrayList<>();
+        log.info("queryLearningOutcomes: subject='{}', validThemes={}", subject, validThemePageTitles.size());
         try {
             JsonNode queryResult = graphClient.ask(q);
             JsonNode rows = queryResult.path("results");
+            int totalRows = 0;
+            int filteredOut = 0;
             for (Iterator<String> it = rows.fieldNames(); it.hasNext(); ) {
+                totalRows++;
                 String pageTitle = it.next();
                 JsonNode row = rows.get(pageTitle);
                 String fullUrl = row.has("fullurl") ? row.path("fullurl").asText(null) : null;
                 JsonNode p = row.path("printouts");
 
+                String theme = firstWpgFulltext(p.path("Haridus:seotudTeema"));
                 String itemKooliaste = firstText(p.path("Haridus:kooliaste"));
                 String itemKlass = firstText(p.path("Haridus:klass"));
-                String itemAinevaldkond = firstWpgFulltext(p.path("Haridus:seotudAinevaldkond"));
-                String itemHaridusaste = firstWpgFulltext(p.path("Haridus:seotudHaridusaste"));
 
-                if (!matchesSoftFilter(itemKooliaste, schoolLevel)) continue;
-                if (!matchesSoftFilter(itemKlass, grade)) continue;
-                if (!matchesSoftFilter(itemAinevaldkond, subjectArea)) continue;
-                if (!matchesSoftFilter(itemHaridusaste, educationLevel)) continue;
+                // LO with a known theme: theme must be in the valid set
+                // LO without a theme (standalone): include if kooliaste/klass matches
+                if (theme != null && !theme.isBlank()) {
+                    if (!validThemePageTitles.contains(theme)) {
+                        log.debug("Filtered out '{}': theme '{}' not in valid themes", pageTitle, theme);
+                        filteredOut++;
+                        continue;
+                    }
+                } else {
+                    // Standalone LO — must match at least one of kooliaste/klass
+                    if (!matchesAtLeastOneOf(itemKooliaste, schoolLevel, itemKlass, grade)) {
+                        log.debug("Filtered out standalone '{}': kooliaste='{}' klass='{}' no match", pageTitle, itemKooliaste, itemKlass);
+                        filteredOut++;
+                        continue;
+                    }
+                }
 
                 String name = resolveSchemaName(p);
                 String title = name != null && !name.isBlank() ? name : pageTitle;
-                String theme = firstWpgFulltext(p.path("Haridus:seotudTeema"));
 
                 Map<String, Object> lo = new LinkedHashMap<>();
                 lo.put("title", title);
@@ -967,6 +986,7 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
                 lo.put("theme", theme);
                 results.add(lo);
             }
+            log.info("queryLearningOutcomes: {} total rows from API, {} filtered out, {} passed", totalRows, filteredOut, results.size());
         } catch (Exception e) {
             log.warn("queryLearningOutcomes failed for subject='{}': {}", subject, e.getMessage());
         }
@@ -979,9 +999,18 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
         return itemValue.equalsIgnoreCase(metaValue);
     }
 
-    private Map<String, String> queryThemes(String subject, String subjectArea, String educationLevel) {
+    /**
+     * Queries themes from the graph, keyed by pageTitle (not display name) so that
+     * downstream matching with learning-outcome seotudTeema works correctly.
+     *
+     * @param outDisplayNames populated with pageTitle → display name mappings
+     */
+    private Map<String, String> queryThemes(String subject, String subjectArea,
+                                             String educationLevel, String schoolLevel, String grade,
+                                             Map<String, String> outDisplayNames) {
         String q = "[[Category:Haridus:Teema]][[Haridus:seotudOppeaine::" + subject + "]]"
-                + "|?Schema:name|?Haridus:seotudAinevaldkond|?Haridus:seotudHaridusaste|limit=500";
+                + "|?Schema:name|?Haridus:seotudAinevaldkond|?Haridus:seotudHaridusaste"
+                + "|?Haridus:kooliaste|?Haridus:klass|limit=500";
 
         Map<String, String> themeToUrl = new LinkedHashMap<>();
         try {
@@ -995,18 +1024,41 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
 
                 String itemAinevaldkond = firstWpgFulltext(p.path("Haridus:seotudAinevaldkond"));
                 String itemHaridusaste = firstWpgFulltext(p.path("Haridus:seotudHaridusaste"));
+                String itemKooliaste = firstText(p.path("Haridus:kooliaste"));
+                String itemKlass = firstText(p.path("Haridus:klass"));
 
                 if (!matchesSoftFilter(itemAinevaldkond, subjectArea)) continue;
                 if (!matchesSoftFilter(itemHaridusaste, educationLevel)) continue;
+                if (!matchesAtLeastOneOf(itemKooliaste, schoolLevel, itemKlass, grade)) continue;
 
                 String name = resolveSchemaName(p);
-                String title = name != null && !name.isBlank() ? name : pageTitle;
-                themeToUrl.put(title, fullUrl);
+                String displayName = name != null && !name.isBlank() ? name : pageTitle;
+                themeToUrl.put(pageTitle, fullUrl);
+                outDisplayNames.put(pageTitle, displayName);
             }
         } catch (Exception e) {
             log.warn("queryThemes failed for subject='{}': {}", subject, e.getMessage());
         }
         return themeToUrl;
+    }
+
+    /**
+     * Returns true if at least one of (kooliaste, klass) matches between item and metadata.
+     * If metadata has neither schoolLevel nor grade, this filter is skipped (returns true).
+     */
+    private boolean matchesAtLeastOneOf(String itemKooliaste, String metaSchoolLevel,
+                                         String itemKlass, String metaGrade) {
+        boolean metaHasSchool = metaSchoolLevel != null && !metaSchoolLevel.isBlank();
+        boolean metaHasGrade = metaGrade != null && !metaGrade.isBlank();
+        if (!metaHasSchool && !metaHasGrade) return true;
+
+        boolean kooliasteMatch = metaHasSchool
+                && itemKooliaste != null && !itemKooliaste.isBlank()
+                && itemKooliaste.equalsIgnoreCase(metaSchoolLevel);
+        boolean klassMatch = metaHasGrade
+                && itemKlass != null && !itemKlass.isBlank()
+                && itemKlass.equalsIgnoreCase(metaGrade);
+        return kooliasteMatch || klassMatch;
     }
 
     private static String resolveSchemaName(JsonNode printouts) {
