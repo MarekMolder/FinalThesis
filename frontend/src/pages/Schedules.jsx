@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { schedule, curriculumItem, curriculumVersion, curriculum } from '../api';
+import AppShell from '../components/layout/AppShell';
+import PageContainer from '../components/layout/PageContainer';
 
 const STATUS = ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
 
@@ -111,83 +113,87 @@ export default function Schedules() {
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1>Curriculum item schedules</h1>
-      <div style={{ marginBottom: 16 }}>
-        <label>Curriculum </label>
-        <select value={curriculumId} onChange={(e) => { setCurriculumId(e.target.value); setVersionId(''); setItemId(''); }}>
-          <option value="">-- vali --</option>
-          {curriculums.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
-        </select>
-        <label style={{ marginLeft: 8 }}>Version </label>
-        <select value={versionId} onChange={(e) => { setVersionId(e.target.value); setItemId(''); }}>
-          <option value="">-- vali --</option>
-          {versions.map((v) => <option key={v.id} value={v.id}>v{v.versionNumber}</option>)}
-        </select>
-        <label style={{ marginLeft: 8 }}>Item </label>
-        <select value={itemId} onChange={(e) => setItemId(e.target.value)}>
-          <option value="">-- vali --</option>
-          {items.map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
-        </select>
-      </div>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button onClick={openCreate} style={{ marginBottom: 16 }} disabled={!itemId}>Add schedule</button>
-      {loading && <p>Loading...</p>}
-      <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          <tr>
-            <th>Planned start</th>
-            <th>Planned end</th>
-            <th>Minutes</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.map((row) => (
-            <tr key={row.id}>
-              <td>{row.plannedStartAt ? new Date(row.plannedStartAt).toLocaleString() : '-'}</td>
-              <td>{row.plannedEndAt ? new Date(row.plannedEndAt).toLocaleString() : '-'}</td>
-              <td>{row.plannedMinutes}</td>
-              <td>{row.status}</td>
-              <td>
-                <button onClick={() => openEdit(row)}>Edit</button>
-                <button onClick={() => handleDelete(row.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {form && (
-        <form onSubmit={handleSubmit} style={{ marginTop: 24, maxWidth: 400 }}>
-          <h2>{form.id ? 'Edit' : 'Create'}</h2>
-          <div style={{ marginBottom: 8 }}>
-            <label>Planned start</label>
-            <input type="datetime-local" value={form.plannedStartAt || ''} onChange={(e) => setForm({ ...form, plannedStartAt: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }} />
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label>Planned end</label>
-            <input type="datetime-local" value={form.plannedEndAt || ''} onChange={(e) => setForm({ ...form, plannedEndAt: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }} />
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label>Planned minutes</label>
-            <input type="number" value={form.plannedMinutes ?? ''} onChange={(e) => setForm({ ...form, plannedMinutes: parseInt(e.target.value, 10) || 0 })} style={{ display: 'block', width: '100%', padding: 6 }} />
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label>Status</label>
-            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} style={{ padding: 6 }}>
-              {STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
+    <AppShell currentNav="curriculums">
+      <PageContainer>
+        <section className="rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
+          <h1>Curriculum item schedules</h1>
+          <div style={{ marginBottom: 16 }}>
+            <label>Curriculum </label>
+            <select value={curriculumId} onChange={(e) => { setCurriculumId(e.target.value); setVersionId(''); setItemId(''); }}>
+              <option value="">-- vali --</option>
+              {curriculums.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+            </select>
+            <label style={{ marginLeft: 8 }}>Version </label>
+            <select value={versionId} onChange={(e) => { setVersionId(e.target.value); setItemId(''); }}>
+              <option value="">-- vali --</option>
+              {versions.map((v) => <option key={v.id} value={v.id}>v{v.versionNumber}</option>)}
+            </select>
+            <label style={{ marginLeft: 8 }}>Item </label>
+            <select value={itemId} onChange={(e) => setItemId(e.target.value)}>
+              <option value="">-- vali --</option>
+              {items.map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
             </select>
           </div>
-          <div style={{ marginBottom: 8 }}>
-            <label>Notes</label>
-            <input value={form.scheduleNotes || ''} onChange={(e) => setForm({ ...form, scheduleNotes: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }} />
-          </div>
-          <button type="submit" disabled={saving}>{saving ? '...' : 'Save'}</button>
-          <button type="button" onClick={closeForm}>Cancel</button>
-        </form>
-      )}
-    </div>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+          <button onClick={openCreate} style={{ marginBottom: 16 }} disabled={!itemId}>Add schedule</button>
+          {loading && <p>Loading...</p>}
+          <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <thead>
+              <tr>
+                <th>Planned start</th>
+                <th>Planned end</th>
+                <th>Minutes</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.plannedStartAt ? new Date(row.plannedStartAt).toLocaleString() : '-'}</td>
+                  <td>{row.plannedEndAt ? new Date(row.plannedEndAt).toLocaleString() : '-'}</td>
+                  <td>{row.plannedMinutes}</td>
+                  <td>{row.status}</td>
+                  <td>
+                    <button onClick={() => openEdit(row)}>Edit</button>
+                    <button onClick={() => handleDelete(row.id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {form && (
+            <form onSubmit={handleSubmit} style={{ marginTop: 24, maxWidth: 400 }}>
+              <h2>{form.id ? 'Edit' : 'Create'}</h2>
+              <div style={{ marginBottom: 8 }}>
+                <label>Planned start</label>
+                <input type="datetime-local" value={form.plannedStartAt || ''} onChange={(e) => setForm({ ...form, plannedStartAt: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }} />
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label>Planned end</label>
+                <input type="datetime-local" value={form.plannedEndAt || ''} onChange={(e) => setForm({ ...form, plannedEndAt: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }} />
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label>Planned minutes</label>
+                <input type="number" value={form.plannedMinutes ?? ''} onChange={(e) => setForm({ ...form, plannedMinutes: parseInt(e.target.value, 10) || 0 })} style={{ display: 'block', width: '100%', padding: 6 }} />
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label>Status</label>
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} style={{ padding: 6 }}>
+                  {STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label>Notes</label>
+                <input value={form.scheduleNotes || ''} onChange={(e) => setForm({ ...form, scheduleNotes: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }} />
+              </div>
+              <button type="submit" disabled={saving}>{saving ? '...' : 'Save'}</button>
+              <button type="button" onClick={closeForm}>Cancel</button>
+            </form>
+          )}
+        </section>
+      </PageContainer>
+    </AppShell>
   );
 }

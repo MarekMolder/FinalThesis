@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const TYPE_LABELS = {
   MODULE: 'Moodul',
@@ -118,11 +119,13 @@ export default function ItemFormModal({ item, type, parentItem, onSave, onClose,
   );
 
   if (noOverlay) return formContent;
+  if (typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={onClose}>
       {formContent}
-    </div>
+    </div>,
+    document.body
   );
 }
 

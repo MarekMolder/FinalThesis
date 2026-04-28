@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { curriculumItem, relation, graph } from '../../../api';
 import WizardTree from '../../../components/wizard/WizardTree';
 import ItemFormModal from '../../../components/wizard/ItemFormModal';
@@ -314,9 +315,9 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
         }}
       />
 
-      {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={() => setModal(null)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md p-1">
+      {modal && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/20 px-4 py-6 backdrop-blur-sm" onClick={() => setModal(null)}>
+          <div onClick={(e) => e.stopPropagation()} className="my-auto w-full max-w-md p-1">
             {!modal.item && (
               <div className="mb-3 flex gap-2 flex-wrap rounded-2xl bg-white/90 dark:bg-slate-800/90 border border-white/60 dark:border-slate-700/60 px-4 py-3 shadow">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 self-center">Tuup:</span>
@@ -330,7 +331,8 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
             )}
             <ItemFormModal item={modal.item} type={modal.type} parentItem={modal.parentItem} onSave={handleSaveItem} onClose={() => setModal(null)} noOverlay />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {contentImport && (

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { curriculum, curriculumItem, curriculumVersion, getCurrentUser, logout as apiLogout, relation, timeline } from '../api';
-import bgImg from '../assets/background.png';
-import logoImg from '../assets/logo.png';
+import { curriculum, curriculumItem, curriculumVersion, getCurrentUser, relation, timeline } from '../api';
+import AppShell from '../components/layout/AppShell';
+import MobilePanelDrawer from '../components/layout/MobilePanelDrawer';
 import CurriculumCalendar from '../components/curriculumTimeline/CurriculumCalendar';
 import CurriculumGantt from '../components/curriculumTimeline/CurriculumGantt';
 import { computeSchoolWeeks, findSchoolWeek, findSchoolWeeksInRange, formatSchoolWeekLabel } from '../utils/schoolWeeks';
@@ -1028,35 +1028,6 @@ function CurriculumMetaRightPanel({ data, loading }) {
   );
 }
 
-function SidebarItem({ to, icon, label, active }) {
-  return (
-    <Link
-      to={to}
-      className={cn(
-        'flex w-full items-center rounded-2xl text-sm font-medium transition',
-        'justify-center px-2 py-2.5 group-hover:justify-start group-hover:gap-3 group-hover:px-3',
-        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-white/55 dark:hover:bg-slate-700/70'
-      )}
-    >
-      <span
-        className={cn(
-          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700 dark:text-slate-300',
-          active && 'text-white'
-        )}
-      >
-        {icon}
-      </span>
-      <span
-        className={cn(
-          'truncate transition-all duration-200',
-          'w-0 opacity-0 group-hover:w-auto group-hover:opacity-100'
-        )}
-      >
-        {label}
-      </span>
-    </Link>
-  );
-}
 
 export default function CurriculumDetailPage() {
   const { id } = useParams();
@@ -1076,6 +1047,7 @@ export default function CurriculumDetailPage() {
   const [ganttLoading, setGanttLoading] = useState(false);
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [versions, setVersions] = useState([]);
+  const [infoOpenMobile, setInfoOpenMobile] = useState(false);
 
   const schoolWeeks = useMemo(() => {
     if (!structure?.schoolYearStartDate) return [];
@@ -1154,10 +1126,6 @@ export default function CurriculumDetailPage() {
     };
   }, [id, data, versionParam]);
 
-  function logout() {
-    apiLogout();
-  }
-
   const showTimeline = activeView === 'calendar' || activeView === 'gantt';
   const isExternalCurriculum = Boolean(data?.externalGraph);
   const selectedTimelineVersionId = useMemo(() => {
@@ -1192,112 +1160,71 @@ export default function CurriculumDetailPage() {
     return () => { ignore = true; };
   }, [activeView, selectedTimelineVersionId]);
 
-  return (
-    <div className="min-h-full">
-      <div
-        className="fixed inset-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url(${bgImg})` }}
-        aria-hidden="true"
-      />
-      <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-slate-900/90" aria-hidden="true" />
+  const infoPanelContent = (
+    <>
+      <Link
+        to="/curriculums"
+        className="mb-4 flex w-full items-center justify-between rounded-2xl bg-sky-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 sm:px-4"
+      >
+        <span>Õppekavade loend</span>
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/15">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      </Link>
 
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
-        <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="flex shrink-0 items-center rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-sky-400"
-              title="Avaleht"
-            >
-              <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
-            </Link>
-          </div>
-          <div className="ml-auto flex items-center gap-3">
+      <CurriculumMetaRightPanel data={data} loading={loading} />
+
+      <div className="mt-4 space-y-3 border-t border-white/60 dark:border-slate-700 pt-4">
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to="/"
+            className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-sky-400 dark:hover:bg-slate-600"
+          >
+            Töökavad
+          </Link>
+          {!data?.externalGraph && (
             <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
               type="button"
-              title="Kasutaja"
-              onClick={() => {}}
+              onClick={() => {
+                if (versions.length === 0) {
+                  curriculumVersion.list(id).then(setVersions).catch(() => {});
+                }
+                setVersionsOpen(!versionsOpen);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-sky-400 dark:hover:bg-slate-600"
             >
-              <span className="text-sm font-semibold">{(user?.email || 'U').slice(0, 1).toUpperCase()}</span>
+              Versioonid
             </button>
-            <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.label || 'Õpetaja'}</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">{user?.email || '—'}</div>
-            </div>
-            <button
-              onClick={logout}
-              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
-            >
-              Logi välja
-            </button>
-          </div>
+          )}
+          <button
+            type="button"
+            className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
+            onClick={() => navigate('/guide')}
+          >
+            Juhend
+          </button>
         </div>
-      </header>
+        {data?.externalGraph ? (
+          <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+            Graafist imporditud õppekava: täielik struktuur on vasakul põhivaates (moodulid, õpiväljundid) ning
+            versioonide / elementide lehtedel.
+          </p>
+        ) : null}
+      </div>
+    </>
+  );
 
+  return (
+    <AppShell currentNav="curriculums" fixedHeader stickySidebar>
       <div
         className={cn(
-          HEADER_PT_CLASS,
-          'mx-auto grid min-w-0 max-w-[1400px] gap-6 px-2 py-6',
-          showTimeline ? 'grid-cols-[auto_minmax(0,1fr)]' : 'grid-cols-[auto_minmax(0,1fr)_auto]'
+          'grid min-w-0 gap-6',
+          showTimeline ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px]'
         )}
       >
-        <aside
-          className={cn(
-            'group sticky z-30 -ml-8 w-[68px] self-start overflow-y-auto rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px] dark:border-slate-700 dark:bg-slate-900/80',
-            SIDEBAR_STICKY_TOP,
-            SIDEBAR_MAX_H
-          )}
-        >
-          <div className="flex flex-col gap-2">
-            <SidebarItem
-              to="/"
-              label="Minu õppekavad"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-11Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path d="M8 9h8M8 12h8M8 15h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/curriculums"
-              label="Õppekavad"
-              active
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 4h10a2 2 0 0 1 2 2v14l-5-3-5 3-5-3V6a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.8" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/sample"
-              label="Näidisõppekava"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path d="M8 10h8M8 13h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/settings"
-              label="Seaded"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path
-                    d="M19.4 15a8.7 8.7 0 0 0 .1-1 8.7 8.7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.9 7.9 0 0 0-1.7-1l-.3-2.6H11l-.3 2.6a7.9 7.9 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a8.7 8.7 0 0 0-.1 1 8.7 8.7 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.9 7.9 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7.9 7.9 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"
-                    stroke="currentColor"
-                    strokeWidth="1.3"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              }
-            />
-          </div>
-        </aside>
-
         <main className="min-w-0 max-w-full overflow-x-hidden rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/80">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -1522,7 +1449,14 @@ export default function CurriculumDetailPage() {
               {activeView === 'calendar' && (
                 <div className="mt-8">
                   {selectedTimelineVersionId ? (
-                    <CurriculumCalendar curriculumVersionId={selectedTimelineVersionId} schoolWeeks={schoolWeeks} />
+                    <>
+                      <p className="mb-2 text-xs text-slate-500 dark:text-slate-400 sm:hidden">← keri kõrvale, et näha tervet kalendrit →</p>
+                      <div className="-mx-6 overflow-x-auto sm:mx-0">
+                        <div className="min-w-[680px] px-6 sm:min-w-0 sm:px-0">
+                          <CurriculumCalendar curriculumVersionId={selectedTimelineVersionId} schoolWeeks={schoolWeeks} />
+                        </div>
+                      </div>
+                    </>
                   ) : (
                     <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-700/50">
                       <p className="text-lg font-semibold text-slate-700 dark:text-slate-300">Kalendri andmed puuduvad</p>
@@ -1539,24 +1473,31 @@ export default function CurriculumDetailPage() {
                   {ganttLoading ? (
                     <div className="text-center text-sm text-slate-600 dark:text-slate-400">Laen Gantt-vaadet…</div>
                   ) : selectedTimelineVersionId && ganttData.blocks.length > 0 ? (
-                    <CurriculumGantt
-                      blocks={ganttData.blocks}
-                      items={ganttData.items}
-                      relations={ganttData.relations}
-                      anchorDate={new Date().toISOString().slice(0, 10)}
-                      onBlockClick={() => {}}
-                      typeToColor={(type) => {
-                        switch (type) {
-                          case 'MODULE': return '#6366f1';
-                          case 'TOPIC': return '#0ea5e9';
-                          case 'LEARNING_OUTCOME': return '#10b981';
-                          case 'TEST': return '#f43f5e';
-                          case 'TASK': return '#f59e0b';
-                          default: return '#94a3b8';
-                        }
-                      }}
-                      schoolWeeks={schoolWeeks}
-                    />
+                    <>
+                      <p className="mb-2 text-xs text-slate-500 dark:text-slate-400 sm:hidden">← keri kõrvale, et näha tervet Gantt'i →</p>
+                      <div className="-mx-6 overflow-x-auto sm:mx-0">
+                        <div className="min-w-[680px] px-6 sm:min-w-0 sm:px-0">
+                          <CurriculumGantt
+                            blocks={ganttData.blocks}
+                            items={ganttData.items}
+                            relations={ganttData.relations}
+                            anchorDate={new Date().toISOString().slice(0, 10)}
+                            onBlockClick={() => {}}
+                            typeToColor={(type) => {
+                              switch (type) {
+                                case 'MODULE': return '#6366f1';
+                                case 'TOPIC': return '#0ea5e9';
+                                case 'LEARNING_OUTCOME': return '#10b981';
+                                case 'TEST': return '#f43f5e';
+                                case 'TASK': return '#f59e0b';
+                                default: return '#94a3b8';
+                              }
+                            }}
+                            schoolWeeks={schoolWeeks}
+                          />
+                        </div>
+                      </div>
+                    </>
                   ) : (
                     <div className="flex min-h-[min(50vh,28rem)] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 bg-slate-50/40 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-700/50">
                       <p className="text-lg font-semibold text-slate-700 dark:text-slate-300">Gantt andmed puuduvad</p>
@@ -1576,66 +1517,43 @@ export default function CurriculumDetailPage() {
         {!showTimeline && (
         <aside
           className={cn(
-            'sticky z-30 w-[340px] shrink-0 self-start overflow-y-auto rounded-3xl border border-white/60 bg-white/55 p-4 shadow-sm backdrop-blur-md sm:p-5 dark:border-slate-700 dark:bg-slate-900/80',
+            'hidden rounded-3xl border border-white/60 bg-white/55 p-4 shadow-sm backdrop-blur-md sm:p-5 xl:block xl:sticky xl:z-30 xl:w-full xl:self-start xl:overflow-y-auto dark:border-slate-700 dark:bg-slate-900/80',
             SIDEBAR_STICKY_TOP,
             SIDEBAR_MAX_H
           )}
         >
-          <Link
-            to="/curriculums"
-            className="mb-4 flex w-full items-center justify-between rounded-2xl bg-sky-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 sm:px-4"
-          >
-            <span>Õppekavade loend</span>
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/15">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-          </Link>
-
-          <CurriculumMetaRightPanel data={data} loading={loading} />
-
-          <div className="mt-4 space-y-3 border-t border-white/60 dark:border-slate-700 pt-4">
-            <div className="flex flex-wrap gap-2">
-              <Link
-                to="/"
-                className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-sky-400 dark:hover:bg-slate-600"
-              >
-                Töökavad
-              </Link>
-              {!data?.externalGraph && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (versions.length === 0) {
-                      curriculumVersion.list(id).then(setVersions).catch(() => {});
-                    }
-                    setVersionsOpen(!versionsOpen);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-sky-400 dark:hover:bg-slate-600"
-                >
-                  Versioonid
-                </button>
-              )}
-              <button
-                type="button"
-                className="rounded-xl border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
-                onClick={() => navigate('/guide')}
-              >
-                Juhend
-              </button>
-            </div>
-            {data?.externalGraph ? (
-              <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Graafist imporditud õppekava: täielik struktuur on vasakul põhivaates (moodulid, õpiväljundid) ning
-                versioonide / elementide lehtedel.
-              </p>
-            ) : null}
-          </div>
+          {infoPanelContent}
         </aside>
         )}
       </div>
-    </div>
+
+      {/* Mobile floating Info button (< xl, only when info panel is relevant) */}
+      {!showTimeline && (
+        <button
+          type="button"
+          onClick={() => setInfoOpenMobile(true)}
+          aria-label="Ava info"
+          className="fixed bottom-5 right-5 z-30 inline-flex h-14 items-center gap-2 rounded-full bg-sky-600 pl-4 pr-5 text-sm font-semibold text-white shadow-lg transition duration-200 hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 xl:hidden"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+            <path d="M12 11v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <circle cx="12" cy="8" r="0.5" fill="currentColor" />
+          </svg>
+          Info
+        </button>
+      )}
+
+      {/* Mobile info drawer (< xl) */}
+      <MobilePanelDrawer
+        open={infoOpenMobile}
+        onClose={() => setInfoOpenMobile(false)}
+        side="right"
+        title="Info"
+        hideAt="xl"
+      >
+        {infoPanelContent}
+      </MobilePanelDrawer>
+    </AppShell>
   );
 }

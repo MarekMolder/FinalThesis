@@ -4,6 +4,12 @@ module.exports = {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
+      screens: {
+        '3xl': '1800px',
+      },
+      maxWidth: {
+        app: '1800px',
+      },
       keyframes: {
         fadeSlideIn: {
           '0%':   { opacity: '0', transform: 'translateY(8px)' },
@@ -23,4 +29,3 @@ module.exports = {
   },
   plugins: [],
 };
-
