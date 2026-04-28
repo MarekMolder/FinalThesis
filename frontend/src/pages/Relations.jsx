@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { relation, curriculumItem, curriculumVersion, curriculum } from '../api';
+import AppShell from '../components/layout/AppShell';
+import PageContainer from '../components/layout/PageContainer';
 
 const RELATION_TYPE = ['EELDAB', 'ON_EELDUSEKS', 'KOOSNEB', 'ON_OSAKS', 'SISALDAB'];
 
@@ -102,83 +104,87 @@ export default function Relations() {
   const targetDisplay = (row) => row.targetItemId ? itemTitle(row.targetItemId) : (row.targetExternalIri || '—');
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1>Curriculum item relations</h1>
-      <div style={{ marginBottom: 16 }}>
-        <label>Curriculum </label>
-        <select value={curriculumId} onChange={(e) => { setCurriculumId(e.target.value); setVersionId(''); }}>
-          <option value="">-- vali --</option>
-          {curriculums.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
-        </select>
-        <label style={{ marginLeft: 16 }}>Version </label>
-        <select value={versionId} onChange={(e) => setVersionId(e.target.value)}>
-          <option value="">-- vali --</option>
-          {versions.map((v) => <option key={v.id} value={v.id}>v{v.versionNumber}</option>)}
-        </select>
-      </div>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button
-        onClick={openCreate}
-        style={{ marginBottom: 16 }}
-        disabled={!versionId || items.length < 1 || versionClosed}
-      >
-        Add relation
-      </button>
-      {loading && <p>Loading...</p>}
-      <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          <tr>
-            <th>Source</th>
-            <th>Target</th>
-            <th>Type</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.map((row) => (
-            <tr key={row.id}>
-              <td>{itemTitle(row.sourceItemId)}</td>
-              <td>{targetDisplay(row)}</td>
-              <td>{row.type}</td>
-              <td>
-                <button onClick={() => openEdit(row)} disabled={versionClosed}>Edit</button>
-                <button onClick={() => handleDelete(row.id)} disabled={versionClosed}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <AppShell currentNav="curriculums">
+      <PageContainer>
+        <section className="rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
+          <h1>Curriculum item relations</h1>
+          <div style={{ marginBottom: 16 }}>
+            <label>Curriculum </label>
+            <select value={curriculumId} onChange={(e) => { setCurriculumId(e.target.value); setVersionId(''); }}>
+              <option value="">-- vali --</option>
+              {curriculums.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+            </select>
+            <label style={{ marginLeft: 16 }}>Version </label>
+            <select value={versionId} onChange={(e) => setVersionId(e.target.value)}>
+              <option value="">-- vali --</option>
+              {versions.map((v) => <option key={v.id} value={v.id}>v{v.versionNumber}</option>)}
+            </select>
+          </div>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+          <button
+            onClick={openCreate}
+            style={{ marginBottom: 16 }}
+            disabled={!versionId || items.length < 1 || versionClosed}
+          >
+            Add relation
+          </button>
+          {loading && <p>Loading...</p>}
+          <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>Target</th>
+                <th>Type</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((row) => (
+                <tr key={row.id}>
+                  <td>{itemTitle(row.sourceItemId)}</td>
+                  <td>{targetDisplay(row)}</td>
+                  <td>{row.type}</td>
+                  <td>
+                    <button onClick={() => openEdit(row)} disabled={versionClosed}>Edit</button>
+                    <button onClick={() => handleDelete(row.id)} disabled={versionClosed}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {form && (
-        <form onSubmit={handleSubmit} style={{ marginTop: 24, maxWidth: 400 }}>
-          <h2>{form.id ? 'Edit' : 'Create'}</h2>
-          <div style={{ marginBottom: 8 }}>
-            <label>Source item</label>
-            <select value={form.sourceItemId} onChange={(e) => setForm({ ...form, sourceItemId: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }}>
-              {items.map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
-            </select>
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label>Target item (või jäta tühjaks ja sisesta Target external IRI)</label>
-            <select value={form.targetItemId ?? ''} onChange={(e) => setForm({ ...form, targetItemId: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }}>
-              <option value="">-- none (kasuta Target external IRI) --</option>
-              {items.map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
-            </select>
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label>Type</label>
-            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} style={{ padding: 6 }}>
-              {RELATION_TYPE.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label>Target external IRI</label>
-            <input value={form.targetExternalIri || ''} onChange={(e) => setForm({ ...form, targetExternalIri: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }} />
-          </div>
-          <button type="submit" disabled={saving}>{saving ? '...' : 'Save'}</button>
-          <button type="button" onClick={closeForm}>Cancel</button>
-        </form>
-      )}
-    </div>
+          {form && (
+            <form onSubmit={handleSubmit} style={{ marginTop: 24, maxWidth: 400 }}>
+              <h2>{form.id ? 'Edit' : 'Create'}</h2>
+              <div style={{ marginBottom: 8 }}>
+                <label>Source item</label>
+                <select value={form.sourceItemId} onChange={(e) => setForm({ ...form, sourceItemId: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }}>
+                  {items.map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
+                </select>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label>Target item (või jäta tühjaks ja sisesta Target external IRI)</label>
+                <select value={form.targetItemId ?? ''} onChange={(e) => setForm({ ...form, targetItemId: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }}>
+                  <option value="">-- none (kasuta Target external IRI) --</option>
+                  {items.map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
+                </select>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label>Type</label>
+                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} style={{ padding: 6 }}>
+                  {RELATION_TYPE.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label>Target external IRI</label>
+                <input value={form.targetExternalIri || ''} onChange={(e) => setForm({ ...form, targetExternalIri: e.target.value })} style={{ display: 'block', width: '100%', padding: 6 }} />
+              </div>
+              <button type="submit" disabled={saving}>{saving ? '...' : 'Save'}</button>
+              <button type="button" onClick={closeForm}>Cancel</button>
+            </form>
+          )}
+        </section>
+      </PageContainer>
+    </AppShell>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { graph, curriculumItem } from '../../api';
 
 const TYPE_TABS = [
@@ -351,10 +352,11 @@ export default function ContentImportPanel({
     );
   }
 
-  return (
+  if (typeof document === 'undefined') return null;
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="relative flex w-[90vw] max-w-[900px] flex-col rounded-3xl border border-white/60 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+        className="relative flex w-[90vw] max-w-[900px] flex-col rounded-3xl border border-white/60 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 shadow-2xl overflow-hidden"
         style={{ maxHeight: '88vh' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -483,6 +485,7 @@ export default function ContentImportPanel({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

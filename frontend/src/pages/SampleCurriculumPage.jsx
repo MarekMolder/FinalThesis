@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { getCurrentUser, logout as apiLogout } from '../api';
-import bgImg from '../assets/background.png';
-import logoImg from '../assets/logo.png';
+import { useNavigate } from 'react-router-dom';
 import CurriculumCalendar from '../components/curriculumTimeline/CurriculumCalendar';
 import CurriculumGantt from '../components/curriculumTimeline/CurriculumGantt';
+import AppShell from '../components/layout/AppShell';
+import PageContainer from '../components/layout/PageContainer';
 import TutorialOverlay from '../components/tutorial/TutorialOverlay';
 import InfoTooltip from '../components/tutorial/InfoTooltip';
 import TUTORIAL_STEPS from '../components/tutorial/tutorialSteps';
@@ -19,10 +18,6 @@ import {
   sampleStructure,
 } from '../data/sampleCurriculumData';
 import { computeSchoolWeeks, findSchoolWeeksInRange, formatSchoolWeekLabel } from '../utils/schoolWeeks';
-
-const HEADER_PT_CLASS = 'pt-[4.5rem]';
-const SIDEBAR_STICKY_TOP = 'top-[4.5rem]';
-const SIDEBAR_MAX_H = 'max-h-[calc(100vh-4.5rem)]';
 
 function cn(...xs) {
   return xs.filter(Boolean).join(' ');
@@ -70,36 +65,6 @@ function ChevronDownIcon({ open, className }) {
   );
 }
 
-function SidebarItem({ to, icon, label, active }) {
-  return (
-    <Link
-      to={to}
-      className={cn(
-        'flex w-full items-center rounded-2xl text-sm font-medium transition',
-        'justify-center px-2 py-2.5 group-hover:justify-start group-hover:gap-3 group-hover:px-3',
-        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-white/55 dark:hover:bg-slate-700/50'
-      )}
-    >
-      <span
-        className={cn(
-          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700 dark:text-slate-300',
-          active && 'text-white'
-        )}
-      >
-        {icon}
-      </span>
-      <span
-        className={cn(
-          'truncate transition-all duration-200',
-          'w-0 opacity-0 group-hover:w-auto group-hover:opacity-100'
-        )}
-      >
-        {label}
-      </span>
-    </Link>
-  );
-}
-
 const CHILD_TYPE_LABELS = {
   TASK: '\u00DClesanne',
   TEST: 'Test',
@@ -131,7 +96,6 @@ function typeToColor(type) {
 
 export default function SampleCurriculumPage() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
   const tutorial = useTutorial();
   const [view, setView] = useState('structure');
   const [openModules, setOpenModules] = useState(() => new Set([0]));
@@ -164,120 +128,16 @@ export default function SampleCurriculumPage() {
     });
   }
 
-  function logout() {
-    apiLogout();
-  }
-
   return (
-    <div className="min-h-full">
-      <div
-        className="fixed inset-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url(${bgImg})` }}
-        aria-hidden="true"
-      />
-      <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-slate-900/90" aria-hidden="true" />
+    <AppShell currentNav="sample">
+      <PageContainer>
 
-      {/* Header */}
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/35 dark:border-slate-700 bg-white/35 dark:bg-slate-900/80 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="flex shrink-0 items-center rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-sky-400"
-              title="Avaleht"
-            >
-              <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
-            </Link>
-          </div>
-          <div className="ml-auto flex items-center gap-3">
-            <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 dark:border-slate-600 bg-white/55 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 shadow-sm"
-              type="button"
-              title="Kasutaja"
-              onClick={() => {}}
-            >
-              <span className="text-sm font-semibold">{(user?.email || 'U').slice(0, 1).toUpperCase()}</span>
-            </button>
-            <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.label || '\u00D5petaja'}</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">{user?.email || '\u2014'}</div>
-            </div>
-            <button
-              onClick={logout}
-              className="rounded-xl border border-white/55 dark:border-slate-600 bg-white/55 dark:bg-slate-800/70 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 shadow-sm hover:bg-white/70 dark:hover:bg-slate-700/70"
-            >
-              Logi välja
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Grid: sidebar + main */}
-      <div className={cn(HEADER_PT_CLASS, 'mx-auto grid min-w-0 max-w-[1400px] gap-6 px-2 py-6 grid-cols-[auto_minmax(0,1fr)]')}>
-        {/* Sidebar */}
-        <aside
-          className={cn(
-            'group sticky z-30 -ml-8 w-[68px] self-start overflow-y-auto rounded-3xl border border-white/60 dark:border-slate-700 bg-white/55 dark:bg-slate-800/70 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px]',
-            SIDEBAR_STICKY_TOP,
-            SIDEBAR_MAX_H
-          )}
-        >
-          <div className="flex flex-col gap-2">
-            <SidebarItem
-              to="/"
-              label="Minu õppekavad"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-11Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path d="M8 9h8M8 12h8M8 15h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/curriculums"
-              label="Õppekavad"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 4h10a2 2 0 0 1 2 2v14l-5-3-5 3-5-3V6a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.8" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/sample"
-              label="Näidisõppekava"
-              active
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path d="M8 10h8M8 13h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/settings"
-              label="Seaded"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path
-                    d="M19.4 15a8.7 8.7 0 0 0 .1-1 8.7 8.7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.9 7.9 0 0 0-1.7-1l-.3-2.6H11l-.3 2.6a7.9 7.9 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a8.7 8.7 0 0 0-.1 1 8.7 8.7 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.9 7.9 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7.9 7.9 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"
-                    stroke="currentColor"
-                    strokeWidth="1.3"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              }
-            />
-          </div>
-        </aside>
-
-        {/* Main content */}
-        <main className="min-w-0 max-w-full overflow-x-hidden rounded-3xl border border-white/60 dark:border-slate-700 bg-white/55 dark:bg-slate-800/70 p-6 shadow-sm backdrop-blur-md">
+        <section className="min-w-0 max-w-full overflow-x-hidden rounded-3xl border border-white/60 dark:border-slate-700 bg-white/55 dark:bg-slate-800/70 p-6 shadow-sm backdrop-blur-md">
 
           {/* Metadata section */}
           <section data-tutorial="metadata">
-            <div className="flex items-start justify-between gap-4">
-              <div>
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
                 <div className="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-400">
                   Näidisõppekava
                 </div>
@@ -302,12 +162,12 @@ export default function SampleCurriculumPage() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2 self-stretch sm:self-auto">
                 <InfoTooltip title={TUTORIAL_STEPS[1].title} content={TUTORIAL_STEPS[1].content} />
                 <button
                   type="button"
                   onClick={() => tutorial.startTour()}
-                  className="shrink-0 rounded-2xl bg-gradient-to-r from-sky-500 to-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg"
+                  className="flex-1 rounded-2xl bg-gradient-to-r from-sky-500 to-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-md hover:shadow-lg sm:flex-none"
                 >
                   Alusta tutvustust
                 </button>
@@ -561,11 +421,16 @@ export default function SampleCurriculumPage() {
                 <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">Kalender</h2>
                 <InfoTooltip title={TUTORIAL_STEPS[5].title} content={TUTORIAL_STEPS[5].content} />
               </header>
-              <CurriculumCalendar
-                curriculumVersionId={null}
-                schoolWeeks={schoolWeeks}
-                staticData={calendarStaticData}
-              />
+              <p className="mb-2 text-xs text-slate-500 dark:text-slate-400 sm:hidden">← keri kõrvale, et näha tervet kalendrit →</p>
+              <div className="-mx-6 overflow-x-auto sm:mx-0">
+                <div className="min-w-[680px] px-6 sm:min-w-0 sm:px-0">
+                  <CurriculumCalendar
+                    curriculumVersionId={null}
+                    schoolWeeks={schoolWeeks}
+                    staticData={calendarStaticData}
+                  />
+                </div>
+              </div>
             </section>
           )}
 
@@ -576,15 +441,20 @@ export default function SampleCurriculumPage() {
                 <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">Gantt</h2>
                 <InfoTooltip title={TUTORIAL_STEPS[6].title} content={TUTORIAL_STEPS[6].content} />
               </header>
-              <CurriculumGantt
-                blocks={sampleTimelineBlocks}
-                items={sampleItems}
-                relations={sampleRelations}
-                anchorDate={anchorDate}
-                onBlockClick={() => {}}
-                typeToColor={typeToColor}
-                schoolWeeks={schoolWeeks}
-              />
+              <p className="mb-2 text-xs text-slate-500 dark:text-slate-400 sm:hidden">← keri kõrvale, et näha tervet Gantt'i →</p>
+              <div className="-mx-6 overflow-x-auto sm:mx-0">
+                <div className="min-w-[680px] px-6 sm:min-w-0 sm:px-0">
+                  <CurriculumGantt
+                    blocks={sampleTimelineBlocks}
+                    items={sampleItems}
+                    relations={sampleRelations}
+                    anchorDate={anchorDate}
+                    onBlockClick={() => {}}
+                    typeToColor={typeToColor}
+                    schoolWeeks={schoolWeeks}
+                  />
+                </div>
+              </div>
             </section>
           )}
 
@@ -604,8 +474,7 @@ export default function SampleCurriculumPage() {
               Loo oma {'\u00F5'}ppekava!
             </button>
           </section>
-        </main>
-      </div>
+        </section>
 
       {/* Tutorial overlay */}
       <TutorialOverlay
@@ -618,6 +487,7 @@ export default function SampleCurriculumPage() {
         onEnd={tutorial.endTour}
         onViewChange={setView}
       />
-    </div>
+      </PageContainer>
+    </AppShell>
   );
 }

@@ -199,7 +199,7 @@ export default function AuthPage() {
 
                     <Link
                       to={sidebarShowsLogin ? '/register' : '/login'}
-                      className="mt-5 flex w-full max-w-full items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-[13px] font-semibold tracking-wide text-white transition-all duration-200 hover:bg-white/[0.18] active:scale-[0.99] sm:rounded-[14px] sm:px-8 sm:py-3 sm:text-[13.5px]"
+                      className="mt-5 flex w-full max-w-full items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-[13px] font-semibold tracking-wide text-white transition-all duration-200 hover:bg-white/[0.18] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 sm:rounded-[14px] sm:px-8 sm:py-3 sm:text-[13.5px]"
                       style={{
                         background:     'rgba(255,255,255,0.12)',
                         border:         '1px solid rgba(255,255,255,0.38)',
@@ -354,7 +354,7 @@ export default function AuthPage() {
                             formShowsLogin ? 'opacity-100' : 'pointer-events-none opacity-0',
                           ].join(' ')}
                         >
-                          <Link className="font-medium text-sky-600 hover:underline" to="/login"
+                          <Link className="font-medium text-sky-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2" to="/login"
                             onClick={(e) => e.preventDefault()}>
                             Unustasid parooli?
                           </Link>
@@ -368,9 +368,9 @@ export default function AuthPage() {
 
                     <div className="mt-3 text-center text-[13px] text-slate-500 dark:text-slate-400">
                       {formShowsLogin ? (
-                        <>Pole kontot?{' '}<Link className="font-semibold text-sky-600 hover:underline" to="/register">Loo konto</Link></>
+                        <>Pole kontot?{' '}<Link className="font-semibold text-sky-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2" to="/register">Loo konto</Link></>
                       ) : (
-                        <>Juba konto olemas?{' '}<Link className="font-semibold text-sky-600 hover:underline" to="/login">Logi sisse</Link></>
+                        <>Juba konto olemas?{' '}<Link className="font-semibold text-sky-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2" to="/login">Logi sisse</Link></>
                       )}
                     </div>
                   </div>

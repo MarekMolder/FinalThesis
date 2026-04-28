@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { curriculum, getCurrentUser, graph, logout as apiLogout } from '../api';
-import bgImg from '../assets/background.png';
-import logoImg from '../assets/logo.png';
+import { curriculum, graph } from '../api';
+import AppShell from '../components/layout/AppShell';
+import PageContainer from '../components/layout/PageContainer';
 
 const ENUMS = {
   status: ['DRAFT', 'ACTIVE', 'ARCHIVED'],
@@ -20,39 +20,8 @@ function cn(...xs) {
   return xs.filter(Boolean).join(' ');
 }
 
-function SidebarItem({ to, icon, label, active }) {
-  return (
-    <Link
-      to={to}
-      className={cn(
-        'flex w-full items-center rounded-2xl text-sm font-medium transition',
-        'justify-center px-2 py-2.5 group-hover:justify-start group-hover:gap-3 group-hover:px-3',
-        active ? 'bg-sky-600/90 text-white shadow-sm' : 'text-slate-700 hover:bg-white/55 dark:text-slate-300 dark:hover:bg-slate-700/50'
-      )}
-    >
-      <span
-        className={cn(
-          'grid h-12 w-12 place-items-center rounded-2xl text-slate-700 dark:text-slate-300',
-          active && 'text-white'
-        )}
-      >
-        {icon}
-      </span>
-      <span
-        className={cn(
-          'truncate transition-all duration-200',
-          'w-0 opacity-0 group-hover:w-auto group-hover:opacity-100'
-        )}
-      >
-        {label}
-      </span>
-    </Link>
-  );
-}
-
 export default function Curriculums() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
   const [list, setList] = useState([]);
   const [systemList, setSystemList] = useState([]);
   const [externalList, setExternalList] = useState([]);
@@ -164,114 +133,11 @@ export default function Curriculums() {
     }
   }
 
-  function logout() {
-    apiLogout();
-  }
-
   return (
-    <div className="min-h-full">
-      {/* Taust – sama mis HomePage */}
-      <div
-        className="fixed inset-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url(${bgImg})` }}
-        aria-hidden="true"
-      />
-      <div className="fixed inset-0 -z-10 bg-white/55 dark:bg-slate-900/90" aria-hidden="true" />
-
-      {/* Header – sama mis HomePage */}
-      <header className="sticky top-0 z-20 border-b border-white/35 bg-white/35 shadow-[0_12px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80">
-        <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-6 py-2">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="flex shrink-0 items-center rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-sky-400"
-              title="Avaleht"
-            >
-              <img src={logoImg} alt="" className="h-16 w-22 object-contain" />
-            </Link>
-          </div>
-          <div className="ml-auto flex items-center gap-3">
-            <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/55 text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
-              type="button"
-              title="Kasutaja"
-              onClick={() => {}}
-            >
-              <span className="text-sm font-semibold">{(user?.email || 'U').slice(0, 1).toUpperCase()}</span>
-            </button>
-            <div className="hidden text-right sm:block">
-              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.label || 'Õpetaja'}</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">{user?.email || '—'}</div>
-            </div>
-            <button
-              onClick={logout}
-              className="rounded-xl border border-white/55 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/70 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            >
-              Logi välja
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Sama grid: sidebar | main | parem paneel */}
-      <div className="mx-auto grid max-w-[1400px] grid-cols-[auto_1fr_auto] gap-6 px-2 py-6">
-        {/* Vasak külgriba – sama mis HomePage, siin aktiivne on Õppekavad */}
-        <aside
-          className={cn(
-            'group relative -ml-8 h-[calc(100vh-120px)] w-[68px] rounded-3xl border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-md transition-[width] duration-200 hover:w-[260px] dark:border-slate-700 dark:bg-slate-800/80'
-          )}
-        >
-          <div className="flex flex-col gap-2">
-            <SidebarItem
-              to="/"
-              label="Minu õppekavad"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-11Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path d="M8 9h8M8 12h8M8 15h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/curriculums"
-              label="Õppekavad"
-              active
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 4h10a2 2 0 0 1 2 2v14l-5-3-5 3-5-3V6a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.8" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/sample"
-              label="Näidisõppekava"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path d="M8 10h8M8 13h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/settings"
-              label="Seaded"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" strokeWidth="1.8" />
-                  <path
-                    d="M19.4 15a8.7 8.7 0 0 0 .1-1 8.7 8.7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.9 7.9 0 0 0-1.7-1l-.3-2.6H11l-.3 2.6a7.9 7.9 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a8.7 8.7 0 0 0-.1 1 8.7 8.7 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.9 7.9 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7.9 7.9 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"
-                    stroke="currentColor"
-                    strokeWidth="1.3"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              }
-            />
-          </div>
-        </aside>
-
-        {/* Põhisisu – väike erinevus: 3 kaarti + tabel */}
-        <main className="rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
+    <AppShell currentNav="curriculums">
+      <PageContainer>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
           <div className="mb-4">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Õppekavad</h1>
             <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">Halda oma õppekavasid ja vaata süsteemi ning graafi õppekavasid.</div>
@@ -423,7 +289,7 @@ export default function Curriculums() {
                         >
                           {activeTab === 'mine' && 'Sul pole veel õppekavasid. Loo uus ülaloleva nupuga.'}
                           {activeTab === 'system' && 'Süsteemi avalikke õppekavasid ei leitud.'}
-                          {activeTab === 'external' && 'Graafist imporditud õppekavasid ei ole. Kasuta nuppu „Impordi graafist“ ülal.'}
+                          {activeTab === 'external' && 'Graafist imporditud õppekavasid ei ole. Kasuta nuppu „Impordi graafist" ülal.'}
                         </td>
                       </tr>
                     )}
@@ -611,10 +477,10 @@ export default function Curriculums() {
           </div>
           </form>
           )}
-        </main>
+        </section>
 
-        {/* Parem paneel – sama mis HomePage */}
-        <aside className="h-[calc(100vh-120px)] w-[320px] overflow-auto rounded-3xl border border-white/60 bg-white/55 p-5 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
+        {/* Right-panel content from the original grid's third column — preserved verbatim */}
+        <aside className="rounded-3xl border border-white/60 bg-white/55 p-5 shadow-sm backdrop-blur-md xl:self-start dark:border-slate-700 dark:bg-slate-800/80">
           <button
             type="button"
             className="flex w-full items-center justify-between rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
@@ -660,7 +526,8 @@ export default function Curriculums() {
             </button>
           </div>
         </aside>
-          </div>
-    </div>
+        </div>
+      </PageContainer>
+    </AppShell>
   );
 }
