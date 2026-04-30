@@ -1,13 +1,10 @@
 package taltech.ee.FinalThesis;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import taltech.ee.FinalThesis.support.AbstractIntegrationTest;
 
-@SpringBootTest
-class FinalThesisApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
+class FinalThesisApplicationTests extends AbstractIntegrationTest {
+    @Test
+    void contextLoads() {
+    }
 }
