@@ -64,7 +64,7 @@ public class AiChatServiceImpl implements AiChatService {
     private static final Map<Integer, String> STEP_PROMPTS = Map.of(
         1, "\nPraegu on samm 1 (Metaandmed). Aita metaandmete valikuga (aine, klass, kooliaste). Ara paku action-kaarte selles sammus.",
         2, "\nPraegu on samm 2 (Struktuur). Fookus on struktuuril. Soovita mooduleid, teemasid ja opivaljundeid. Kasuta ADD_ITEM ja IMPORT_GRAPH_ITEM action-kaarte konkreetsete soovituste tegemiseks.",
-        3, "\nPraegu on samm 3 (Sisu). Fookus on sisul. Soovita ulesandeid, teste, oppematerjale ja knobiteid konkreetsete teemade ja opivaljundite alla. Kasuta ADD_ITEM action-kaarte.",
+        3, "\nPraegu on samm 3 (Sisu). Fookus on sisul. Soovita ulesandeid, teste, oppematerjale ja knobiteid konkreetsete teemade ja opivaljundite alla. EELISTA ALATI graafis seotud sisu: kui kontekstis on opivaljundi voi teema all 'graafis seotud sisu' loend IRI-dega, kasuta IMPORT_GRAPH_ITEM action-kaarte nende elementidega ja seo need oige parentTitle-iga. Kasuta ADD_ITEM-i AINULT siis kui graafis sobivat elementi pole. Kui kasutaja palub soovitusi konkreetse opivaljundi alla ja sellel on graafis seotud sisu, paku KOIGEPEALT graafi elemente.",
         4, "\nPraegu on samm 4 (Ajakava). Fookus on ajakaval. Soovita tundide arvu elementidele. Kasuta ADD_SCHEDULE action-kaarte. Arvesta kogu kursuse mahtu."
     );
 

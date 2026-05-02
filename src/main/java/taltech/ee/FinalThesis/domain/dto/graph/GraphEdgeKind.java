@@ -1,0 +1,16 @@
+package taltech.ee.FinalThesis.domain.dto.graph;
+
+public enum GraphEdgeKind {
+    PARENT_CHILD,
+    INTERNAL_RELATION,
+    GRAPH_REQUIRES,
+    GRAPH_REQUIRED_BY,
+    GRAPH_CONSISTS_OF,
+    GRAPH_PART_OF,
+    GRAPH_USES,
+    GRAPH_RELATED_LO,
+    GRAPH_CONTAINS_KNOBIT,
+    GRAPH_HAS_THEME,
+    GRAPH_BELONGS_TO_MODULE,
+    GRAPH_BELONGS_TO_CURRICULUM
+}

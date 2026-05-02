@@ -49,3 +49,30 @@ body {
     margin: 0;
   }
 }
+
+/* ── Diff viewer colour palette ───────────────────────────────────────────── */
+:root {
+  --diff-added-bg: #ecfdf5;
+  --diff-added-border: #34d399;
+  --diff-added-text: #065f46;
+  --diff-removed-bg: #fef2f2;
+  --diff-removed-border: #f87171;
+  --diff-removed-text: #991b1b;
+  --diff-modified-bg: #fefce8;
+  --diff-modified-border: #facc15;
+  --diff-modified-text: #854d0e;
+  --diff-unchanged-text: #475569;
+}
+
+.dark {
+  --diff-added-bg: rgba(16, 185, 129, 0.12);
+  --diff-added-border: #10b981;
+  --diff-added-text: #6ee7b7;
+  --diff-removed-bg: rgba(239, 68, 68, 0.14);
+  --diff-removed-border: #ef4444;
+  --diff-removed-text: #fca5a5;
+  --diff-modified-bg: rgba(234, 179, 8, 0.12);
+  --diff-modified-border: #eab308;
+  --diff-modified-text: #fde68a;
+  --diff-unchanged-text: #94a3b8;
+}

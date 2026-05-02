@@ -5,6 +5,7 @@ import AppShell from '../components/layout/AppShell';
 import MobilePanelDrawer from '../components/layout/MobilePanelDrawer';
 import CurriculumCalendar from '../components/curriculumTimeline/CurriculumCalendar';
 import CurriculumGantt from '../components/curriculumTimeline/CurriculumGantt';
+import GraphExplorerView from '../components/graph/GraphExplorerView';
 import { computeSchoolWeeks, findSchoolWeek, findSchoolWeeksInRange, formatSchoolWeekLabel } from '../utils/schoolWeeks';
 
 /** Fikseeritud päise kõrgus — sisu nihutamine ja sticky külgribad. */
@@ -1047,6 +1048,8 @@ export default function CurriculumDetailPage() {
   const [ganttLoading, setGanttLoading] = useState(false);
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [versions, setVersions] = useState([]);
+  const [compareA, setCompareA] = useState('');
+  const [compareB, setCompareB] = useState('');
   const [infoOpenMobile, setInfoOpenMobile] = useState(false);
 
   const schoolWeeks = useMemo(() => {
@@ -1127,6 +1130,7 @@ export default function CurriculumDetailPage() {
   }, [id, data, versionParam]);
 
   const showTimeline = activeView === 'calendar' || activeView === 'gantt';
+  const hideInfoPanel = showTimeline || activeView === 'graph';
   const isExternalCurriculum = Boolean(data?.externalGraph);
   const selectedTimelineVersionId = useMemo(() => {
     const versions = Array.isArray(data?.curriculumVersions) ? data.curriculumVersions : [];
@@ -1222,7 +1226,7 @@ export default function CurriculumDetailPage() {
       <div
         className={cn(
           'grid min-w-0 gap-6',
-          showTimeline ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px]'
+          hideInfoPanel ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px]'
         )}
       >
         <main className="min-w-0 max-w-full overflow-x-hidden rounded-3xl border border-white/60 bg-white/55 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/80">
@@ -1308,6 +1312,40 @@ export default function CurriculumDetailPage() {
           {versionsOpen && (
             <div className="mt-4 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/80">
               <h3 className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Versioonid</h3>
+              {versions.length >= 2 && (
+                <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/70 p-2 dark:border-slate-700 dark:bg-slate-900/40">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Võrdle:</span>
+                  <select
+                    value={compareA}
+                    onChange={(e) => setCompareA(e.target.value)}
+                    className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  >
+                    <option value="">A</option>
+                    {[...versions].sort((a, b) => (b.versionNumber ?? 0) - (a.versionNumber ?? 0)).map((v) => (
+                      <option key={v.id} value={v.id}>#{v.versionNumber} · {v.state}</option>
+                    ))}
+                  </select>
+                  <span className="text-xs text-slate-500">vs</span>
+                  <select
+                    value={compareB}
+                    onChange={(e) => setCompareB(e.target.value)}
+                    className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  >
+                    <option value="">B</option>
+                    {[...versions].sort((a, b) => (b.versionNumber ?? 0) - (a.versionNumber ?? 0)).map((v) => (
+                      <option key={v.id} value={v.id}>#{v.versionNumber} · {v.state}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={!compareA || !compareB || compareA === compareB}
+                    onClick={() => navigate(`/curriculum/${id}/diff/${compareA}/${compareB}`)}
+                    className="rounded bg-sky-600 px-3 py-1 text-xs font-semibold text-white shadow disabled:opacity-50"
+                  >
+                    Võrdle
+                  </button>
+                </div>
+              )}
               {versions.length === 0 ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">Laen…</p>
               ) : (
@@ -1316,6 +1354,9 @@ export default function CurriculumDetailPage() {
                     .sort((a, b) => (b.versionNumber ?? 0) - (a.versionNumber ?? 0))
                     .map((v) => {
                       const isActive = versionParam ? v.id === versionParam : v.id === structure?.curriculumVersionId;
+                      const ascending = [...versions].sort((a, b) => (a.versionNumber ?? 0) - (b.versionNumber ?? 0));
+                      const idx = ascending.findIndex((x) => x.id === v.id);
+                      const previous = idx > 0 ? ascending[idx - 1] : null;
                       return (
                         <div
                           key={v.id}
@@ -1352,6 +1393,15 @@ export default function CurriculumDetailPage() {
                             {isActive && (
                               <span className="text-xs font-semibold text-sky-600">Aktiivne</span>
                             )}
+                            <button
+                              type="button"
+                              disabled={!previous}
+                              onClick={() => previous && navigate(`/curriculum/${id}/diff/${previous.id}/${v.id}`)}
+                              title={previous ? `Diff vs versioon ${previous.versionNumber}` : 'Esimesel versioonil pole eelmist'}
+                              className="rounded-lg border border-sky-200 bg-sky-50 px-2 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100 disabled:opacity-50 dark:border-sky-800 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-900/50"
+                            >
+                              Diff vs eelmine
+                            </button>
                             {v.state !== 'CLOSED' && versions.length > 1 && (
                               <button
                                 type="button"
@@ -1393,6 +1443,7 @@ export default function CurriculumDetailPage() {
                 { key: 'structure', label: 'Struktuur' },
                 { key: 'calendar', label: 'Kalender' },
                 { key: 'gantt', label: 'Gantt' },
+                { key: 'graph', label: 'Graafivaade' },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -1508,13 +1559,23 @@ export default function CurriculumDetailPage() {
                   )}
                 </div>
               )}
+
+              {activeView === 'graph' && (
+                <div className="mt-6">
+                  <GraphExplorerView
+                    curriculumId={data.id}
+                    versionId={versionParam || selectedTimelineVersionId}
+                    onOpenInEditor={() => setActiveView('structure')}
+                  />
+                </div>
+              )}
             </>
           ) : (
             <div className="mt-10 text-center text-sm text-slate-600 dark:text-slate-400">Ei leitud.</div>
           )}
         </main>
 
-        {!showTimeline && (
+        {!hideInfoPanel && (
         <aside
           className={cn(
             'hidden rounded-3xl border border-white/60 bg-white/55 p-4 shadow-sm backdrop-blur-md sm:p-5 xl:block xl:sticky xl:z-30 xl:w-full xl:self-start xl:overflow-y-auto dark:border-slate-700 dark:bg-slate-900/80',
@@ -1528,7 +1589,7 @@ export default function CurriculumDetailPage() {
       </div>
 
       {/* Mobile floating Info button (< xl, only when info panel is relevant) */}
-      {!showTimeline && (
+      {!hideInfoPanel && (
         <button
           type="button"
           onClick={() => setInfoOpenMobile(true)}

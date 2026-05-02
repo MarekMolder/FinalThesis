@@ -3,7 +3,6 @@ import { isAuthenticatedSession, logout as apiLogout } from './api';
 import AuthPage from './pages/auth/AuthPage';
 import HomePage from './pages/HomePage';
 import Curriculums from './pages/Curriculums';
-import CurriculumVersions from './pages/CurriculumVersions';
 import CurriculumItems from './pages/CurriculumItems';
 import Schedules from './pages/Schedules';
 import Relations from './pages/Relations';
@@ -13,6 +12,7 @@ import SampleCurriculumPage from './pages/SampleCurriculumPage';
 import CurriculumDetailPage from './pages/CurriculumDetailPage';
 import CreateCurriculumPage from './pages/wizard/CreateCurriculumPage';
 import CurriculumPdfPreviewPage from './pages/CurriculumPdfPreviewPage';
+import VersionDiffPage from './pages/VersionDiffPage';
 
 // Apply saved theme immediately to avoid flash
 if (typeof window !== 'undefined') {
@@ -32,7 +32,6 @@ function Layout({ children }) {
       <nav className="hidden" aria-hidden="true">
         <Link to="/">Home</Link>
         <Link to="/curriculums">Curriculums</Link>
-        <Link to="/curriculum-versions">Versions</Link>
         <Link to="/curriculum-items">Items</Link>
         <Link to="/schedules">Schedules</Link>
         <Link to="/relations">Relations</Link>
@@ -60,10 +59,13 @@ export default function App() {
       <Route path="/curriculum/new" element={<Protected><CreateCurriculumPage /></Protected>} />
       <Route path="/curriculum/:id" element={<Protected><CurriculumDetailPage /></Protected>} />
       <Route path="/curriculum/:id/pdf-preview" element={<Protected><CurriculumPdfPreviewPage /></Protected>} />
+      <Route
+        path="/curriculum/:curriculumId/diff/:versionAId/:versionBId"
+        element={<Protected><VersionDiffPage /></Protected>}
+      />
 
       {/* Legacy CRUD pages */}
       <Route path="/curriculums" element={<Protected><Curriculums /></Protected>} />
-      <Route path="/curriculum-versions" element={<Protected><CurriculumVersions /></Protected>} />
       <Route path="/curriculum-items" element={<Protected><CurriculumItems /></Protected>} />
       <Route path="/schedules" element={<Protected><Schedules /></Protected>} />
       <Route path="/relations" element={<Protected><Relations /></Protected>} />

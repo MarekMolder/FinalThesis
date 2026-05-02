@@ -56,4 +56,7 @@ public class GraphLearningOutcomeDto {
     /** docs/05_RDF §4 — haridus:sisaldabKnobitit */
     @Builder.Default
     private List<GraphLinkedPageDto> sisaldabKnobitit = new ArrayList<>();
+    /** Other LOs related to this one (Haridus:seotudOpivaljund). */
+    @Builder.Default
+    private List<GraphLinkedPageDto> seotudOpivaljund = new ArrayList<>();
 }
