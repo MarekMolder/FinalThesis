@@ -19,7 +19,9 @@ import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
 import taltech.ee.FinalThesis.domain.updateRequests.UpdateCurriculumVersionRequest;
 import taltech.ee.FinalThesis.mappers.CurriculumVersionMapper;
 import taltech.ee.FinalThesis.security.CurriculumUserDetails;
+import taltech.ee.FinalThesis.domain.dto.diff.DiffResultDto;
 import taltech.ee.FinalThesis.services.ContentJsonGeneratorService;
+import taltech.ee.FinalThesis.services.CurriculumVersionDiffService;
 import taltech.ee.FinalThesis.services.CurriculumVersionService;
 
 import java.util.UUID;
@@ -32,6 +34,7 @@ public class CurriculumVersionController {
     private final CurriculumVersionMapper curriculumVersionMapper;
     private final CurriculumVersionService curriculumVersionService;
     private final ContentJsonGeneratorService contentJsonGeneratorService;
+    private final CurriculumVersionDiffService curriculumVersionDiffService;
 
     @PostMapping
     public ResponseEntity<CreateCurriculumVersionResponseDto> create(
@@ -98,5 +101,22 @@ public class CurriculumVersionController {
                 .map(curriculumVersionMapper::toGetDetailsResponseDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{versionAId}/diff/{versionBId}")
+    public ResponseEntity<DiffResultDto> diff(
+            @AuthenticationPrincipal CurriculumUserDetails userDetails,
+            @PathVariable UUID versionAId,
+            @PathVariable UUID versionBId) {
+        DiffResultDto result = curriculumVersionDiffService.diff(versionAId, versionBId, userDetails.getId());
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{versionAId}/restore")
+    public ResponseEntity<GetCurriculumVersionDetailsResponseDto> restore(
+            @AuthenticationPrincipal CurriculumUserDetails userDetails,
+            @PathVariable UUID versionAId) {
+        CurriculumVersion created = curriculumVersionService.duplicateVersion(versionAId, userDetails.getId());
+        return new ResponseEntity<>(curriculumVersionMapper.toGetDetailsResponseDto(created), HttpStatus.CREATED);
     }
 }

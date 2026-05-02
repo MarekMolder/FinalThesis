@@ -145,6 +145,10 @@ export const curriculumVersion = {
     api(`/curriculum-version/${id}/duplicate`, { method: 'POST' }),
   generateContentJson: (id) =>
     api(`/curriculum-version/${id}/generate-content-json`, { method: 'POST' }),
+  diff: (versionAId, versionBId) =>
+    api(`/curriculum-version/${versionAId}/diff/${versionBId}`),
+  restore: (versionAId) =>
+    api(`/curriculum-version/${versionAId}/restore`, { method: 'POST' }),
 };
 
 export const curriculumItem = {
@@ -172,6 +176,19 @@ export const relation = {
   create: (body) => api('/curriculum-item-relation', { method: 'POST', body: JSON.stringify(body) }),
   update: (id, body) => api(`/curriculum-item-relation/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   delete: (id) => api(`/curriculum-item-relation/${id}`, { method: 'DELETE' }),
+};
+
+export const graphExplorer = {
+  /** GraphViewDto for a curriculum + version. */
+  get: (curriculumId, versionId) =>
+    api(`/graph-explorer/${curriculumId}?versionId=${encodeURIComponent(versionId)}`),
+  /** Expand a graph node by IRI; pass already-rendered IRIs to dedupe. */
+  expand: (iri, excludeIris = []) => {
+    const params = new URLSearchParams();
+    params.set('iri', iri);
+    excludeIris.forEach((x) => params.append('excludeIris', x));
+    return api(`/graph-explorer/expand?${params.toString()}`);
+  },
 };
 
 export const timeline = {

@@ -1,0 +1,20 @@
+package taltech.ee.FinalThesis.domain.dto.graph;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class GraphViewDto {
+    @Builder.Default
+    private List<GraphNodeDto> nodes = new ArrayList<>();
+    @Builder.Default
+    private List<GraphEdgeDto> edges = new ArrayList<>();
+}

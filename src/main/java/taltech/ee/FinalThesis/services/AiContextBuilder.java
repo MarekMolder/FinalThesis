@@ -3,6 +3,7 @@ package taltech.ee.FinalThesis.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import taltech.ee.FinalThesis.domain.dto.graph.GraphContentItemDto;
 import taltech.ee.FinalThesis.domain.entities.Curriculum;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItem;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItemSchedule;
@@ -147,6 +148,11 @@ public class AiContextBuilder {
             log.warn("Failed to load graph data for AI context: {}", e.getMessage());
         }
 
+        // Graph content per existing LO/TOPIC — only relevant for content step
+        if (step >= 3) {
+            appendGraphContentForExistingItems(sb, items);
+        }
+
         // Schedule info for step 4
         if (step == 4) {
             List<CurriculumItemSchedule> schedules = scheduleRepository
@@ -189,6 +195,70 @@ public class AiContextBuilder {
         children.stream()
             .sorted(Comparator.comparingInt(CurriculumItem::getOrderIndex))
             .forEach(child -> appendTreeNode(sb, child, childrenMap, depth + 1));
+    }
+
+    private static final int MAX_GRAPH_ITEMS_PER_ELEMENT = 8;
+    private static final Set<String> CONTENT_HOST_TYPES = Set.of("LEARNING_OUTCOME", "TOPIC");
+
+    private void appendGraphContentForExistingItems(StringBuilder sb, List<CurriculumItem> items) {
+        Set<String> existingIris = items.stream()
+            .map(CurriculumItem::getExternalIri)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+        Set<String> existingTitles = items.stream()
+            .map(CurriculumItem::getTitle)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+        List<CurriculumItem> hosts = items.stream()
+            .filter(i -> i.getExternalIri() != null && !i.getExternalIri().isBlank())
+            .filter(i -> i.getType() != null && CONTENT_HOST_TYPES.contains(i.getType().name()))
+            .toList();
+
+        if (hosts.isEmpty()) return;
+
+        StringBuilder block = new StringBuilder();
+        for (CurriculumItem host : hosts) {
+            List<GraphContentItemDto> graphItems;
+            try {
+                graphItems = graphService.getItemsForElement(host.getExternalIri());
+            } catch (Exception e) {
+                log.warn("Failed to load graph items for {} (iri: {}): {}",
+                    host.getTitle(), host.getExternalIri(), e.getMessage());
+                continue;
+            }
+            if (graphItems == null || graphItems.isEmpty()) continue;
+
+            List<GraphContentItemDto> notYetAdded = graphItems.stream()
+                .filter(g -> {
+                    String url = g.getFullUrl();
+                    String headline = g.getHeadline();
+                    boolean addedByIri = url != null && existingIris.contains(url);
+                    boolean addedByTitle = headline != null && existingTitles.contains(headline);
+                    return !addedByIri && !addedByTitle;
+                })
+                .limit(MAX_GRAPH_ITEMS_PER_ELEMENT)
+                .toList();
+
+            if (notYetAdded.isEmpty()) continue;
+
+            block.append("- ").append(host.getType().name()).append(" \"")
+                .append(host.getTitle()).append("\" graafis seotud sisu:\n");
+            for (GraphContentItemDto g : notYetAdded) {
+                block.append("    [").append(g.getType() != null ? g.getType() : "ITEM").append("] ")
+                    .append(g.getHeadline() != null ? g.getHeadline() : g.getPageTitle());
+                if (g.getFullUrl() != null && !g.getFullUrl().isBlank()) {
+                    block.append(" (iri: ").append(g.getFullUrl()).append(")");
+                }
+                block.append(" parentTitle: \"").append(host.getTitle()).append("\"\n");
+            }
+        }
+
+        if (block.length() > 0) {
+            sb.append("Graafis seotud sisu opivaljundite/teemade kohta (kasuta IMPORT_GRAPH_ITEM):\n");
+            sb.append(block);
+            sb.append("\n");
+        }
     }
 
     @SuppressWarnings("unchecked")

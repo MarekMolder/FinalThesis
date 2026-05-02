@@ -13,6 +13,7 @@ import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumVersionNotFoundException;
 import taltech.ee.FinalThesis.mappers.CurriculumVersionMapper;
 import taltech.ee.FinalThesis.services.ContentJsonGeneratorService;
+import taltech.ee.FinalThesis.services.CurriculumVersionDiffService;
 import taltech.ee.FinalThesis.services.CurriculumVersionService;
 import taltech.ee.FinalThesis.support.AbstractWebMvcTest;
 
@@ -33,6 +34,7 @@ class CurriculumVersionControllerWebMvcTest extends AbstractWebMvcTest {
     @MockitoBean CurriculumVersionService curriculumVersionService;
     @MockitoBean CurriculumVersionMapper curriculumVersionMapper;
     @MockitoBean ContentJsonGeneratorService contentJsonGeneratorService;
+    @MockitoBean CurriculumVersionDiffService curriculumVersionDiffService;
 
     @Test
     void list_returns200_withPagedVersions() throws Exception {

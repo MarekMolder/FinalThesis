@@ -167,6 +167,20 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
         // Copy items — map old ID → new item for parent/relation references
         List<CurriculumItem> sourceItems = curriculumItemRepository
                 .findAllWithParentByCurriculumVersion_Id(sourceVersionId);
+
+        // Backfill localKey on source items missing both externalIri and localKey, so that
+        // copies inherit a stable key. Without this, the diff service can't match items
+        // across versions duplicated from the same source — they'd fall back to synthetic
+        // per-item keys and show as ADDED+REMOVED pairs.
+        for (CurriculumItem src : sourceItems) {
+            boolean noIri = src.getExternalIri() == null || src.getExternalIri().isBlank();
+            boolean noKey = src.getLocalKey() == null || src.getLocalKey().isBlank();
+            if (noIri && noKey) {
+                src.setLocalKey(UUID.randomUUID().toString());
+                curriculumItemRepository.save(src);
+            }
+        }
+
         Map<UUID, CurriculumItem> oldToNew = new HashMap<>();
 
         // First pass: create items without parent (top-level)

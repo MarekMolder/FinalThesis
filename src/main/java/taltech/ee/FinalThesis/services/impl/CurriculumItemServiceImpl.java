@@ -53,7 +53,7 @@ public class CurriculumItemServiceImpl implements CurriculumItemService {
         item.setOrderIndex(request.getOrderIndex());
         item.setSourceType(request.getSourceType());
         item.setExternalIri(request.getExternalIri());
-        item.setLocalKey(request.getLocalKey());
+        item.setLocalKey(request.getLocalKey() != null ? request.getLocalKey() : UUID.randomUUID().toString());
         item.setSubjectIri(request.getSubjectIri());
         item.setSubjectAreaIri(request.getSubjectAreaIri());
         item.setEducationLevelIri(request.getEducationLevelIri());

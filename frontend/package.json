@@ -15,7 +15,11 @@
     "@fullcalendar/interaction": "^6.1.19",
     "@fullcalendar/react": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
+    "cytoscape": "^3.33.3",
+    "cytoscape-dagre": "^2.5.0",
+    "cytoscape-fcose": "^2.2.0",
     "react": "^19.2.4",
+    "react-cytoscapejs": "^2.0.0",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1"
   },

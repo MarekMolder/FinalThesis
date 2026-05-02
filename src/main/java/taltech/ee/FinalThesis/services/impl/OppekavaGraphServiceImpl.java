@@ -622,6 +622,7 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
         List<GraphLinkedPageDto> onEelduseks = toLinkedPages(p.path("Haridus:onEelduseks"));
         List<GraphLinkedPageDto> onOsaks = toLinkedPages(p.path("Haridus:onOsaks"));
         List<GraphLinkedPageDto> sisaldabKnobitit = toLinkedPages(p.path("Haridus:sisaldabKnobitit"));
+        List<GraphLinkedPageDto> seotudOpivaljund = toLinkedPages(p.path("Haridus:seotudOpivaljund"));
         String semanticJoined = joinSemanticRelationLabels(p);
         String relationSummary = buildRelationSummary(eeldab, koosneb, onEelduseks, onOsaks);
 
@@ -653,6 +654,7 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
                 .onEelduseks(onEelduseks)
                 .onOsaks(onOsaks)
                 .sisaldabKnobitit(sisaldabKnobitit)
+                .seotudOpivaljund(seotudOpivaljund)
                 .build();
     }
 

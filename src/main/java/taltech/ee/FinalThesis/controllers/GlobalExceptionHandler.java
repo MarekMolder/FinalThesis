@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import taltech.ee.FinalThesis.domain.dto.ApiErrorResponse;
 import taltech.ee.FinalThesis.exceptions.CurriculumUpdateException;
+import taltech.ee.FinalThesis.exceptions.DiffValidationException;
 import taltech.ee.FinalThesis.exceptions.EmailAlreadyExistsException;
+import taltech.ee.FinalThesis.exceptions.GraphFetchException;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumNotFoundException;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumItemNotFoundException;
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumItemRelationNotFoundException;
@@ -117,6 +119,27 @@ public class GlobalExceptionHandler {
                 .message(ex.getMessage())
                 .build();
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    /** Returns 400 when a diff request is invalid (same version or different curriculums). */
+    @ExceptionHandler(DiffValidationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDiffValidationException(DiffValidationException ex) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    /** Returns 502 when an upstream graph query (oppekava.edu.ee) fails. */
+    @ExceptionHandler(GraphFetchException.class)
+    public ResponseEntity<ApiErrorResponse> handleGraphFetchException(GraphFetchException ex) {
+        log.warn("Graph fetch failed: {}", ex.getMessage());
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.BAD_GATEWAY.value())
+                .message(ex.getMessage() != null ? ex.getMessage() : "Graph fetch failed")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.BAD_GATEWAY);
     }
 
     /** Returns 409 when registration fails because email already exists. */

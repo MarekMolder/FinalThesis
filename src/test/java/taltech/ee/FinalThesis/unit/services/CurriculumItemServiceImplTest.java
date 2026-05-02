@@ -139,4 +139,67 @@ class CurriculumItemServiceImplTest {
 
         verify(curriculumItemRepository, never()).save(any(CurriculumItem.class));
     }
+
+    @Test
+    void create_autoFillsLocalKey_whenRequestLocalKeyIsNull() {
+        UUID userId = UUID.randomUUID();
+        UUID versionId = UUID.randomUUID();
+        User user = UserTestData.aUser().withId(userId).build();
+        Curriculum curriculum = CurriculumTestData.aCurriculum().withUser(user).build();
+        CurriculumVersion version = CurriculumVersionTestData.aCurriculumVersion()
+                .withId(versionId).withState(CurriculumVersionStateEnum.DRAFT)
+                .withCurriculum(curriculum).build();
+
+        CreateCurriculumItemRequest request = new CreateCurriculumItemRequest();
+        request.setType(CurriculumItemTypeEnum.TOPIC);
+        request.setTitle("t");
+        request.setOrderIndex(0);
+        request.setSourceType(CurriculumItemSourceTypeEnum.TEACHER_CREATED);
+        request.setLocalKey(null);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+                .thenReturn(Optional.of(version));
+        when(curriculumItemRepository.save(any(CurriculumItem.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.create(userId, versionId, null, request);
+
+        ArgumentCaptor<CurriculumItem> captor = ArgumentCaptor.forClass(CurriculumItem.class);
+        verify(curriculumItemRepository).save(captor.capture());
+        String localKey = captor.getValue().getLocalKey();
+        assertThat(localKey).isNotBlank();
+        // Must parse as UUID
+        UUID.fromString(localKey);
+    }
+
+    @Test
+    void create_preservesLocalKey_whenRequestProvidesOne() {
+        UUID userId = UUID.randomUUID();
+        UUID versionId = UUID.randomUUID();
+        User user = UserTestData.aUser().withId(userId).build();
+        Curriculum curriculum = CurriculumTestData.aCurriculum().withUser(user).build();
+        CurriculumVersion version = CurriculumVersionTestData.aCurriculumVersion()
+                .withId(versionId).withState(CurriculumVersionStateEnum.DRAFT)
+                .withCurriculum(curriculum).build();
+
+        CreateCurriculumItemRequest request = new CreateCurriculumItemRequest();
+        request.setType(CurriculumItemTypeEnum.TOPIC);
+        request.setTitle("t");
+        request.setOrderIndex(0);
+        request.setSourceType(CurriculumItemSourceTypeEnum.TEACHER_CREATED);
+        request.setLocalKey("caller-supplied-key");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+                .thenReturn(Optional.of(version));
+        when(curriculumItemRepository.save(any(CurriculumItem.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.create(userId, versionId, null, request);
+
+        ArgumentCaptor<CurriculumItem> captor = ArgumentCaptor.forClass(CurriculumItem.class);
+        verify(curriculumItemRepository).save(captor.capture());
+        assertThat(captor.getValue().getLocalKey()).isEqualTo("caller-supplied-key");
+    }
 }
