@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -35,6 +36,7 @@ public class OppekavaGraphClient {
      * Runs an Ask API query and returns the "query" part of the response.
      * Query is passed raw; UriComponentsBuilder encodes it once (avoiding double-encoding).
      */
+    @Cacheable(cacheNames = "graphAsk", unless = "#result == null")
     public JsonNode ask(String query) {
         URI uri = UriComponentsBuilder.fromUriString(DEFAULT_BASE_URL)
                 .queryParam("action", "ask")

@@ -31,6 +31,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CurriculumTimelineController {
 
+    private static final String BLOCK_TYPE_ITEM_SCHEDULE = "ITEM_SCHEDULE";
+    private static final String BLOCK_TYPE_MANUAL_BUFFER = "MANUAL_BUFFER";
+    private static final String DEFAULT_BUFFER_LABEL = "Puhver";
+
     private final CurriculumVersionRepository curriculumVersionRepository;
     private final CurriculumItemRepository curriculumItemRepository;
     private final CurriculumItemScheduleRepository curriculumItemScheduleRepository;
@@ -44,9 +48,6 @@ public class CurriculumTimelineController {
         CurriculumVersion version = curriculumVersionRepository.findById(curriculumVersionId)
                 .orElseThrow(() -> new CurriculumVersionNotFoundException(String.format("Curriculum version with ID '%s' not found", curriculumVersionId)));
 
-        // Allow reading timeline blocks for:
-        // - owner's curricula
-        // - PUBLIC curricula (so external curricula can be viewed even if not owned by the current user)
         boolean isOwner = version.getCurriculum() != null
                 && version.getCurriculum().getUser() != null
                 && userDetails.getId().equals(version.getCurriculum().getUser().getId());
@@ -57,7 +58,6 @@ public class CurriculumTimelineController {
             throw new CurriculumVersionNotFoundException(String.format("Curriculum version with ID '%s' not found", curriculumVersionId));
         }
 
-        // Items are scoped by curriculumVersion; schedules and buffers then follow from those items.
         List<CurriculumItem> items = curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(curriculumVersionId);
 
         List<TimelineBlockDto> blocks = new ArrayList<>();
@@ -92,7 +92,7 @@ public class CurriculumTimelineController {
         if (s == null || s.getCurriculumItem() == null) return null;
         return new TimelineBlockDto(
                 s.getId(),
-                "ITEM_SCHEDULE",
+                BLOCK_TYPE_ITEM_SCHEDULE,
                 s.getCurriculumItem().getId(),
                 s.getCurriculumItem().getType(),
                 s.getCurriculumItem().getTitle(),
@@ -109,7 +109,7 @@ public class CurriculumTimelineController {
         if (b == null) return null;
         return new TimelineBlockDto(
                 b.getId(),
-                "MANUAL_BUFFER",
+                BLOCK_TYPE_MANUAL_BUFFER,
                 null,
                 null,
                 null,
@@ -118,7 +118,7 @@ public class CurriculumTimelineController {
                 b.getPlannedMinutes(),
                 b.getStatus(),
                 b.getBufferNotes(),
-                b.getBufferNotes() != null && !b.getBufferNotes().isBlank() ? b.getBufferNotes() : "Puhver"
+                b.getBufferNotes() != null && !b.getBufferNotes().isBlank() ? b.getBufferNotes() : DEFAULT_BUFFER_LABEL
         );
     }
 }

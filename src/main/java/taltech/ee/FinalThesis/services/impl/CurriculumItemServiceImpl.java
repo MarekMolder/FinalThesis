@@ -83,7 +83,6 @@ public class CurriculumItemServiceImpl implements CurriculumItemService {
                 .orElseThrow(() -> new CurriculumVersionNotFoundException(
                         String.format("Curriculum version with ID '%s' not found", curriculumVersionId)));
 
-        // Sama loogika mis CurriculumTimelineController: omanik VÕI avalik õppekava (timeline + modal itemite nimekiri).
         boolean isOwner = version.getCurriculum() != null
                 && version.getCurriculum().getUser() != null
                 && userId.equals(version.getCurriculum().getUser().getId());

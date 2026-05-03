@@ -69,37 +69,35 @@ public class CurriculumServiceImpl implements CurriculumService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(String.format("User with ID '%s' not found", userId)));
 
-        Curriculum curriculumToCreate = new Curriculum();
-        curriculumToCreate.setTitle(curriculum.getTitle());
-        curriculumToCreate.setDescription(curriculum.getDescription());
-        curriculumToCreate.setCurriculumType(curriculum.getCurriculumType());
-        curriculumToCreate.setStatus(curriculum.getStatus());
-        curriculumToCreate.setVisibility(curriculum.getVisibility());
-        curriculumToCreate.setProvider(curriculum.getProvider());
-        curriculumToCreate.setRelevantOccupation(curriculum.getRelevantOccupation());
-        curriculumToCreate.setRelevantOccupationIri(curriculum.getRelevantOccupationIri());
-        curriculumToCreate.setIdentifier(curriculum.getIdentifier());
-        curriculumToCreate.setAudience(curriculum.getAudience());
-        curriculumToCreate.setAudienceIri(curriculum.getAudienceIri());
-        curriculumToCreate.setSubjectAreaIri(curriculum.getSubjectAreaIri());
-        curriculumToCreate.setSubjectIri(curriculum.getSubjectIri());
-        curriculumToCreate.setEducationalLevelIri(curriculum.getEducationalLevelIri());
-        curriculumToCreate.setSchoolLevel(curriculum.getSchoolLevel());
-        curriculumToCreate.setGrade(curriculum.getGrade());
-        curriculumToCreate.setEducationalFramework(curriculum.getEducationalFramework());
-        curriculumToCreate.setLanguage(curriculum.getLanguage());
-        curriculumToCreate.setVolumeHours(curriculum.getVolumeHours());
-        curriculumToCreate.setExternalSource(curriculum.getExternalSource());
-        curriculumToCreate.setExternalPageIri(curriculum.getExternalPageIri() != null ? curriculum.getExternalPageIri() : "");
-        curriculumToCreate.setUser(user);
-        curriculumToCreate.setCurriculumVersions(new ArrayList<>());
-
-        return curriculumRepository.save(curriculumToCreate);
+        return curriculumRepository.save(buildNewCurriculumFrom(curriculum, user));
     }
 
-    @Override
-    public Page<Curriculum> listCurriculums(Pageable pageable) {
-        return curriculumRepository.findByVisibility(CurriculumVisbilityEnum.PUBLIC, pageable);
+    private static Curriculum buildNewCurriculumFrom(CreateCurriculumRequest req, User user) {
+        Curriculum c = new Curriculum();
+        c.setTitle(req.getTitle());
+        c.setDescription(req.getDescription());
+        c.setCurriculumType(req.getCurriculumType());
+        c.setStatus(req.getStatus());
+        c.setVisibility(req.getVisibility());
+        c.setProvider(req.getProvider());
+        c.setRelevantOccupation(req.getRelevantOccupation());
+        c.setRelevantOccupationIri(req.getRelevantOccupationIri());
+        c.setIdentifier(req.getIdentifier());
+        c.setAudience(req.getAudience());
+        c.setAudienceIri(req.getAudienceIri());
+        c.setSubjectAreaIri(req.getSubjectAreaIri());
+        c.setSubjectIri(req.getSubjectIri());
+        c.setEducationalLevelIri(req.getEducationalLevelIri());
+        c.setSchoolLevel(req.getSchoolLevel());
+        c.setGrade(req.getGrade());
+        c.setEducationalFramework(req.getEducationalFramework());
+        c.setLanguage(req.getLanguage());
+        c.setVolumeHours(req.getVolumeHours());
+        c.setExternalSource(req.getExternalSource());
+        c.setExternalPageIri(req.getExternalPageIri() != null ? req.getExternalPageIri() : "");
+        c.setUser(user);
+        c.setCurriculumVersions(new ArrayList<>());
+        return c;
     }
 
     @Override
@@ -168,12 +166,6 @@ public class CurriculumServiceImpl implements CurriculumService {
 
     @Override
     @Transactional
-    public Optional<ImportedCurriculumStructureDto> getImportedStructureForCurriculum(UUID curriculumId) {
-        return getImportedStructureForCurriculum(curriculumId, null);
-    }
-
-    @Override
-    @Transactional
     public Optional<ImportedCurriculumStructureDto> getImportedStructureForCurriculum(UUID curriculumId, UUID versionId) {
         return curriculumRepository.findById(curriculumId)
                 .flatMap(curriculum -> {
@@ -222,15 +214,13 @@ public class CurriculumServiceImpl implements CurriculumService {
                         (a, b) -> a.isAfter(b) ? a : b
                 ));
 
-        // TEST items always sort last within their parent
-        Comparator<CurriculumItem> testLastThenSchedule = Comparator
+        Comparator<CurriculumItem> scheduleAwareOrder = Comparator
                 .<CurriculumItem, Boolean>comparing(
                         i -> i.getType() == CurriculumItemTypeEnum.TEST)
                 .thenComparing(
                         i -> scheduleByItem.get(i.getId()),
                         Comparator.nullsLast(Comparator.naturalOrder()))
                 .thenComparing(ORDER_COMPARATOR);
-        Comparator<CurriculumItem> scheduleAwareOrder = testLastThenSchedule;
 
         Map<UUID, List<CurriculumItemRelation>> outgoingBySource = relations.stream()
                 .filter(r -> r.getSourceItem() != null)

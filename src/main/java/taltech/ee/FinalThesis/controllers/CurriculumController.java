@@ -75,7 +75,6 @@ public class CurriculumController {
         );
     }
 
-    /** Süsteemi õppekavad: PUBLIC, externalGraph=false, not owned by current user. */
     @GetMapping("/system")
     public ResponseEntity<Page<ListCurriculumResponseDto>> listSystemCurriculums(
             @AuthenticationPrincipal CurriculumUserDetails userDetails,
@@ -86,7 +85,6 @@ public class CurriculumController {
         );
     }
 
-    /** Graafist imporditud õppekavad (DB-s, externalGraph=true). */
     @GetMapping("/external")
     public ResponseEntity<Page<ListCurriculumResponseDto>> listExternalCurriculums(Pageable pageable) {
         Page<Curriculum> curriculums = curriculumService.listExternalCurriculums(pageable);
@@ -106,10 +104,6 @@ public class CurriculumController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * For external curricula: graph-derived structure (moodulid, õpiväljundid).
-     * Returns 404 if curriculum not found, not visible, or not external.
-     */
     @GetMapping(path = "/{curriculumId}/graph-structure")
     public ResponseEntity<GraphCurriculumDetailDto> getCurriculumGraphStructure(
             @AuthenticationPrincipal CurriculumUserDetails userDetails,
@@ -123,9 +117,6 @@ public class CurriculumController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Imporditud õppekava: struktuur andmebaasist (EELDAB/KOOSNEB õpiväljundite vahel).
-     */
     @GetMapping(path = "/{curriculumId}/imported-structure")
     public ResponseEntity<ImportedCurriculumStructureDto> getCurriculumImportedStructure(
             @AuthenticationPrincipal CurriculumUserDetails userDetails,

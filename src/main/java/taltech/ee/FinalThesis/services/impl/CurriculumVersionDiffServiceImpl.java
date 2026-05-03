@@ -21,6 +21,7 @@ import taltech.ee.FinalThesis.repositories.CurriculumVersionRepository;
 import taltech.ee.FinalThesis.services.CurriculumVersionDiffService;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -265,7 +266,7 @@ public class CurriculumVersionDiffServiceImpl implements CurriculumVersionDiffSe
 
     private static Set<String> relationTripleSet(List<CurriculumItemRelation> rels,
                                                  Map<CurriculumItem, String> keys) {
-        Set<String> out = new java.util.HashSet<>();
+        Set<String> out = new HashSet<>();
         for (CurriculumItemRelation r : rels) {
             String t = relationTriple(r, keys);
             if (t != null) out.add(t);
