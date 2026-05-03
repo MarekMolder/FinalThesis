@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumDetailDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumSummaryDto;
@@ -14,12 +15,12 @@ import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
 import taltech.ee.FinalThesis.domain.entities.User;
 import taltech.ee.FinalThesis.fixtures.CurriculumTestData;
 import taltech.ee.FinalThesis.fixtures.UserTestData;
-import taltech.ee.FinalThesis.repositories.CurriculumItemRelationRepository;
-import taltech.ee.FinalThesis.repositories.CurriculumItemRepository;
 import taltech.ee.FinalThesis.repositories.CurriculumRepository;
 import taltech.ee.FinalThesis.repositories.CurriculumVersionRepository;
 import taltech.ee.FinalThesis.services.OppekavaGraphService;
 import taltech.ee.FinalThesis.services.impl.ExternalCurriculumSyncServiceImpl;
+import taltech.ee.FinalThesis.services.sync.ExternalCurriculumEntityFactory;
+import taltech.ee.FinalThesis.services.sync.ExternalCurriculumGraphImporter;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,8 +39,8 @@ class ExternalCurriculumSyncServiceImplTest {
     @Mock OppekavaGraphService oppekavaGraphService;
     @Mock CurriculumRepository curriculumRepository;
     @Mock CurriculumVersionRepository curriculumVersionRepository;
-    @Mock CurriculumItemRepository curriculumItemRepository;
-    @Mock CurriculumItemRelationRepository curriculumItemRelationRepository;
+    @Spy ExternalCurriculumEntityFactory entityFactory;
+    @Mock ExternalCurriculumGraphImporter graphImporter;
 
     @InjectMocks ExternalCurriculumSyncServiceImpl service;
 

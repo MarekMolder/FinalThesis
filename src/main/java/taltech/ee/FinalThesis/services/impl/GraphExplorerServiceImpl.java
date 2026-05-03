@@ -51,8 +51,6 @@ public class GraphExplorerServiceImpl implements GraphExplorerService {
                 .findByIdAndCurriculum_User_Id(versionId, userId)
                 .orElseThrow(() -> new CurriculumVersionNotFoundException(
                         "Version not found: " + versionId));
-        // (curriculumId is for the URL, but ownership is enforced via the repository above)
-
         List<CurriculumItem> items = curriculumItemRepository
                 .findAllWithParentByCurriculumVersion_Id(versionId);
         List<CurriculumItemRelation> relations = curriculumItemRelationRepository
@@ -84,7 +82,6 @@ public class GraphExplorerServiceImpl implements GraphExplorerService {
         nodes.addAll(ownByIri.values());
         nodes.addAll(ownNodesNoIri);
 
-        // PARENT_CHILD edges (skip if either endpoint was merged away)
         for (CurriculumItem item : items) {
             if (item.getParentItem() == null) continue;
             String src = resolveOwnId(item, ownByIri);

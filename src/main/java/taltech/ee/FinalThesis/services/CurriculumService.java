@@ -14,7 +14,6 @@ import java.util.UUID;
 public interface CurriculumService {
     Curriculum createCurriculum(UUID userId, CreateCurriculumRequest curriculum);
 
-    Page<Curriculum> listCurriculums(Pageable pageable);
     Page<Curriculum> listCurriculumsForTeacher(UUID userId, Pageable pageable);
 
     /** Süsteemi õppekavad: PUBLIC, externalGraph=false, not owned by userId. */
@@ -37,9 +36,8 @@ public interface CurriculumService {
     /**
      * Imporditud õppekava struktuur DB-st (moodulid, õpiväljundid, EELDAB/KOOSNEB).
      * Tühi, kui pole externalGraph või versioon puudub.
+     * Pass {@code null} for versionId to use the latest version.
      */
-    Optional<ImportedCurriculumStructureDto> getImportedStructureForCurriculum(UUID curriculumId);
-
     Optional<ImportedCurriculumStructureDto> getImportedStructureForCurriculum(UUID curriculumId, UUID versionId);
 
     Curriculum updateCurriculumForUser(UUID id, UUID userId, UpdateCurriculumRequest curriculum);

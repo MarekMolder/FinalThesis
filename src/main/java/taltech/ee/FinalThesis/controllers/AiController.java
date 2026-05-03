@@ -14,11 +14,13 @@ public class AiController {
 
     private final AiChatService aiChatService;
 
+    private static final String EMPTY_MESSAGES_REPLY = "Sonumid on tuhjad.";
+
     @PostMapping("/chat")
     public ResponseEntity<AiChatResponse> chat(@RequestBody AiChatRequest request) {
         if (request.getMessages() == null || request.getMessages().isEmpty()) {
             return ResponseEntity.badRequest().body(
-                AiChatResponse.builder().reply("Sonumid on tuhjad.").build()
+                AiChatResponse.builder().reply(EMPTY_MESSAGES_REPLY).build()
             );
         }
         AiChatResponse response = aiChatService.chatWithContext(

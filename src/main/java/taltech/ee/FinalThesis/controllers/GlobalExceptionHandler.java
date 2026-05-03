@@ -20,7 +20,6 @@ import taltech.ee.FinalThesis.exceptions.notFoundExceptions.CurriculumVersionNot
 import taltech.ee.FinalThesis.exceptions.notFoundExceptions.UserNotFoundException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Central exception handler for all REST controllers. Maps thrown exceptions to HTTP status codes
@@ -160,7 +159,7 @@ public class GlobalExceptionHandler {
                         .field(fe.getField())
                         .message(fe.getDefaultMessage())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
         ApiErrorResponse error = ApiErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message("Validation failed")

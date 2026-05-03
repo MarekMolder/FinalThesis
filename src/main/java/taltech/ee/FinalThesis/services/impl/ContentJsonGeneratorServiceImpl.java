@@ -16,6 +16,7 @@ import taltech.ee.FinalThesis.repositories.CurriculumItemRepository;
 import taltech.ee.FinalThesis.repositories.CurriculumItemScheduleRepository;
 import taltech.ee.FinalThesis.repositories.CurriculumVersionRepository;
 import taltech.ee.FinalThesis.domain.enums.CurriculumItemSourceTypeEnum;
+import taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum;
 import taltech.ee.FinalThesis.services.ContentJsonGeneratorService;
 
 import java.util.List;
@@ -59,7 +60,6 @@ public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorServ
         ObjectNode root = objectMapper.createObjectNode();
         root.put("format_version", "1.0");
 
-        // curriculum_root
         ObjectNode currRoot = root.putObject("curriculum_root");
         currRoot.put("id", version.getCurriculum().getId().toString());
         currRoot.put("type", "curriculum");
@@ -75,7 +75,6 @@ public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorServ
         currPublish.putNull("external_iri");
         currPublish.putNull("published_iri");
 
-        // items
         ArrayNode itemsArr = root.putArray("items");
         for (CurriculumItem item : items) {
             ObjectNode n = itemsArr.addObject();
@@ -108,7 +107,6 @@ public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorServ
             pub.putNull("published_iri");
         }
 
-        // relations
         ArrayNode relArr = root.putArray("relations");
         for (CurriculumItemRelation rel : relations) {
             ObjectNode n = relArr.addObject();
@@ -128,7 +126,6 @@ public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorServ
             n.put("relation_type", rel.getType().name().toLowerCase());
         }
 
-        // schedule
         ArrayNode schedArr = root.putArray("schedule");
         for (CurriculumItemSchedule s : schedules) {
             ObjectNode n = schedArr.addObject();
@@ -149,7 +146,6 @@ public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorServ
             n.put("schedule_notes", s.getScheduleNotes() != null ? s.getScheduleNotes() : "");
         }
 
-        // publish_variants
         ObjectNode variants = root.putObject("publish_variants");
         ObjectNode full = variants.putObject("full_curriculum_publish");
         full.put("description", "Publish all items");
@@ -166,7 +162,7 @@ public class ContentJsonGeneratorServiceImpl implements ContentJsonGeneratorServ
         try {
             String json = objectMapper.writeValueAsString(root);
             version.setContentJson(json);
-            version.setState(taltech.ee.FinalThesis.domain.enums.CurriculumVersionStateEnum.FINAL);
+            version.setState(CurriculumVersionStateEnum.FINAL);
             versionRepository.save(version);
             return json;
         } catch (Exception e) {

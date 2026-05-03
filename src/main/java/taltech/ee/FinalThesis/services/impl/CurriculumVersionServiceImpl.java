@@ -121,7 +121,6 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
             if (existing.getState() == CurriculumVersionStateEnum.CLOSED) {
                 throw new CurriculumUpdateException("CLOSED curriculum versions cannot be deleted");
             }
-            // Delete child records first to avoid FK constraint violations
             curriculumItemScheduleRepository.deleteByCurriculumItem_CurriculumVersion_Id(id);
             curriculumItemRelationRepository.deleteByCurriculumVersion_Id(id);
             curriculumItemRepository.nullifyParentsByCurriculumVersionId(id);
@@ -137,7 +136,6 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
                 .orElseThrow(() -> new CurriculumVersionNotFoundException(
                         "Version not found: " + sourceVersionId));
 
-        // Determine next version number
         int maxVersion = curriculumVersionRepository.findByCurriculumId(
                         source.getCurriculum().getId(),
                         org.springframework.data.domain.PageRequest.of(0, 1,
@@ -164,7 +162,6 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
         newVersion.setCurriculumItems(new ArrayList<>());
         newVersion = curriculumVersionRepository.save(newVersion);
 
-        // Copy items — map old ID → new item for parent/relation references
         List<CurriculumItem> sourceItems = curriculumItemRepository
                 .findAllWithParentByCurriculumVersion_Id(sourceVersionId);
 
@@ -183,7 +180,6 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
 
         Map<UUID, CurriculumItem> oldToNew = new HashMap<>();
 
-        // First pass: create items without parent (top-level)
         for (CurriculumItem src : sourceItems) {
             if (src.getParentItem() == null) {
                 CurriculumItem copy = copyItem(src, newVersion, null);
@@ -191,7 +187,6 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
                 oldToNew.put(src.getId(), copy);
             }
         }
-        // Multi-pass: create child items level by level (handles 3+ deep hierarchies)
         Set<UUID> remaining = new java.util.HashSet<>();
         for (CurriculumItem src : sourceItems) {
             if (src.getParentItem() != null) remaining.add(src.getId());
@@ -211,7 +206,6 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
             if (!progress) break; // avoid infinite loop for orphaned items
         }
 
-        // Copy relations
         List<CurriculumItemRelation> sourceRelations =
                 curriculumItemRelationRepository.findAllByCurriculumVersion_Id(sourceVersionId);
         for (CurriculumItemRelation rel : sourceRelations) {
@@ -228,7 +222,6 @@ public class CurriculumVersionServiceImpl implements CurriculumVersionService {
             curriculumItemRelationRepository.save(copy);
         }
 
-        // Copy schedules
         List<CurriculumItemSchedule> sourceSchedules =
                 curriculumItemScheduleRepository.findByCurriculumItem_CurriculumVersion_Id(sourceVersionId);
         for (CurriculumItemSchedule sched : sourceSchedules) {

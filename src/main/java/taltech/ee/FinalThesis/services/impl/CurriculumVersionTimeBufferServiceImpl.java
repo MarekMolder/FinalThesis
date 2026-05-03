@@ -16,6 +16,7 @@ import taltech.ee.FinalThesis.exceptions.notFoundExceptions.UserNotFoundExceptio
 import taltech.ee.FinalThesis.repositories.CurriculumVersionRepository;
 import taltech.ee.FinalThesis.repositories.CurriculumVersionTimeBufferRepository;
 import taltech.ee.FinalThesis.repositories.UserRepository;
+import taltech.ee.FinalThesis.domain.enums.CurriculumVisbilityEnum;
 import taltech.ee.FinalThesis.services.CurriculumVersionTimeBufferService;
 
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class CurriculumVersionTimeBufferServiceImpl implements CurriculumVersion
 
         var curriculum = version.getCurriculum();
         boolean isOwner = curriculum != null && curriculum.getUser() != null && userId.equals(curriculum.getUser().getId());
-        boolean isPublic = curriculum != null && curriculum.getVisibility() == taltech.ee.FinalThesis.domain.enums.CurriculumVisbilityEnum.PUBLIC;
+        boolean isPublic = curriculum != null && curriculum.getVisibility() == CurriculumVisbilityEnum.PUBLIC;
         if (!isOwner && !isPublic) {
             throw new CurriculumVersionNotFoundException(String.format("Curriculum version with ID '%s' not found", curriculumVersionId));
         }
@@ -61,7 +62,7 @@ public class CurriculumVersionTimeBufferServiceImpl implements CurriculumVersion
 
         var curriculum = version.getCurriculum();
         boolean isOwner = curriculum != null && curriculum.getUser() != null && userId.equals(curriculum.getUser().getId());
-        boolean isPublic = curriculum != null && curriculum.getVisibility() == taltech.ee.FinalThesis.domain.enums.CurriculumVisbilityEnum.PUBLIC;
+        boolean isPublic = curriculum != null && curriculum.getVisibility() == CurriculumVisbilityEnum.PUBLIC;
         if (!isOwner && !isPublic) {
             throw new CurriculumVersionNotFoundException(String.format("Curriculum version with ID '%s' not found", curriculumVersionId));
         }
@@ -76,7 +77,7 @@ public class CurriculumVersionTimeBufferServiceImpl implements CurriculumVersion
             var curriculum = b.getCurriculumVersion().getCurriculum();
             if (curriculum == null) return false;
             boolean isOwner = curriculum.getUser() != null && userId.equals(curriculum.getUser().getId());
-            boolean isPublic = curriculum.getVisibility() == taltech.ee.FinalThesis.domain.enums.CurriculumVisbilityEnum.PUBLIC;
+            boolean isPublic = curriculum.getVisibility() == CurriculumVisbilityEnum.PUBLIC;
             return isOwner || isPublic;
         });
     }
@@ -93,7 +94,7 @@ public class CurriculumVersionTimeBufferServiceImpl implements CurriculumVersion
 
         var curriculum = existing.getCurriculumVersion() != null ? existing.getCurriculumVersion().getCurriculum() : null;
         boolean isOwner = curriculum != null && curriculum.getUser() != null && userId.equals(curriculum.getUser().getId());
-        boolean isPublic = curriculum != null && curriculum.getVisibility() == taltech.ee.FinalThesis.domain.enums.CurriculumVisbilityEnum.PUBLIC;
+        boolean isPublic = curriculum != null && curriculum.getVisibility() == CurriculumVisbilityEnum.PUBLIC;
         if (!isOwner && !isPublic) {
             throw new CurriculumVersionTimeBufferNotFoundException(String.format("Buffer with ID '%s' not found", id));
         }

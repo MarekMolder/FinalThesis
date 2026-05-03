@@ -84,12 +84,6 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     @Override
-    public String chat(List<Map<String, String>> messages) {
-        AiChatResponse response = chatWithContext(messages, null, null);
-        return response.getReply();
-    }
-
-    @Override
     public AiChatResponse chatWithContext(List<Map<String, String>> messages, UUID versionId, Integer step) {
         if (apiKey == null || apiKey.isBlank()) {
             return AiChatResponse.builder()
@@ -97,7 +91,6 @@ public class AiChatServiceImpl implements AiChatService {
                 .build();
         }
 
-        // Build system prompt with context
         StringBuilder systemPrompt = new StringBuilder(BASE_SYSTEM_PROMPT);
 
         if (step != null && STEP_PROMPTS.containsKey(step)) {

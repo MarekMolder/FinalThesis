@@ -31,9 +31,6 @@ public class CurriculumItemScheduleServiceImpl implements CurriculumItemSchedule
     private final CurriculumItemRepository curriculumItemRepository;
     private final UserRepository userRepository;
 
-    /**
-     * Sama ligipääsumudel mis ajateljel / puhvrite puhul: omanik või avalik õppekava.
-     */
     private static boolean canAccessItemScheduleContext(CurriculumItem item, UUID userId) {
         if (item == null || item.getCurriculumVersion() == null) {
             return false;
