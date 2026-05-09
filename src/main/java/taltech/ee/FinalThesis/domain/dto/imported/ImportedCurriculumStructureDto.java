@@ -28,4 +28,8 @@ public class ImportedCurriculumStructureDto {
 
     @Builder.Default
     private List<ImportedModuleDto> modules = new ArrayList<>();
+
+    /** Õppeained (OppeaineTasemeOpe) — kõrgharidus, paralleelselt moodulitega. */
+    @Builder.Default
+    private List<ImportedModuleDto> subjects = new ArrayList<>();
 }

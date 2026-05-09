@@ -7,6 +7,7 @@ import taltech.ee.FinalThesis.domain.dto.graph.GraphLearningOutcomeDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphLinkedPageDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphModuleDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphResourcePageDto;
+import taltech.ee.FinalThesis.domain.dto.graph.GraphSubjectDto;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,11 @@ public interface OppekavaGraphService {
      * Üks moodul täispäringuga (RDF §2).
      */
     GraphModuleDto getModuleFromGraph(String pageTitle);
+
+    /**
+     * Üks õppeaine (OppeaineTasemeOpe) täispäringuga.
+     */
+    GraphSubjectDto getSubjectFromGraph(String pageTitle);
 
     /**
      * Lehed, millel Haridus:seotudOpivaljund osutab sellele õpiväljundile (materjal, test, ülesanne, …).

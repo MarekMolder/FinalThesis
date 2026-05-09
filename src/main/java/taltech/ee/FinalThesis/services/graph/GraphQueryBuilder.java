@@ -5,18 +5,22 @@ public final class GraphQueryBuilder {
 
     public static final String CATEGORY_OPPEKAVA = "Category:Haridus:Oppekava";
     public static final String CATEGORY_OPPEKAVA_MOODUL = "Category:Haridus:OppekavaMoodul";
+    public static final String CATEGORY_OPPEAINE_TASEME_OPE = "Category:Haridus:OppeaineTasemeOpe";
     public static final String CATEGORY_ULESANNE = "Category:Haridus:Ulesanne";
     public static final String CATEGORY_OPPEMATERJAL = "Category:Haridus:Oppematerjal";
     public static final String CATEGORY_KNOBIT = "Category:Haridus:Knobit";
 
     private static final String CURRICULUM_PRINTOUTS =
-            "?Schema:name|?Schema:identifier|?Schema:numberOfCredits|?Schema:provider|?Schema:audience|?Schema:relevantOccupation|?Haridus:seotudMoodul|?Haridus:seotudOpivaljund";
+            "?Schema:name|?Schema:identifier|?Schema:numberOfCredits|?Schema:provider|?Schema:audience|?Schema:relevantOccupation|?Haridus:seotudMoodul|?Haridus:seotudOpivaljund|?Haridus:OppekavaOppvaljund";
 
     private static final String LEARNING_OUTCOME_PRINTOUTS =
             "?Schema:name|?Haridus:verb|?Haridus:klass|?Haridus:kooliaste|?Haridus:seotudHaridusaste|?Haridus:seotudOppeaine|?Haridus:seotudAinevaldkond|?Haridus:seotudTeema|?Haridus:seotudMoodul|?Haridus:seotudOppekava|?Haridus:koosneb|?Haridus:eeldab|?Haridus:sisaldabKnobitit|?Haridus:onEelduseks|?Haridus:onOsaks|?Haridus:seotudOpivaljund|?Haridus:semanticRelation|?Skos:semanticRelation|?Kategooria";
 
     private static final String MODULE_LIST_PRINTOUTS =
-            "?Schema:name|?Schema:numberOfCredits|?Haridus:seotudOppekava|?Haridus:eeldus|?Haridus:seotudOpivaljund";
+            "?Schema:name|?Schema:numberOfCredits|?Haridus:seotudOppekava|?Haridus:eeldus|?Haridus:seotudOpivaljund|?Haridus:OpKavaMoodulSisaldabOpivaljund";
+
+    private static final String SUBJECT_LIST_PRINTOUTS =
+            "?Schema:name|?Schema:identifier|?Schema:courseCode|?Schema:numberOfCredits|?OppeaineMahtEAP|?Haridus:seotudOppekava|?Haridus:seotudOpivaljund|?Haridus:OpTaOpSisaldabOpivaljund";
 
     private static final String CONTENT_ITEM_PRINTOUTS =
             "?Schema:headline|?Schema:url|?Haridus:seotudTeema|limit=100";
@@ -45,6 +49,15 @@ public final class GraphQueryBuilder {
 
     public static String moduleByPageTitle(String pageTitle) {
         return "[[" + pageTitle + "]]|" + MODULE_LIST_PRINTOUTS;
+    }
+
+    public static String subjectsForCurriculum(String curriculumPageTitle) {
+        return "[[" + CATEGORY_OPPEAINE_TASEME_OPE + "]][[Haridus:seotudOppekava::"
+                + curriculumPageTitle + "]]|" + SUBJECT_LIST_PRINTOUTS;
+    }
+
+    public static String subjectByPageTitle(String pageTitle) {
+        return "[[" + pageTitle + "]]|" + SUBJECT_LIST_PRINTOUTS;
     }
 
     public static String contentItem(String category, String linkProperty, String linkTarget, boolean withLearningResourceType) {

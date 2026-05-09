@@ -12,6 +12,7 @@ import taltech.ee.FinalThesis.domain.dto.graph.GraphLearningOutcomeDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphLinkedPageDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphModuleDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphResourcePageDto;
+import taltech.ee.FinalThesis.domain.dto.graph.GraphSubjectDto;
 import taltech.ee.FinalThesis.services.OppekavaGraphService;
 
 import java.util.ArrayList;
@@ -168,15 +169,19 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
             }
             String curriculumQuery = GraphQueryBuilder.curriculumByPageTitle(pageTitle);
             String modulesQuery = GraphQueryBuilder.modulesForCurriculum(pageTitle);
+            String subjectsQuery = GraphQueryBuilder.subjectsForCurriculum(pageTitle);
 
             JsonNode queryResult;
             JsonNode modulesResult;
+            JsonNode subjectsResult;
             try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {
                 var fCurr = CompletableFuture.supplyAsync(() -> graphClient.ask(curriculumQuery), exec);
                 var fMods = CompletableFuture.supplyAsync(() -> graphClient.ask(modulesQuery), exec);
-                CompletableFuture.allOf(fCurr, fMods).join();
+                var fSubjects = CompletableFuture.supplyAsync(() -> graphClient.ask(subjectsQuery), exec);
+                CompletableFuture.allOf(fCurr, fMods, fSubjects).join();
                 queryResult = fCurr.join();
                 modulesResult = fMods.join();
+                subjectsResult = fSubjects.join();
             }
 
             JsonNode results = queryResult.path("results");
@@ -201,7 +206,10 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
             String relevantOccupationIri = firstFullUrl(printouts.path("Schema:relevantOccupation"));
             Integer numberOfCredits = GraphPrintoutExtractor.parseNumberOrFulltext(printouts.path("Schema:numberOfCredits"));
 
-            List<GraphLearningOutcomeDto> curriculumOutcomes = toLearningOutcomes(printouts.path("Haridus:seotudOpivaljund"));
+            List<GraphLearningOutcomeDto> curriculumOutcomes = mergeLearningOutcomes(
+                    toLearningOutcomes(printouts.path("Haridus:seotudOpivaljund")),
+                    toLearningOutcomes(printouts.path("Haridus:OppekavaOppvaljund"))
+            );
             List<GraphModuleDto> modules = new ArrayList<>();
 
             JsonNode moduleResults = modulesResult.path("results");
@@ -209,6 +217,14 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
                 String modTitle = it.next();
                 JsonNode modRow = moduleResults.get(modTitle);
                 modules.add(parseModuleRow(modTitle, modRow));
+            }
+
+            List<GraphSubjectDto> subjects = new ArrayList<>();
+            JsonNode subjectResults = subjectsResult.path("results");
+            for (Iterator<String> it = subjectResults.fieldNames(); it.hasNext(); ) {
+                String subjTitle = it.next();
+                JsonNode subjRow = subjectResults.get(subjTitle);
+                subjects.add(parseSubjectRow(subjTitle, subjRow));
             }
 
             return GraphCurriculumDetailDto.builder()
@@ -224,10 +240,33 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
                     .numberOfCredits(numberOfCredits)
                     .curriculumLevelLearningOutcomes(curriculumOutcomes)
                     .modules(modules)
+                    .subjects(subjects)
                     .build();
         } finally {
             log.info("getCurriculumFromGraph(pageTitle={}) took {}ms", pageTitle, (System.nanoTime() - t0) / 1_000_000L);
         }
+    }
+
+    @Override
+    public GraphSubjectDto getSubjectFromGraph(String pageTitle) {
+        if (pageTitle == null || pageTitle.isBlank()) {
+            throw new IllegalArgumentException("pageTitle is required");
+        }
+        String q = GraphQueryBuilder.subjectByPageTitle(pageTitle);
+        JsonNode queryResult = graphClient.ask(q);
+        JsonNode results = queryResult.path("results");
+        JsonNode row = results.get(pageTitle);
+        if (row == null) {
+            Iterator<String> names = results.fieldNames();
+            if (names.hasNext()) {
+                pageTitle = names.next();
+                row = results.get(pageTitle);
+            }
+        }
+        if (row == null) {
+            throw new IllegalArgumentException("Subject not found: " + pageTitle);
+        }
+        return parseSubjectRow(pageTitle, row);
     }
 
     @Override
@@ -392,7 +431,10 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
         String curLabel = firstWpgFulltext(modPrintouts.path("Haridus:seotudOppekava"));
         String curIri = firstWpgFullUrl(modPrintouts.path("Haridus:seotudOppekava"));
         List<GraphLinkedPageDto> prerequisites = toLinkedPages(modPrintouts.path("Haridus:eeldus"));
-        List<GraphLearningOutcomeDto> loList = toLearningOutcomes(modPrintouts.path("Haridus:seotudOpivaljund"));
+        List<GraphLearningOutcomeDto> loList = mergeLearningOutcomes(
+                toLearningOutcomes(modPrintouts.path("Haridus:seotudOpivaljund")),
+                toLearningOutcomes(modPrintouts.path("Haridus:OpKavaMoodulSisaldabOpivaljund"))
+        );
         return GraphModuleDto.builder()
                 .title(modTitle)
                 .fullUrl(modUrl)
@@ -401,6 +443,36 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
                 .linkedCurriculumLabel(curLabel)
                 .linkedCurriculumIri(curIri)
                 .prerequisites(prerequisites)
+                .learningOutcomes(loList)
+                .build();
+    }
+
+    private static GraphSubjectDto parseSubjectRow(String title, JsonNode row) {
+        String fullUrl = row.has("fullurl") ? row.path("fullurl").asText(null) : null;
+        JsonNode p = row.path("printouts");
+        String schemaName = GraphPrintoutExtractor.textOrFulltext(p.path("Schema:name"));
+        String identifier = GraphPrintoutExtractor.textOrFulltext(p.path("Schema:identifier"));
+        if (identifier == null || identifier.isBlank()) {
+            identifier = GraphPrintoutExtractor.textOrFulltext(p.path("Schema:courseCode"));
+        }
+        Integer credits = GraphPrintoutExtractor.parseNumberOrFulltext(p.path("Schema:numberOfCredits"));
+        if (credits == null) {
+            credits = GraphPrintoutExtractor.parseNumberOrFulltext(p.path("OppeaineMahtEAP"));
+        }
+        String curLabel = firstWpgFulltext(p.path("Haridus:seotudOppekava"));
+        String curIri = firstWpgFullUrl(p.path("Haridus:seotudOppekava"));
+        List<GraphLearningOutcomeDto> loList = mergeLearningOutcomes(
+                toLearningOutcomes(p.path("Haridus:seotudOpivaljund")),
+                toLearningOutcomes(p.path("Haridus:OpTaOpSisaldabOpivaljund"))
+        );
+        return GraphSubjectDto.builder()
+                .title(title)
+                .fullUrl(fullUrl)
+                .schemaName(schemaName)
+                .identifier(identifier)
+                .numberOfCredits(credits)
+                .linkedCurriculumLabel(curLabel)
+                .linkedCurriculumIri(curIri)
                 .learningOutcomes(loList)
                 .build();
     }
@@ -552,6 +624,20 @@ public class OppekavaGraphServiceImpl implements OppekavaGraphService {
                     .build());
         }
         return list;
+    }
+
+    /** Merge LO lists from multiple property sources, deduping by fullUrl (or title if URL missing). */
+    @SafeVarargs
+    private static List<GraphLearningOutcomeDto> mergeLearningOutcomes(List<GraphLearningOutcomeDto>... sources) {
+        Map<String, GraphLearningOutcomeDto> byKey = new LinkedHashMap<>();
+        for (List<GraphLearningOutcomeDto> src : sources) {
+            if (src == null) continue;
+            for (GraphLearningOutcomeDto lo : src) {
+                String key = lo.getFullUrl() != null && !lo.getFullUrl().isBlank() ? lo.getFullUrl() : lo.getTitle();
+                if (key != null) byKey.putIfAbsent(key, lo);
+            }
+        }
+        return new ArrayList<>(byKey.values());
     }
 
     @Override
