@@ -15,8 +15,12 @@ import taltech.ee.FinalThesis.services.auth.AuthenticationService;
 import java.io.IOException;
 
 /**
- * Servlet filter that extracts the JWT from the Authorization header, validates it,
+ * Servlet filter that extracts the JWT from the request, validates it,
  * and sets the Spring Security context. Also exposes the current user's ID as request attribute "userId".
+ *
+ * <p>Token extraction order: HttpOnly cookie named {@code "token"} takes precedence over
+ * the {@code Authorization: Bearer <token>} header. The header fallback keeps existing
+ * API clients and unit tests working without changes.
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -53,11 +57,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
+        // Cookie takes precedence — used by browser clients (XSS-resistant HttpOnly cookie)
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie c : request.getCookies()) {
+                if ("token".equals(c.getName()) && c.getValue() != null && !c.getValue().isBlank()) {
+                    return c.getValue();
+                }
+            }
+        }
+        // Fall back to Authorization: Bearer <token> header — keeps API clients and unit tests working
         String bearerToken = request.getHeader("Authorization");
-        if(bearerToken != null && bearerToken.startsWith("Bearer ")) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-
         return null;
     }
 }

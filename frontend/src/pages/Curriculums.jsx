@@ -123,7 +123,12 @@ export default function Curriculums() {
     }
   }
   async function handleDelete(id) {
-    if (!confirm('Kustutan õppekava?')) return;
+    const row = currentList.find((c) => c.id === id);
+    const isExternal = !!row?.externalGraph || activeTab === 'external';
+    const msg = isExternal
+      ? 'Kustuta graafist imporditud õppekava? Saad selle hiljem uuesti importida.'
+      : 'Kustutan õppekava?';
+    if (!confirm(msg)) return;
     setError('');
     try {
       await curriculum.delete(id);
@@ -221,7 +226,7 @@ export default function Curriculums() {
                       )}
                       {(showActions || isGraphTab) && (
                         <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-400">
-                          {isGraphTab ? 'Link' : 'Tegevused'}
+                          Tegevused
                         </th>
                       )}
           </tr>
@@ -251,6 +256,13 @@ export default function Curriculums() {
                                     Vaata graafis
                                   </a>
                                 )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(row.id)}
+                                  className="rounded-xl border border-rose-200 bg-white/70 px-3 py-1.5 text-sm font-medium text-rose-700 shadow-sm hover:bg-rose-50 dark:border-rose-800 dark:bg-slate-700 dark:text-rose-400 dark:hover:bg-rose-900/30"
+                                >
+                                  Kustuta
+                                </button>
                               </div>
               </td>
             </tr>

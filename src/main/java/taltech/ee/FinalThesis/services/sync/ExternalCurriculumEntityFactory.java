@@ -5,6 +5,7 @@ import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumDetailDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphCurriculumSummaryDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphLearningOutcomeDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphModuleDto;
+import taltech.ee.FinalThesis.domain.dto.graph.GraphSubjectDto;
 import taltech.ee.FinalThesis.domain.entities.Curriculum;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItem;
 import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
@@ -116,6 +117,44 @@ public class ExternalCurriculumEntityFactory {
         item.setOrderIndex(orderIndex);
         item.setSourceType(CurriculumItemSourceTypeEnum.EXTERNAL);
         item.setExternalIri(modUrl);
+        item.setLocalKey(null);
+        item.setSubjectIri(null);
+        item.setSubjectLabel(null);
+        item.setSubjectAreaIri(null);
+        item.setSubjectAreaLabel(null);
+        item.setTopicLabel(null);
+        item.setTopicIri(null);
+        item.setVerbLabel(null);
+        item.setEducationLevelLabel(null);
+        item.setEducationLevelIri(EXTERNAL_LEVEL);
+        item.setSchoolLevel("");
+        item.setGrade("");
+        item.setEducationalFramework(CurriculumEducationalFrameworkEnum.ESTONIAN_NATIONAL_CURRICULUM);
+        item.setNotation(notation);
+        item.setVerbIri("");
+        item.setIsMandatory(false);
+        item.setParentItem(null);
+        item.setUser(null);
+        item.setCurriculumItemSchedules(new ArrayList<>());
+        item.setCurriculumItemRelations(new ArrayList<>());
+        return item;
+    }
+
+    public CurriculumItem buildSubjectItem(CurriculumVersion version, GraphSubjectDto subject, int orderIndex) {
+        String displayTitle = subject.getSchemaName() != null && !subject.getSchemaName().isBlank()
+                ? subject.getSchemaName()
+                : (subject.getTitle() != null ? subject.getTitle() : "Õppeaine");
+        String subjectUrl = subject.getFullUrl();
+        String notation = subject.getNumberOfCredits() != null ? subject.getNumberOfCredits() + " EAP" : "";
+
+        CurriculumItem item = new CurriculumItem();
+        item.setCurriculumVersion(version);
+        item.setType(CurriculumItemTypeEnum.SUBJECT);
+        item.setTitle(displayTitle);
+        item.setDescription(null);
+        item.setOrderIndex(orderIndex);
+        item.setSourceType(CurriculumItemSourceTypeEnum.EXTERNAL);
+        item.setExternalIri(subjectUrl);
         item.setLocalKey(null);
         item.setSubjectIri(null);
         item.setSubjectLabel(null);

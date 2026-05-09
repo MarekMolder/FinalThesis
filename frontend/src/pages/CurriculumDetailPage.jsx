@@ -48,6 +48,24 @@ function normalizeGraphToStructure(graph) {
       koosneb: [],
       children: [],
     })),
+    subjects: (graph.subjects || []).map((s, i) => ({
+      id: s.fullUrl || s.title || `subj-${i}`,
+      title: (s.schemaName && String(s.schemaName).trim()) || s.title || 'Õppeaine',
+      type: 'SUBJECT',
+      wikiTitle: s.title,
+      fullUrl: s.fullUrl,
+      identifier: s.identifier,
+      eapLabel: s.numberOfCredits != null ? `${s.numberOfCredits} EAP` : null,
+      learningOutcomes: (s.learningOutcomes || []).map((lo, j) => ({
+        id: lo.fullUrl || lo.title || `subj-lo-${i}-${j}`,
+        title: lo.title,
+        type: 'LEARNING_OUTCOME',
+        fullUrl: lo.fullUrl,
+        eeldab: [],
+        koosneb: [],
+        children: [],
+      })),
+    })),
   };
 }
 
@@ -588,20 +606,83 @@ function CurriculumLevelAccordion({ items, expanded, onToggle, schoolWeeks }) {
   );
 }
 
+/** Õppeaine — kollapseeritav kaart (paralleelne ModuleAccordionItem-iga). */
+function SubjectAccordionItem({ subj, index, expanded, onToggle }) {
+  const title = subj.title || 'Õppeaine';
+  const identifier = subj.identifier;
+  const eap = subj.eapLabel;
+  const loList = subj.learningOutcomes || [];
+  const loCount = loList.length;
+
+  return (
+    <div
+      id={`structure-subj-${index}`}
+      className="scroll-mt-24 overflow-hidden rounded-3xl border border-emerald-200/50 bg-white/90 shadow-md backdrop-blur-sm sm:scroll-mt-28 dark:border-emerald-800/40 dark:bg-slate-800/90"
+    >
+      <div className="flex min-h-[4.5rem] items-stretch bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left text-white sm:gap-4 sm:px-5 sm:py-4"
+        >
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/20 ring-1 ring-white/25 sm:h-12 sm:w-12">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-white" aria-hidden>
+              <path d="M12 3L2 9l10 6 10-6-10-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M2 15l10 6 10-6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-white/85">Õppeaine {index + 1}</div>
+            <div className="line-clamp-2 text-sm font-bold leading-snug sm:text-base">
+              {title}{identifier ? ` (${identifier})` : ''}
+            </div>
+            <div className="mt-1.5 flex flex-wrap gap-1.5 text-[10px] font-semibold text-white/90 sm:text-[11px]">
+              {eap && <span className="rounded-full bg-black/20 px-2 py-0.5">{eap}</span>}
+              {loCount > 0 && (
+                <span className="rounded-full bg-black/20 px-2 py-0.5">
+                  {loCount} {loCount === 1 ? 'õpiväljund' : 'õpiväljundit'}
+                </span>
+              )}
+            </div>
+          </div>
+          <ChevronDownIcon open={expanded} className="text-white/90" />
+        </button>
+        <div className="flex items-center border-l border-white/15 px-2 sm:px-3">
+          <GraphExternalLink href={subj.fullUrl} variant="glassOnGradient" />
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-emerald-100/60 bg-gradient-to-b from-slate-50/50 to-white/90 px-4 py-4 sm:px-6 sm:py-5 dark:border-emerald-900/40 dark:from-slate-800/50 dark:to-slate-800/90">
+          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-700" />
+            <span>Õpiväljundid</span>
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
+          </div>
+          <LearningOutcomeTree items={loList} accent="emerald" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
   const [openModules, setOpenModules] = useState(() => new Set());
+  const [openSubjects, setOpenSubjects] = useState(() => new Set());
   const [curriculumOpen, setCurriculumOpen] = useState(false);
 
   if (!structure) return null;
   const modules = structure.modules || [];
+  const subjects = structure.subjects || [];
   const curriculumLos = structure.curriculumLevelLearningOutcomes || [];
   const hasModules = modules.length > 0;
+  const hasSubjects = subjects.length > 0;
   const hasCurriculumLos = curriculumLos.length > 0;
 
-  if (!hasModules && !hasCurriculumLos) {
+  if (!hasModules && !hasSubjects && !hasCurriculumLos) {
     return (
       <div className="mt-10 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-700/50 dark:text-slate-400">
-        Struktuuri ei leitud (moodulid ja õppekava-taseme õpiväljundid puuduvad).
+        Struktuuri ei leitud (moodulid, õppeained ja õppekava-taseme õpiväljundid puuduvad).
       </div>
     );
   }
@@ -626,12 +707,34 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
     });
   }
 
+  function toggleSubject(idx) {
+    setOpenSubjects((prev) => {
+      const n = new Set(prev);
+      if (n.has(idx)) n.delete(idx);
+      else n.add(idx);
+      return n;
+    });
+  }
+
+  function goSubject(idx) {
+    setOpenSubjects((prev) => {
+      const n = new Set(prev);
+      n.add(idx);
+      return n;
+    });
+    requestAnimationFrame(() => {
+      document.getElementById(`structure-subj-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   function expandAllModules() {
     setOpenModules(new Set(modules.map((_, i) => i)));
+    setOpenSubjects(new Set(subjects.map((_, i) => i)));
   }
 
   function collapseAll() {
     setOpenModules(new Set());
+    setOpenSubjects(new Set());
     setCurriculumOpen(false);
   }
 
@@ -647,6 +750,9 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
       requestAnimationFrame(() =>
         document.getElementById('structure-curriculum-los')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       );
+    } else if (v.startsWith('s')) {
+      const idx = Number.parseInt(v.slice(1), 10);
+      if (!Number.isNaN(idx)) goSubject(idx);
     } else {
       const idx = Number.parseInt(v, 10);
       if (!Number.isNaN(idx)) goModule(idx);
@@ -686,7 +792,7 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
                 'focus:border-sky-400/50 focus:ring-2 focus:ring-sky-300/30 focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_8px_rgba(14,165,233,0.12)]'
               )}
             >
-              <option value="">Vali moodul või sektsioon…</option>
+              <option value="">Vali moodul, õppeaine või sektsioon…</option>
               {modules.map((mod, idx) => {
                 const prefix = mod.type === 'TOPIC' ? 'T' : 'M';
                 return (
@@ -695,6 +801,11 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
                   </option>
                 );
               })}
+              {hasSubjects && subjects.map((subj, idx) => (
+                <option key={subj.id || idx} value={`s${idx}`}>
+                  A{idx + 1}: {subj.title}{subj.identifier ? ` (${subj.identifier})` : ''}
+                </option>
+              ))}
               {hasCurriculumLos && (
                 <option value="co">Õppekava taseme õpiväljundid ({curriculumLos.length})</option>
               )}
@@ -816,8 +927,29 @@ function CurriculumStructureExplorer({ structure, dataSource, schoolWeeks }) {
         );
       })()}
 
+      {hasSubjects && (
+        <div className={cn((hasModules) && 'pt-2')}>
+          <div className="mb-3 flex items-center gap-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Õppeained</span>
+            <span className="h-px flex-1 bg-gradient-to-r from-emerald-200 dark:from-emerald-800 to-transparent" />
+            <span className="text-xs text-slate-500 dark:text-slate-400">{subjects.length} tk</span>
+          </div>
+          <div className="space-y-3">
+            {subjects.map((subj, idx) => (
+              <SubjectAccordionItem
+                key={subj.id || idx}
+                subj={subj}
+                index={idx}
+                expanded={openSubjects.has(idx)}
+                onToggle={() => toggleSubject(idx)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {hasCurriculumLos && (
-        <div className={cn(hasModules && 'pt-2')}>
+        <div className={cn((hasModules || hasSubjects) && 'pt-2')}>
           <CurriculumLevelAccordion
             items={curriculumLos}
             expanded={curriculumOpen}

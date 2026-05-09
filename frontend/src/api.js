@@ -1,17 +1,11 @@
 const API_BASE = '/api/v1';
 
-function getToken() {
-  return localStorage.getItem('token');
-}
-
 export async function api(path, options = {}) {
-  const token = getToken();
   const headers = {
     'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers, credentials: 'include' });
   if (res.status === 401) {
     logout();
     throw new Error('Unauthorized');
@@ -30,11 +24,12 @@ export async function login(email, password) {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ email, password }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.message || data.error || 'Login failed');
-  if (data.token) localStorage.setItem('token', data.token);
+  if (data.userInfo) localStorage.setItem('userInfo', JSON.stringify(data.userInfo));
   return data;
 }
 
@@ -42,61 +37,48 @@ export async function register(name, email, password) {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ name, email, password }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.message || data.error || 'Register failed');
-  if (data.token) localStorage.setItem('token', data.token);
+  if (data.userInfo) localStorage.setItem('userInfo', JSON.stringify(data.userInfo));
   return data;
 }
 
-export function isLoggedIn() {
-  return !!getToken();
-}
-
-/** Token present and JWT payload parses (user info available for the UI). */
-export function isAuthenticatedSession() {
-  if (!getToken()) return false;
-  return getCurrentUser() != null;
-}
-
-/** Remove token and go to login. */
-export function logout() {
-  localStorage.removeItem('token');
-  if (typeof window !== 'undefined') {
-    window.location.assign('/login');
-  }
-}
-
-function base64UrlDecode(input) {
-  const pad = '='.repeat((4 - (input.length % 4)) % 4);
-  const base64 = (input + pad).replace(/-/g, '+').replace(/_/g, '/');
-  try {
-    // atob expects Latin1; JWT payload is JSON ASCII/UTF-8 safe for typical claims
-    return atob(base64);
-  } catch {
-    return null;
-  }
-}
-
-/** Returns user info derived from JWT (email from `sub`, role from `role`). */
+/** Returns user info from localStorage (email/role). Token never touches JS. */
 export function getCurrentUser() {
-  const token = getToken();
-  if (!token) return null;
-  const parts = token.split('.');
-  if (parts.length < 2) return null;
-  const json = base64UrlDecode(parts[1]);
-  if (!json) return null;
   try {
-    const payload = JSON.parse(json);
+    const raw = localStorage.getItem('userInfo');
+    if (!raw) return null;
+    const ui = JSON.parse(raw);
     return {
-      email: payload.sub || payload.email || null,
-      role: payload.role || null,
-      label: payload.role === 'ADMIN' ? 'Admin' : 'Õpetaja',
+      email: ui.email || null,
+      role: ui.role || null,
+      label: ui.role === 'ADMIN' ? 'Admin' : 'Õpetaja',
     };
   } catch {
     return null;
   }
+}
+
+/** True if we have cached user info (JWT validity verified server-side per request). */
+export function isLoggedIn() {
+  return !!getCurrentUser();
+}
+
+/** Alias for isLoggedIn — session validity is enforced server-side via HttpOnly cookie. */
+export function isAuthenticatedSession() {
+  return isLoggedIn();
+}
+
+/** Call logout endpoint to clear HttpOnly cookie, wipe userInfo, redirect to login. */
+export async function logout() {
+  try {
+    await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+  } catch {}
+  localStorage.removeItem('userInfo');
+  if (typeof window !== 'undefined') window.location.assign('/login');
 }
 
 // CRUD helpers (return .content for list when it's a page)

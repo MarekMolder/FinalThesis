@@ -8,6 +8,7 @@ import taltech.ee.FinalThesis.domain.dto.graph.GraphLearningOutcomeDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphLinkedPageDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphModuleDto;
 import taltech.ee.FinalThesis.domain.dto.graph.GraphResourcePageDto;
+import taltech.ee.FinalThesis.domain.dto.graph.GraphSubjectDto;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItem;
 import taltech.ee.FinalThesis.domain.entities.CurriculumItemRelation;
 import taltech.ee.FinalThesis.domain.entities.CurriculumVersion;
@@ -89,6 +90,33 @@ public class ExternalCurriculumGraphImporter {
                 }
             }
         }
+        List<GraphSubjectDto> subjects = detail.getSubjects();
+        if (subjects != null) {
+            for (GraphSubjectDto subj : subjects) {
+                CurriculumItem subjItem = entityFactory.buildSubjectItem(version, subj, orderIndex.getAndIncrement());
+                subjItem = curriculumItemRepository.save(subjItem);
+                putItemByKey(byKey, subjItem);
+
+                try {
+                    GraphSubjectDto fullSubj = oppekavaGraphService.getSubjectFromGraph(subj.getTitle());
+                    List<GraphLearningOutcomeDto> los = fullSubj.getLearningOutcomes() != null
+                            ? fullSubj.getLearningOutcomes() : List.of();
+                    int loOrder = 0;
+                    for (GraphLearningOutcomeDto lo : los) {
+                        GraphLearningOutcomeDto enriched = fetchLearningOutcomeDetail(lo);
+                        CurriculumItem loItem = createOrMergeLearningOutcome(version, enriched, subjItem, byKey, orderIndex);
+                        loItem.setOrderIndex(loOrder++);
+                        loItem = curriculumItemRepository.save(loItem);
+                        saveRelation(version, subjItem, loItem, CurriculumItemRelationTypeEnum.SISALDAB, relationFingerprints);
+                        expandLearningOutcomeSubtree(version, loItem, enriched, byKey, relationFingerprints,
+                                expandedLearningOutcomes, orderIndex, 0);
+                    }
+                } catch (Exception e) {
+                    log.warn("Subject detail fetch failed for '{}': {}", subj.getTitle(), e.getMessage());
+                }
+            }
+        }
+
         log.debug("External sync: {} items, {} relations", byKey.size(), relationFingerprints.size());
     }
 

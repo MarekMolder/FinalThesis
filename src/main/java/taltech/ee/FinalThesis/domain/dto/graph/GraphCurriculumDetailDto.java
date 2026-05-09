@@ -39,4 +39,8 @@ public class GraphCurriculumDetailDto {
     /** Modules (moodulid) with their learning outcomes. */
     @Builder.Default
     private List<GraphModuleDto> modules = new ArrayList<>();
+
+    /** Subjects (õppeained, OppeaineTasemeOpe) — parallel to modules. */
+    @Builder.Default
+    private List<GraphSubjectDto> subjects = new ArrayList<>();
 }

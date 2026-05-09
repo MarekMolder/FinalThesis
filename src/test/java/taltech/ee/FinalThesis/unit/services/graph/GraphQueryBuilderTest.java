@@ -65,4 +65,21 @@ class GraphQueryBuilderTest {
                 true);
         assertThat(q).contains("?Schema:learningResourceType");
     }
+
+    @Test
+    void subjectsForCurriculum_targetsCorrectCategoryAndLink() {
+        String q = GraphQueryBuilder.subjectsForCurriculum("Curr X");
+        assertThat(q).contains("[[Category:Haridus:OppeaineTasemeOpe]]");
+        assertThat(q).contains("[[Haridus:seotudOppekava::Curr X]]");
+        assertThat(q).contains("?Schema:name");
+        assertThat(q).contains("?Schema:identifier");
+    }
+
+    @Test
+    void subjectByPageTitle_includesSubjectPrintouts() {
+        String q = GraphQueryBuilder.subjectByPageTitle("Algo");
+        assertThat(q).startsWith("[[Algo]]");
+        assertThat(q).contains("?Schema:numberOfCredits");
+        assertThat(q).contains("?Haridus:seotudOpivaljund");
+    }
 }

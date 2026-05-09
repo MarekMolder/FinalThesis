@@ -259,6 +259,35 @@ public class CurriculumServiceImpl implements CurriculumService {
                     .build());
         }
 
+        List<CurriculumItem> topLevelSubjects = items.stream()
+                .filter(i -> i.getType() == CurriculumItemTypeEnum.SUBJECT && i.getParentItem() == null)
+                .sorted(scheduleAwareOrder)
+                .toList();
+
+        List<ImportedModuleDto> subjectDtos = new ArrayList<>();
+        for (CurriculumItem subj : topLevelSubjects) {
+            final UUID subjId = subj.getId();
+            List<CurriculumItem> subjChildren = childrenByParent.getOrDefault(subjId, List.of())
+                    .stream().sorted(scheduleAwareOrder).toList();
+
+            List<ImportedLearningOutcomeDto> subjLos = subjChildren.stream()
+                    .filter(i -> SECOND_LEVEL_TYPES.contains(i.getType()))
+                    .map(lo -> toImportedLearningOutcomeDto(lo, outgoingBySource, childrenByParent, scheduleByItem, scheduleEndByItem))
+                    .toList();
+
+            subjectDtos.add(ImportedModuleDto.builder()
+                    .id(subj.getId())
+                    .title(subj.getTitle())
+                    .type(subj.getType().name())
+                    .eapLabel(eapLabelFromNotation(subj.getNotation()))
+                    .fullUrl(subj.getExternalIri())
+                    .orderIndex(subj.getOrderIndex())
+                    .plannedStartAt(scheduleByItem.get(subj.getId()))
+                    .plannedEndAt(scheduleEndByItem.get(subj.getId()))
+                    .learningOutcomes(subjLos)
+                    .build());
+        }
+
         List<ImportedLearningOutcomeDto> curriculumLevelLos = items.stream()
                 .filter(i -> i.getType() == CurriculumItemTypeEnum.LEARNING_OUTCOME
                         && i.getParentItem() == null)
@@ -271,6 +300,7 @@ public class CurriculumServiceImpl implements CurriculumService {
                 .schoolYearStartDate(version != null ? version.getSchoolYearStartDate() : null)
                 .schoolBreaksJson(version != null ? version.getSchoolBreaksJson() : null)
                 .modules(moduleDtos)
+                .subjects(subjectDtos)
                 .curriculumLevelLearningOutcomes(curriculumLevelLos)
                 .build());
     }
@@ -437,20 +467,21 @@ public class CurriculumServiceImpl implements CurriculumService {
     @Override
     @Transactional
     public void deleteCurriculumForUser(UUID id, UUID userId) {
-        getCurriculumForUser(id, userId).ifPresent(c -> {
-            if (c.isExternalGraph()) {
-                throw new CurriculumUpdateException("Cannot delete an external graph curriculum");
-            }
-            // Delete child records for each version to avoid FK constraint violations
-            for (CurriculumVersion v : c.getCurriculumVersions()) {
-                UUID vid = v.getId();
-                curriculumItemScheduleRepository.deleteByCurriculumItem_CurriculumVersion_Id(vid);
-                curriculumItemRelationRepository.deleteByCurriculumVersion_Id(vid);
-                curriculumItemRepository.nullifyParentsByCurriculumVersionId(vid);
-                curriculumItemRepository.deleteByCurriculumVersion_Id(vid);
-            }
-            curriculumVersionRepository.deleteAll(c.getCurriculumVersions());
-            curriculumRepository.delete(c);
-        });
+        Curriculum c = getCurriculumForUser(id, userId)
+                .orElseGet(() -> curriculumRepository.findById(id)
+                        .filter(Curriculum::isExternalGraph)
+                        .orElse(null));
+        if (c == null) return;
+
+        // Delete child records for each version to avoid FK constraint violations
+        for (CurriculumVersion v : c.getCurriculumVersions()) {
+            UUID vid = v.getId();
+            curriculumItemScheduleRepository.deleteByCurriculumItem_CurriculumVersion_Id(vid);
+            curriculumItemRelationRepository.deleteByCurriculumVersion_Id(vid);
+            curriculumItemRepository.nullifyParentsByCurriculumVersionId(vid);
+            curriculumItemRepository.deleteByCurriculumVersion_Id(vid);
+        }
+        curriculumVersionRepository.deleteAll(c.getCurriculumVersions());
+        curriculumRepository.delete(c);
     }
 }
