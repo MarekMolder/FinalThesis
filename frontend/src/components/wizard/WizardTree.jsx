@@ -1,6 +1,6 @@
 import TreeNode from './TreeNode';
 
-export default function WizardTree({ items, mode, scheduleMap, onEdit, onDelete, onAddChild, onImport, renderExtraButtons }) {
+export default function WizardTree({ items, mode, scheduleMap, ...handlers }) {
   const roots = buildTree(items, scheduleMap ?? {});
 
   if (roots.length === 0) {
@@ -13,12 +13,12 @@ export default function WizardTree({ items, mode, scheduleMap, onEdit, onDelete,
 
   return (
     <div className="flex flex-col gap-2">
-      {roots.map((node) => renderNode(node, 0, mode, scheduleMap ?? {}, items, onEdit, onDelete, onAddChild, onImport, renderExtraButtons))}
+      {roots.map((node) => renderNode(node, 0, mode, scheduleMap ?? {}, items, handlers))}
     </div>
   );
 }
 
-function renderNode(node, depth, mode, scheduleMap, allItems, onEdit, onDelete, onAddChild, onImport, renderExtraButtons) {
+function renderNode(node, depth, mode, scheduleMap, allItems, handlers) {
   return (
     <TreeNode
       key={node.item.id}
@@ -27,14 +27,10 @@ function renderNode(node, depth, mode, scheduleMap, allItems, onEdit, onDelete, 
       depth={depth}
       mode={mode}
       scheduleInfo={scheduleMap[node.item.id] ?? null}
-      onEdit={onEdit}
-      onDelete={onDelete}
-      onAddChild={onAddChild}
-      onImport={onImport}
-      renderExtraButtons={renderExtraButtons}
+      {...handlers}
     >
       {node.children.length > 0
-        ? node.children.map((child) => renderNode(child, depth + 1, mode, scheduleMap, allItems, onEdit, onDelete, onAddChild, onImport, renderExtraButtons))
+        ? node.children.map((child) => renderNode(child, depth + 1, mode, scheduleMap, allItems, handlers))
         : null}
     </TreeNode>
   );

@@ -165,7 +165,7 @@ public final class CurriculumTestData {
         }
 
         public Curriculum build() {
-            if (user == null) {
+            if (user == null && !externalGraph) {
                 throw new IllegalStateException("Curriculum requires a user (call withUser).");
             }
             Curriculum c = new Curriculum();

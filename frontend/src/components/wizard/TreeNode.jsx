@@ -1,229 +1,250 @@
 import { useState } from 'react';
+import RowMenu from './RowMenu';
+import {
+  ChevronIcon, PlusIcon, MoreIcon, EditIcon, TrashIcon,
+  ImportIcon, SearchIcon, LinkIcon, ExternalIcon, ClockIcon, CheckIcon,
+  ModuleIcon, TopicIcon, OutcomeIcon, TestIcon, TaskIcon, MaterialIcon, KnobitIcon,
+} from './treeIcons';
 
-export default function TreeNode({ item, children, allItems, mode, scheduleInfo, onEdit, onDelete, onAddChild, onImport, renderExtraButtons, depth = 0 }) {
+const CONTENT_TYPES = ['TASK', 'TEST', 'LEARNING_MATERIAL', 'KNOBIT'];
+
+/* Tüübi → ikoon + silt. */
+const TYPE_VISUALS = {
+  MODULE:            { Icon: ModuleIcon,   label: 'Moodul' },
+  TOPIC:             { Icon: TopicIcon,    label: 'Teema' },
+  LEARNING_OUTCOME:  { Icon: OutcomeIcon,  label: 'Õpiväljund' },
+  TASK:              { Icon: TaskIcon,     label: 'Ülesanne' },
+  TEST:              { Icon: TestIcon,     label: 'Test' },
+  LEARNING_MATERIAL: { Icon: MaterialIcon, label: 'Materjal' },
+  KNOBIT:            { Icon: KnobitIcon,   label: 'Knobit' },
+};
+
+/* Tüübi visuaal: külgriba värv + medaljoni taust/tekst (staatilised klassid Tailwind purge'i jaoks). */
+const TYPE_STYLE = {
+  MODULE:            { rail: 'bg-indigo-400', medBg: 'bg-indigo-50 dark:bg-indigo-900/30',   medFg: 'text-indigo-600 dark:text-indigo-300' },
+  TOPIC:             { rail: 'bg-violet-400', medBg: 'bg-violet-50 dark:bg-violet-900/30',   medFg: 'text-violet-600 dark:text-violet-300' },
+  LEARNING_OUTCOME:  { rail: 'bg-teal-400',   medBg: 'bg-teal-50 dark:bg-teal-900/30',       medFg: 'text-teal-600 dark:text-teal-300' },
+  TASK:              { rail: 'bg-amber-400',  medBg: 'bg-amber-50 dark:bg-amber-900/30',     medFg: 'text-amber-600 dark:text-amber-300' },
+  TEST:              { rail: 'bg-rose-400',   medBg: 'bg-rose-50 dark:bg-rose-900/30',       medFg: 'text-rose-600 dark:text-rose-300' },
+  LEARNING_MATERIAL: { rail: 'bg-purple-400', medBg: 'bg-purple-50 dark:bg-purple-900/30',   medFg: 'text-purple-600 dark:text-purple-300' },
+  KNOBIT:            { rail: 'bg-sky-400',    medBg: 'bg-sky-50 dark:bg-sky-900/30',         medFg: 'text-sky-600 dark:text-sky-300' },
+};
+
+const CONTENT_ADD = [
+  { type: 'TASK', label: 'Ülesanne', Icon: TaskIcon },
+  { type: 'TEST', label: 'Test', Icon: TestIcon },
+  { type: 'LEARNING_MATERIAL', label: 'Materjal', Icon: MaterialIcon },
+  { type: 'KNOBIT', label: 'Knobit', Icon: KnobitIcon },
+];
+
+export default function TreeNode({
+  item, children, allItems, mode, scheduleInfo,
+  onEdit, onDelete, onAddChild, onImport,
+  onSearchGraph, onRelatedGraph,
+  selectMode, selected, onToggleSelect,
+}) {
   const isExternal = item.sourceType === 'OPPEKAVAWEB' || item.sourceType === 'EXTERNAL';
-  const CONTENT_TYPES = ['TASK', 'TEST', 'LEARNING_MATERIAL', 'KNOBIT'];
-  const [expanded, setExpanded] = useState(!CONTENT_TYPES.includes(item.type));
+  const isContentType = CONTENT_TYPES.includes(item.type);
+  const [expanded, setExpanded] = useState(!isContentType);
 
-  /* ───── MODULE ───── */
+  const style = TYPE_STYLE[item.type] ?? TYPE_STYLE.MODULE;
+  const { Icon } = TYPE_VISUALS[item.type] ?? TYPE_VISUALS.MODULE;
+
+  /* counts for module chips */
+  let chips = null;
   if (item.type === 'MODULE') {
-    const childItems = (allItems ?? []).filter((i) => i.parentItemId === item.id);
     const descendantIds = new Set();
-    const collectDescendants = (parentId) => {
+    const collect = (pid) => {
       for (const i of (allItems ?? [])) {
-        if (i.parentItemId === parentId && !descendantIds.has(i.id)) {
-          descendantIds.add(i.id);
-          collectDescendants(i.id);
-        }
+        if (i.parentItemId === pid && !descendantIds.has(i.id)) { descendantIds.add(i.id); collect(i.id); }
       }
     };
-    collectDescendants(item.id);
-    const allDesc = (allItems ?? []).filter((i) => descendantIds.has(i.id));
-    const topicCount = childItems.filter((i) => i.type === 'TOPIC').length;
-    const loCount = allDesc.filter((i) => i.type === 'LEARNING_OUTCOME').length;
-    const contentCount = allDesc.filter((i) => CONTENT_TYPES.includes(i.type)).length;
-
-    return (
-      <div className="mb-3 overflow-hidden rounded-[20px] border border-indigo-200/20 bg-white/90 dark:bg-slate-800/90 shadow-[0_2px_12px_rgba(15,23,42,.07)] backdrop-blur-sm">
-        <div className="flex min-h-[60px] items-stretch" style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #6d28d9 50%, #0284c7 100%)' }}>
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left text-white"
-          >
-            <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-[14px] bg-white/20 ring-1 ring-white/25 text-base">
-              📦
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-[9px] font-bold uppercase tracking-[.08em] text-white/70">Moodul</div>
-              <div className="truncate text-sm font-bold leading-snug">{item.title}</div>
-              {(topicCount > 0 || loCount > 0 || contentCount > 0) && (
-                <div className="mt-1 flex flex-wrap gap-1.5">
-                  {topicCount > 0 && <span className="rounded-full bg-black/20 px-2 py-0.5 text-[10px] font-semibold text-white/90">{topicCount} teemat</span>}
-                  {loCount > 0 && <span className="rounded-full bg-black/20 px-2 py-0.5 text-[10px] font-semibold text-white/90">{loCount} OÕ-d</span>}
-                  {contentCount > 0 && mode === 'content' && <span className="rounded-full bg-black/20 px-2 py-0.5 text-[10px] font-semibold text-white/90">{contentCount} sisu</span>}
-                </div>
-              )}
-            </div>
-            <svg className={['h-[18px] w-[18px] text-white/70 transition-transform', expanded ? 'rotate-180' : ''].join(' ')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
-          </button>
-          <div className="flex items-center gap-1.5 border-l border-white/15 px-3">
-            <ScheduleBadge scheduleInfo={scheduleInfo} />
-            {mode === 'structure' && !isExternal && (
-              <>
-                <ModuleBtn onClick={() => onAddChild(item, 'TOPIC')}>+ Teema</ModuleBtn>
-                <ModuleBtn onClick={() => onAddChild(item, 'LEARNING_OUTCOME')}>+ OÕ</ModuleBtn>
-                <ModuleBtn onClick={() => onAddChild(item, 'TEST')}>+ Test</ModuleBtn>
-                <ModuleBtn onClick={() => onImport(item)}>⬇</ModuleBtn>
-                <ModuleBtn onClick={() => onEdit(item)}>✎</ModuleBtn>
-              </>
-            )}
-            {renderExtraButtons?.(item)}
-            {item.externalIri && (
-              <a
-                href={item.externalIri}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                title="Ava oppekava.edu.ee lehel"
-                className="inline-flex items-center gap-1 rounded-[9px] border border-white/30 bg-white/15 px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-white/25 transition-colors"
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Graaf
-              </a>
-            )}
-            {mode === 'structure' && (
-              <ModuleBtn onClick={() => onDelete(item)} danger>✕</ModuleBtn>
-            )}
-          </div>
-        </div>
-        {expanded && children && (
-          <div className="px-4 py-3">
-            {children}
-          </div>
-        )}
+    collect(item.id);
+    const desc = (allItems ?? []).filter((i) => descendantIds.has(i.id));
+    const topicCount = desc.filter((i) => i.type === 'TOPIC').length;
+    const loCount = desc.filter((i) => i.type === 'LEARNING_OUTCOME').length;
+    const contentCount = desc.filter((i) => CONTENT_TYPES.includes(i.type)).length;
+    chips = (
+      <div className="flex flex-wrap gap-1.5">
+        {topicCount > 0 && <Chip>{topicCount} teemat</Chip>}
+        {loCount > 0 && <Chip>{loCount} OÕ-d</Chip>}
+        {contentCount > 0 && mode === 'content' && <Chip>{contentCount} sisu</Chip>}
       </div>
     );
   }
 
-  /* ───── TOPIC ───── */
-  if (item.type === 'TOPIC') {
-    return (
-      <div className={['mb-1.5 overflow-hidden rounded-[14px] border border-violet-200/20 bg-violet-50/80 dark:bg-violet-900/30', depth > 0 ? 'ml-2' : ''].join(' ')}>
-        <div className="flex items-center gap-2 bg-violet-100/60 dark:bg-violet-900/40 px-3 py-2.5 border-b border-violet-200/10 dark:border-violet-800/20">
-          <button onClick={() => setExpanded((v) => !v)} className="text-violet-500 flex-shrink-0">
-            <svg className={['h-3 w-3 transition-transform', expanded ? 'rotate-0' : '-rotate-90'].join(' ')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
-          </button>
-          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[9px] bg-gradient-to-br from-violet-600 to-indigo-600 text-[11px] font-bold text-white">T</div>
-          <span className="flex-1 truncate text-[13px] font-semibold text-violet-950 dark:text-violet-100">{item.title}</span>
-          <ScheduleBadge scheduleInfo={scheduleInfo} small />
-          <SourceBadge external={isExternal} externalIri={item.externalIri} />
-          {mode === 'structure' && (
-            <div className="flex gap-1">
-              <NodeBtn sm onClick={() => onAddChild(item, 'LEARNING_OUTCOME')}>+ OÕ</NodeBtn>
-              <NodeBtn sm onClick={() => onAddChild(item, 'TEST')}>+ Test</NodeBtn>
-              <NodeBtn sm onClick={() => onImport(item)}>⬇</NodeBtn>
-              {!isExternal && <NodeBtn sm onClick={() => onEdit(item)}>✎</NodeBtn>}
-              <NodeBtn sm onClick={() => onDelete(item)} danger>✕</NodeBtn>
-            </div>
-          )}
-          {renderExtraButtons?.(item)}
-        </div>
-        {expanded && children && <div className="px-2.5 py-2 pl-10">{children}</div>}
-      </div>
-    );
-  }
+  const sizing = item.type === 'MODULE'
+    ? { card: 'py-3', med: 'h-9 w-9', icon: 'h-[18px] w-[18px]', title: 'text-[14.5px]' }
+    : isContentType
+    ? { card: 'py-2', med: 'h-[25px] w-[25px]', icon: 'h-[14px] w-[14px]', title: 'text-[12px]' }
+    : { card: 'py-2.5', med: 'h-7 w-7', icon: 'h-4 w-4', title: 'text-[12.5px]' };
 
-  /* ───── LEARNING OUTCOME ───── */
-  if (item.type === 'LEARNING_OUTCOME') {
-    return (
-      <div className={['mb-1.5 overflow-hidden rounded-[14px] border bg-white/90 dark:bg-slate-800/90 shadow-[0_1px_4px_rgba(15,23,42,.05)]', isExternal ? 'border-sky-200/25' : 'border-emerald-200/20', depth > 0 ? 'ml-3' : ''].join(' ')}>
-        <div className="flex items-center gap-2.5 px-3 py-2.5">
-          <div className={['flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-lg text-[10px] font-bold text-white', isExternal ? 'bg-gradient-to-br from-sky-500 to-sky-700' : 'bg-gradient-to-br from-emerald-500 to-emerald-700'].join(' ')}>OÕ</div>
-          <div className="min-w-0 flex-1">
-            <div className="text-[9px] font-bold uppercase tracking-[.06em] text-slate-400 dark:text-slate-500">Õpiväljund{item.parentItemId ? '' : ' · iseseisev'}{isExternal ? ' · väline' : ''}</div>
-            <div className="text-xs font-semibold text-slate-800 dark:text-slate-100 leading-snug line-clamp-2">{item.title}</div>
-          </div>
-          <ScheduleBadge scheduleInfo={scheduleInfo} small />
-          <SourceBadge external={isExternal} externalIri={item.externalIri} />
-          <div className="flex flex-shrink-0 gap-1">
-            {mode === 'content' && (
-              <NodeBtn sm onClick={() => onAddChild(item, null)}>+ Sisu</NodeBtn>
-            )}
-            {renderExtraButtons?.(item)}
-            {mode === 'structure' && !isExternal && (
-              <NodeBtn sm onClick={() => onEdit(item)}>✎</NodeBtn>
-            )}
-            {mode === 'structure' && isExternal && (
-              <span className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 px-2 py-0.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500">🔒 Lukus</span>
-            )}
-            {mode === 'structure' && (
-              <NodeBtn sm onClick={() => onDelete(item)} danger>✕</NodeBtn>
-            )}
-          </div>
-        </div>
-        {mode === 'content' && children && (
-          <div className="border-t border-dashed border-emerald-100/50 px-2.5 py-2 pl-10">{children}</div>
-        )}
-      </div>
-    );
-  }
-
-  /* ───── CONTENT ITEMS (TASK / TEST / LEARNING_MATERIAL / KNOBIT) ───── */
-  const subConfig = {
-    TASK:              { bg: 'bg-amber-50/80 dark:bg-amber-900/30',    border: 'border-amber-200/50',  iconBg: 'from-amber-500 to-amber-600',   text: 'text-amber-900 dark:text-amber-100',  icon: '✏️' },
-    TEST:              { bg: 'bg-red-50/80 dark:bg-red-900/30',        border: 'border-red-200/50',    iconBg: 'from-red-500 to-red-600',       text: 'text-red-900 dark:text-red-100',      icon: '🧪' },
-    LEARNING_MATERIAL: { bg: 'bg-fuchsia-50/80 dark:bg-fuchsia-900/30', border: 'border-purple-200/50', iconBg: 'from-violet-500 to-purple-600', text: 'text-purple-900 dark:text-purple-100', icon: '📄' },
-    KNOBIT:            { bg: 'bg-blue-50/80 dark:bg-blue-900/30',      border: 'border-blue-200/50',   iconBg: 'from-blue-600 to-blue-700',     text: 'text-blue-900 dark:text-blue-100',    icon: '⚡' },
-  };
-  const cfg = subConfig[item.type] ?? { bg: 'bg-white/60 dark:bg-slate-800/50', border: 'border-slate-200 dark:border-slate-700', iconBg: 'from-slate-400 to-slate-500', text: 'text-slate-800 dark:text-slate-100', icon: '·' };
+  const indent = item.type === 'TOPIC' ? 'ml-2' : (item.type === 'LEARNING_OUTCOME' || isContentType) ? 'ml-3.5' : '';
   const hasChildren = !!children;
+  const showCaret = item.type === 'MODULE' || item.type === 'TOPIC' || (item.type === 'LEARNING_OUTCOME' && mode === 'content') || (isContentType && hasChildren);
+  const isSelected = selectMode && selected?.has(item.id);
+
+  /* ---- + (lisa) menüü sisu ---- */
+  const addMenu = buildAddMenu();
+  /* ---- ⋯ (veel) menüü sisu ---- */
+  const moreMenu = buildMoreMenu();
+
+  function buildAddMenu() {
+    if (mode === 'structure') {
+      if (item.type === 'MODULE') {
+        if (isExternal) return null;
+        return (close) => (
+          <>
+            <RowMenu.Label>Lisa moodulisse</RowMenu.Label>
+            <RowMenu.Item icon={<TopicIcon />} onClick={() => { onAddChild(item, 'TOPIC'); close(); }}>Teema</RowMenu.Item>
+            <RowMenu.Item icon={<OutcomeIcon />} onClick={() => { onAddChild(item, 'LEARNING_OUTCOME'); close(); }}>Õpiväljund</RowMenu.Item>
+            <RowMenu.Item icon={<TestIcon />} onClick={() => { onAddChild(item, 'TEST'); close(); }}>Test</RowMenu.Item>
+            <RowMenu.Separator />
+            <RowMenu.Item icon={<ImportIcon />} onClick={() => { onImport(item); close(); }}>Impordi graafist</RowMenu.Item>
+          </>
+        );
+      }
+      if (item.type === 'TOPIC') {
+        return (close) => (
+          <>
+            <RowMenu.Label>Lisa teemasse</RowMenu.Label>
+            <RowMenu.Item icon={<OutcomeIcon />} onClick={() => { onAddChild(item, 'LEARNING_OUTCOME'); close(); }}>Õpiväljund</RowMenu.Item>
+            <RowMenu.Item icon={<TestIcon />} onClick={() => { onAddChild(item, 'TEST'); close(); }}>Test</RowMenu.Item>
+            <RowMenu.Separator />
+            <RowMenu.Item icon={<ImportIcon />} onClick={() => { onImport(item); close(); }}>Impordi graafist</RowMenu.Item>
+          </>
+        );
+      }
+      return null;
+    }
+
+    /* mode === 'content' */
+    const isImportableParent = ['MODULE', 'TOPIC', 'LEARNING_OUTCOME'].includes(item.type);
+    if (!isImportableParent) return null;
+    return (close) => (
+      <>
+        {item.type === 'LEARNING_OUTCOME' && (
+          <>
+            <RowMenu.Label>Lisa sisu</RowMenu.Label>
+            {CONTENT_ADD.map((c) => (
+              <RowMenu.Item key={c.type} icon={<c.Icon />} onClick={() => { onAddChild(item, c.type); close(); }}>{c.label}</RowMenu.Item>
+            ))}
+            {(onSearchGraph || (onRelatedGraph && item.externalIri)) && <RowMenu.Separator />}
+          </>
+        )}
+        {item.type !== 'LEARNING_OUTCOME' && (onSearchGraph || (onRelatedGraph && item.externalIri)) && (
+          <RowMenu.Label>Graafist</RowMenu.Label>
+        )}
+        {onSearchGraph && (
+          <RowMenu.Item icon={<SearchIcon />} onClick={() => { onSearchGraph(item); close(); }}>Otsi graafist</RowMenu.Item>
+        )}
+        {onRelatedGraph && item.externalIri && (
+          <RowMenu.Item icon={<LinkIcon />} onClick={() => { onRelatedGraph(item); close(); }}>Seotud sisu</RowMenu.Item>
+        )}
+      </>
+    );
+  }
+
+  function buildMoreMenu() {
+    const canEdit = !isExternal && (mode === 'structure' || isContentType);
+    const canDelete = mode === 'structure' || isContentType;
+    if (!canEdit && !canDelete) return null;
+    return (close) => (
+      <>
+        {canEdit && <RowMenu.Item icon={<EditIcon />} onClick={() => { onEdit(item); close(); }}>Muuda</RowMenu.Item>}
+        {canDelete && <RowMenu.Item danger icon={<TrashIcon />} onClick={() => { onDelete(item); close(); }}>Kustuta</RowMenu.Item>}
+      </>
+    );
+  }
 
   return (
-    <div className={['mb-1 overflow-hidden rounded-[10px] border', cfg.border, cfg.bg].join(' ')}>
-      <div className="flex items-center gap-2 px-2.5 py-1.5">
-        {hasChildren && (
-          <button onClick={() => setExpanded((v) => !v)} className="flex-shrink-0 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
-            <svg className={['h-3 w-3 transition-transform', expanded ? 'rotate-90' : ''].join(' ')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <div className={['relative rounded-[14px] border border-slate-200/70 dark:border-slate-700/70 bg-white dark:bg-slate-800/70 transition-colors hover:border-slate-300/70 dark:hover:border-slate-600', indent, isSelected ? 'ring-2 ring-rose-300/70 dark:ring-rose-700' : ''].join(' ')}>
+      {/* külgriba */}
+      <span className={['pointer-events-none absolute left-0 top-2 bottom-2 w-[3px] rounded-full', style.rail].join(' ')} />
+
+      <div className={['group flex items-center gap-2.5 pl-4 pr-3', sizing.card].join(' ')}>
+        {selectMode && isContentType ? (
+          <input
+            type="checkbox"
+            checked={!!isSelected}
+            onChange={() => onToggleSelect?.(item)}
+            onClick={(e) => e.stopPropagation()}
+            className="h-4 w-4 flex-shrink-0 rounded accent-rose-500 cursor-pointer"
+          />
+        ) : showCaret ? (
+          <button type="button" onClick={() => setExpanded((v) => !v)} className="flex h-4 w-4 flex-shrink-0 items-center justify-center text-slate-300 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-300">
+            <ChevronIcon className={['h-3.5 w-3.5 transition-transform', expanded ? '' : '-rotate-90'].join(' ')} />
           </button>
+        ) : (
+          <span className="w-4 flex-shrink-0" />
         )}
-        <div className={['flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-[7px] bg-gradient-to-br text-[9px] font-bold text-white', cfg.iconBg].join(' ')}>
-          {cfg.icon}
+
+        {/* ikoon-medaljon */}
+        <span className={['grid flex-shrink-0 place-items-center rounded-[10px]', sizing.med, style.medBg, style.medFg].join(' ')}>
+          <Icon className={sizing.icon} />
+        </span>
+
+        {/* pealkiri + sildid */}
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="min-w-0">
+            {item.type !== 'LEARNING_OUTCOME' && !isContentType && (
+              <div className="text-[9px] font-bold uppercase tracking-[.07em] text-slate-400 dark:text-slate-500">{TYPE_VISUALS[item.type]?.label}</div>
+            )}
+            <div className={['truncate font-semibold leading-snug text-slate-800 dark:text-slate-100', sizing.title].join(' ')}>{item.title}</div>
+          </div>
+          {chips}
         </div>
-        <span className={['flex-1 truncate text-[11px] font-semibold', cfg.text].join(' ')}>{item.title}</span>
-        <ScheduleBadge scheduleInfo={scheduleInfo} small />
-        <SourceBadge external={isExternal} externalIri={item.externalIri} small />
-        {renderExtraButtons?.(item)}
-        <div className="flex gap-1">
-          {!isExternal && <NodeBtn xs onClick={() => onEdit(item)}>✎</NodeBtn>}
-          {isExternal && <span className="rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 px-1.5 py-0.5 text-[9px] font-semibold text-slate-400 dark:text-slate-500">🔒</span>}
-          <NodeBtn xs onClick={() => onDelete(item)} danger>✕</NodeBtn>
+
+        {/* actions */}
+        <div className="flex flex-shrink-0 items-center gap-1.5 opacity-70 transition-opacity group-hover:opacity-100">
+          <ScheduleBadge scheduleInfo={scheduleInfo} />
+          {(item.type === 'MODULE' || item.type === 'TOPIC' || (mode === 'structure' && item.type === 'LEARNING_OUTCOME')) && (
+            <SourceBadge external={isExternal} externalIri={item.externalIri} />
+          )}
+          {isContentType && <SourceBadge external={isExternal} externalIri={item.externalIri} small />}
+
+          {addMenu && (
+            <RowMenu trigger={() => <IconBtn title="Lisa" as="span"><PlusIcon className="h-4 w-4" /></IconBtn>}>
+              {addMenu}
+            </RowMenu>
+          )}
+          {moreMenu ? (
+            <RowMenu trigger={() => <IconBtn title="Veel" as="span"><MoreIcon className="h-4 w-4" /></IconBtn>}>
+              {moreMenu}
+            </RowMenu>
+          ) : isExternal && mode === 'structure' && item.type !== 'MODULE' ? (
+            <span className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 px-2 py-0.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500">Lukus</span>
+          ) : null}
         </div>
       </div>
-      {hasChildren && expanded && <div className="border-t border-inherit px-3 py-1.5 pl-6">{children}</div>}
+
+      {/* lapsed */}
+      {hasChildren && expanded && (
+        <div className={['pb-3 pr-3', item.type === 'MODULE' ? 'pl-5 pt-1' : 'pl-9 pt-0.5'].join(' ')}>
+          <div className="flex flex-col gap-2">{children}</div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ───── Module header buttons (white on transparent) ───── */
-function ModuleBtn({ onClick, children, danger }) {
+function Chip({ children }) {
+  return <span className="rounded-full bg-slate-100 dark:bg-slate-700/60 px-2.5 py-0.5 text-[10.5px] font-semibold text-slate-500 dark:text-slate-300">{children}</span>;
+}
+
+function IconBtn({ children, title }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        'rounded-[10px] border px-2.5 py-1 text-[10px] font-semibold transition-colors',
-        danger
-          ? 'border-red-300/40 bg-red-500/20 text-white hover:bg-red-500/30'
-          : 'border-white/25 bg-white/20 text-white hover:bg-white/30',
-      ].join(' ')}
+    <span
+      title={title}
+      className="grid h-[29px] w-[29px] place-items-center rounded-[9px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:border-indigo-700 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-300 cursor-pointer"
     >
       {children}
-    </button>
+    </span>
   );
 }
 
-/* ───── Generic small buttons ───── */
-function NodeBtn({ onClick, children, sm, xs, danger }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        'rounded-[9px] border font-semibold transition-colors',
-        xs ? 'px-2 py-0.5 text-[10px]' : sm ? 'px-2.5 py-0.5 text-[10px]' : 'px-2.5 py-1 text-[11px]',
-        danger
-          ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-800/60 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
-          : 'border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-700/90',
-      ].join(' ')}
-    >
-      {children}
-    </button>
-  );
-}
-
-/* ───── Schedule badge ───── */
-function ScheduleBadge({ scheduleInfo, small }) {
+/* ───── Ajakava silt ───── */
+function ScheduleBadge({ scheduleInfo }) {
   if (!scheduleInfo?.plannedStartAt) return null;
   const d = new Date(scheduleInfo.plannedStartAt);
   const dd = String(d.getDate()).padStart(2, '0');
@@ -249,21 +270,17 @@ function ScheduleBadge({ scheduleInfo, small }) {
   return (
     <span
       title={`Planeeritud: ${d.toLocaleString('et-EE')}${statusLabel ? ` · ${statusLabel}` : ''}`}
-      className={['inline-flex items-center gap-1 rounded-[7px] border font-semibold', colorClass, small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}
+      className={['inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[10px] font-semibold', colorClass].join(' ')}
     >
-      {isCompleted ? (
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-      ) : (
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      )}
+      {isCompleted ? <CheckIcon className="h-2.5 w-2.5" /> : <ClockIcon className="h-2.5 w-2.5" />}
       {timeLabel}
       {statusLabel && <span className="ml-0.5">{`· ${statusLabel}`}</span>}
     </span>
   );
 }
 
-/* ───── Source badge ───── */
-function SourceBadge({ external, externalIri, small }) {
+/* ───── Allikas silt ───── */
+function SourceBadge({ external, externalIri }) {
   if (external) {
     if (externalIri) {
       return (
@@ -273,21 +290,21 @@ function SourceBadge({ external, externalIri, small }) {
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
           title="Ava oppekava.edu.ee lehel"
-          className={['inline-flex items-center gap-1 rounded-[7px] border border-sky-200 dark:border-sky-800/60 bg-sky-50 dark:bg-sky-900/30 font-semibold text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}
+          className="inline-flex items-center gap-1 rounded-lg border border-sky-200 dark:border-sky-800/60 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-400 transition-colors hover:bg-sky-100 dark:hover:bg-sky-900/50"
         >
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <ExternalIcon className="h-2.5 w-2.5" />
           Graaf
         </a>
       );
     }
     return (
-      <span className={['rounded-[7px] border border-sky-200 dark:border-sky-800/60 bg-sky-50 dark:bg-sky-900/30 font-semibold text-sky-700 dark:text-sky-400', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}>
-        🔗 Väline
+      <span className="inline-flex items-center gap-1 rounded-lg border border-sky-200 dark:border-sky-800/60 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-400">
+        Väline
       </span>
     );
   }
   return (
-    <span className={['rounded-[7px] border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-900/30 font-semibold text-emerald-700 dark:text-emerald-400', small ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'].join(' ')}>
+    <span className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-2 py-0.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
       Lokaalne
     </span>
   );

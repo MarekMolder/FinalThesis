@@ -48,7 +48,7 @@ public class GraphExplorerServiceImpl implements GraphExplorerService {
     @Override
     public GraphViewDto getCurriculumGraph(UUID curriculumId, UUID versionId, UUID userId) {
         CurriculumVersion version = curriculumVersionRepository
-                .findByIdAndCurriculum_User_Id(versionId, userId)
+                .findByIdForUserOrExternalGraph(versionId, userId)
                 .orElseThrow(() -> new CurriculumVersionNotFoundException(
                         "Version not found: " + versionId));
         List<CurriculumItem> items = curriculumItemRepository

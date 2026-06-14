@@ -4,9 +4,7 @@ import { curriculumItem, relation, graph } from '../../../api';
 import WizardTree from '../../../components/wizard/WizardTree';
 import ItemFormModal from '../../../components/wizard/ItemFormModal';
 import ContentImportPanel from '../../../components/wizard/ContentImportPanel';
-
-const CONTENT_TYPES = ['TASK', 'TEST', 'LEARNING_MATERIAL', 'KNOBIT'];
-const IMPORTABLE_PARENT_TYPES = ['MODULE', 'TOPIC', 'LEARNING_OUTCOME'];
+import { SelectIcon, TrashIcon } from '../../../components/wizard/treeIcons';
 
 export default function ContentStep({ versionId, metadata, items, onItemsChange, onContentStatsReady, scheduleMap }) {
   const [modal, setModal] = useState(null);
@@ -56,8 +54,8 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
     items.filter((i) => i.externalIri).map((i) => i.externalIri)
   );
 
-  function handleAddChild(parentItem) {
-    setModal({ item: null, type: 'TASK', parentItem });
+  function handleAddChild(parentItem, type) {
+    setModal({ item: null, type: type || 'TASK', parentItem });
   }
 
   async function handleSaveItem({ title, description, type, notation }) {
@@ -235,19 +233,20 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">Sisu lisamine</h2>
           <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">Lisa õpiväljundite alla ülesanded, testid, materjalid ja knobitid</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-shrink-0 gap-2">
           {deleteMode ? (
             <>
               <button
                 onClick={handleBulkDelete}
                 disabled={deleteSelected.size === 0 || deleting}
-                className="rounded-xl bg-red-600 px-3.5 py-[7px] text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-rose-500 px-3.5 py-2 text-xs font-semibold text-white shadow-[0_2px_9px_rgba(244,63,94,.25)] transition-colors hover:bg-rose-600 disabled:opacity-40"
               >
-                {deleting ? 'Kustutan...' : `Kustuta valitud (${deleteSelected.size})`}
+                <TrashIcon className="h-[15px] w-[15px]" />
+                {deleting ? 'Kustutan…' : `Kustuta valitud (${deleteSelected.size})`}
               </button>
               <button
                 onClick={() => { setDeleteMode(false); setDeleteSelected(new Set()); }}
-                className="rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-3.5 py-[7px] text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/90 dark:hover:bg-slate-700/90"
+                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-500 dark:text-slate-300 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/60"
               >
                 Loobu
               </button>
@@ -255,9 +254,9 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
           ) : (
             <button
               onClick={() => setDeleteMode(true)}
-              className="rounded-xl border border-red-200 dark:border-rose-800 bg-red-50 dark:bg-rose-900/30 px-3.5 py-[7px] text-xs font-semibold text-red-700 dark:text-rose-300 hover:bg-red-100 dark:hover:bg-red-900/40"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60"
             >
-              Kustuta sisu
+              <SelectIcon className="h-[15px] w-[15px]" /> Vali
             </button>
           )}
         </div>
@@ -272,63 +271,16 @@ export default function ContentStep({ versionId, metadata, items, onItemsChange,
         onEdit={(item) => setModal({ item, type: item.type, parentItem: null })}
         onDelete={handleDelete}
         onAddChild={handleAddChild}
-        onImport={() => {}}
-        renderExtraButtons={(item) => {
-          const parts = [];
-          if (deleteMode && CONTENT_TYPES.includes(item.type)) {
-            parts.push(
-              <label key="cb" className="flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
-                <input
-                  type="checkbox"
-                  checked={deleteSelected.has(item.id)}
-                  onChange={() => toggleDeleteSelect(item)}
-                  className="h-3.5 w-3.5 accent-red-600 rounded"
-                />
-              </label>
-            );
-          }
-          if (IMPORTABLE_PARENT_TYPES.includes(item.type)) {
-            if (item.externalIri) {
-              parts.push(
-                <button
-                  key="related"
-                  onClick={(e) => { e.stopPropagation(); setContentImport({ element: item, mode: 'related' }); }}
-                  className="rounded-[9px] border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-900/40 px-2.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-colors"
-                  title="Seotud sisu graafist"
-                >
-                  &#128279; Seotud
-                </button>
-              );
-            }
-            parts.push(
-              <button
-                key="search"
-                onClick={(e) => { e.stopPropagation(); setContentImport({ element: item, mode: 'search' }); }}
-                className="rounded-[9px] border border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-white/90 dark:hover:bg-slate-700/90 transition-colors"
-                title="Otsi sisu graafist"
-              >
-                &#128269; Otsi
-              </button>
-            );
-          }
-          return parts.length > 0 ? <span className="flex gap-1">{parts}</span> : null;
-        }}
+        onSearchGraph={(item) => setContentImport({ element: item, mode: 'search' })}
+        onRelatedGraph={(item) => setContentImport({ element: item, mode: 'related' })}
+        selectMode={deleteMode}
+        selected={deleteSelected}
+        onToggleSelect={toggleDeleteSelect}
       />
 
       {modal && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/20 px-4 py-6 backdrop-blur-sm" onClick={() => setModal(null)}>
           <div onClick={(e) => e.stopPropagation()} className="my-auto w-full max-w-md p-1">
-            {!modal.item && (
-              <div className="mb-3 flex gap-2 flex-wrap rounded-2xl bg-white/90 dark:bg-slate-800/90 border border-white/60 dark:border-slate-700/60 px-4 py-3 shadow">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 self-center">Tuup:</span>
-                {CONTENT_TYPES.map((t) => (
-                  <button key={t} onClick={() => setModal((m) => ({ ...m, type: t }))}
-                    className={['rounded-xl px-3 py-1 text-xs font-semibold border transition-colors', modal.type === t ? 'bg-sky-600 text-white border-sky-600 shadow-[0_2px_6px_rgba(2,132,199,.25)]' : 'bg-white/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-slate-700 hover:bg-white/90 dark:hover:bg-slate-700/90'].join(' ')}>
-                    {{ TASK: 'Ulesanne', TEST: 'Test', LEARNING_MATERIAL: 'Materjal', KNOBIT: 'Knobit' }[t]}
-                  </button>
-                ))}
-              </div>
-            )}
             <ItemFormModal item={modal.item} type={modal.type} parentItem={modal.parentItem} onSave={handleSaveItem} onClose={() => setModal(null)} noOverlay />
           </div>
         </div>,

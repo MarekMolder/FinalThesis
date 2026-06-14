@@ -49,7 +49,7 @@ class GraphExplorerServiceImplTest {
         UUID userId = UUID.randomUUID();
         UUID curriculumId = UUID.randomUUID();
         UUID versionId = UUID.randomUUID();
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.getCurriculumGraph(curriculumId, versionId, userId))
@@ -66,7 +66,7 @@ class GraphExplorerServiceImplTest {
         CurriculumVersion version = CurriculumVersionTestData.aCurriculumVersion()
                 .withId(versionId).withCurriculum(curriculum).build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(Collections.emptyList());
@@ -102,7 +102,7 @@ class GraphExplorerServiceImplTest {
                 .withTitle("Child topic").withParentItem(parent)
                 .withCurriculumVersion(version).build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(List.of(parent, child));
@@ -149,7 +149,7 @@ class GraphExplorerServiceImplTest {
                 .type(taltech.ee.FinalThesis.domain.enums.CurriculumItemRelationTypeEnum.EELDAB)
                 .build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(List.of(a, b));
@@ -200,7 +200,7 @@ class GraphExplorerServiceImplTest {
                                 .build()))
                         .build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(List.of(lo));
@@ -256,7 +256,7 @@ class GraphExplorerServiceImplTest {
                 .withCurriculumVersion(version)
                 .build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(List.of(lo));
@@ -307,7 +307,7 @@ class GraphExplorerServiceImplTest {
                 .withCurriculumVersion(version)
                 .build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(List.of(task));
@@ -353,7 +353,7 @@ class GraphExplorerServiceImplTest {
                 .withCurriculumVersion(version)
                 .build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(List.of(loA, loB));
@@ -409,7 +409,7 @@ class GraphExplorerServiceImplTest {
                 .withCurriculumVersion(version)
                 .build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(List.of(first, second));
@@ -445,7 +445,7 @@ class GraphExplorerServiceImplTest {
                 .withCurriculumVersion(version)
                 .build();
 
-        when(curriculumVersionRepository.findByIdAndCurriculum_User_Id(versionId, userId))
+        when(curriculumVersionRepository.findByIdForUserOrExternalGraph(versionId, userId))
                 .thenReturn(Optional.of(version));
         when(curriculumItemRepository.findAllWithParentByCurriculumVersion_Id(versionId))
                 .thenReturn(List.of(lo));

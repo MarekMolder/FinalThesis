@@ -3,6 +3,8 @@ import { curriculumItem } from '../../../api';
 import WizardTree from '../../../components/wizard/WizardTree';
 import ImportPanel from '../../../components/wizard/ImportPanel';
 import ItemFormModal from '../../../components/wizard/ItemFormModal';
+import RowMenu from '../../../components/wizard/RowMenu';
+import { PlusIcon, ImportIcon, ModuleIcon, TopicIcon, OutcomeIcon } from '../../../components/wizard/treeIcons';
 
 const STRUCTURE_TYPES = ['MODULE', 'TOPIC', 'LEARNING_OUTCOME', 'TEST'];
 
@@ -143,19 +145,26 @@ export default function StructureStep({ versionId, metadata, catalogJson, items,
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">Õppekava struktuur</h2>
           <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">{metadata.subjectLabel ?? ''} · {metadata.grade ?? ''}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => setImportParent({ id: null })} className="rounded-xl border border-indigo-200/25 dark:border-indigo-800/40 bg-gradient-to-r from-violet-100 to-blue-100 dark:from-violet-900/40 dark:to-blue-900/40 px-3.5 py-[7px] text-xs font-semibold text-indigo-700 dark:text-indigo-400 hover:brightness-105 transition">
-            ⬇ Impordi graafist
+        <div className="flex flex-shrink-0 gap-2">
+          <button onClick={() => setImportParent({ id: null })} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60">
+            <ImportIcon className="h-[15px] w-[15px]" /> Impordi graafist
           </button>
-          <button onClick={() => setModal({ item: null, type: 'MODULE', parentItem: null })} className="rounded-xl bg-sky-600 px-3.5 py-[7px] text-xs font-semibold text-white shadow-[0_2px_6px_rgba(2,132,199,.25)] hover:bg-sky-700">
-            + Moodul
-          </button>
-          <button onClick={() => setModal({ item: null, type: 'TOPIC', parentItem: null })} className="rounded-xl border border-sky-200/60 dark:border-sky-800 bg-sky-50/80 dark:bg-sky-900/40 px-3.5 py-[7px] text-xs font-semibold text-sky-700 dark:text-sky-400 hover:bg-sky-100/80 dark:hover:bg-sky-900/40">
-            + Teema
-          </button>
-          <button onClick={() => setModal({ item: null, type: 'LEARNING_OUTCOME', parentItem: null })} className="rounded-xl border border-sky-200/60 dark:border-sky-800 bg-sky-50/80 dark:bg-sky-900/40 px-3.5 py-[7px] text-xs font-semibold text-sky-700 dark:text-sky-400 hover:bg-sky-100/80 dark:hover:bg-sky-900/40">
-            + Õpiväljund
-          </button>
+          <RowMenu
+            trigger={() => (
+              <span className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-indigo-500 px-4 py-2 text-xs font-semibold text-white shadow-[0_2px_9px_rgba(79,86,196,.26)] transition-colors hover:bg-indigo-600">
+                <PlusIcon className="h-[15px] w-[15px]" /> Lisa
+              </span>
+            )}
+          >
+            {(close) => (
+              <>
+                <RowMenu.Label>Lisa juurelement</RowMenu.Label>
+                <RowMenu.Item icon={<ModuleIcon />} onClick={() => { setModal({ item: null, type: 'MODULE', parentItem: null }); close(); }}>Uus moodul</RowMenu.Item>
+                <RowMenu.Item icon={<TopicIcon />} onClick={() => { setModal({ item: null, type: 'TOPIC', parentItem: null }); close(); }}>Uus teema</RowMenu.Item>
+                <RowMenu.Item icon={<OutcomeIcon />} onClick={() => { setModal({ item: null, type: 'LEARNING_OUTCOME', parentItem: null }); close(); }}>Uus õpiväljund</RowMenu.Item>
+              </>
+            )}
+          </RowMenu>
         </div>
       </div>
 
